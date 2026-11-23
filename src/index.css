@@ -18,7 +18,6 @@ body{font-size:15px;line-height:1.65}
 .pill{font-size:11px;padding:5px 8px}
 th{font-size:12px;padding:13px 12px}td{font-size:13px;padding:13px 12px;line-height:1.65}
 .notice{font-size:13px;line-height:1.75;padding:14px}
-.line-y-axis{width:48px;flex:0 0 48px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;color:#aebdca;font:11px 'DM Mono';padding:2px 0 0}
 .source-list a{font-size:12px;padding:8px 10px}
 .bridge-item b{font-size:14px}.bridge-item small{font-size:12px;line-height:1.5}
 .factor-top{font-size:13px}.factor small{font-size:12px}.band strong{font-size:13px}.band span{font-size:11px}
@@ -30,9 +29,6 @@ th{font-size:12px;padding:13px 12px}td{font-size:13px;padding:13px 12px;line-hei
 
 .legend-row{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 4px;font-size:11px;color:#aab8c5}.legend-row span{display:flex;align-items:center;gap:6px}.legend-row i{display:inline-block;width:9px;height:9px;border-radius:50%}.chart-unit,.chart-hint{font-size:10px;color:#8192a2;margin:6px 0 10px;line-height:1.6}.selected-point{margin:10px 0;padding:12px 14px;border:1px solid #35516a;background:#142331;border-radius:8px;font-size:12px;line-height:1.8}.selected-point b{display:block;color:#f1f6fa;margin-bottom:3px}.selected-point small{display:block;color:#94a7b7}.legend-row+svg{margin-top:8px}.panel svg g[style*="cursor"] circle:last-of-type{pointer-events:all}
 @media(max-width:700px){.legend-row{gap:9px;font-size:10px}.panel-head{gap:10px;flex-wrap:wrap}.panel-head .segmented{margin-left:auto}.selected-point{font-size:11px}.chart-unit{font-size:9px}}
-
-/* Mobile chart readability: keep tooltip, plot and x-axis in separate rows */
-}
 
 /* Single source of truth for responsive trend charts */
 .line-chart{position:relative;height:auto!important;min-height:0!important;margin:14px 0 28px;padding:13px 12px 11px;overflow:hidden;border-radius:6px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 49px,#25344170 50px),#101a23}
