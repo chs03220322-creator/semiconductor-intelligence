@@ -3,12 +3,12 @@
 원본 AppDeploy 프로젝트 `semiconductor-intelligence-4hw5wk`의 대시보드 소스를 GitHub로 이전한 저장소입니다.
 
 ## 보존한 원본 구성
-- 원본 React/Vite 앱과 9개 메뉴: 산업 사이클, 제품별 가격, AI 수요·데이터센터, 빅테크 투자, 공급·재고, 기업 실적, 장기 사이클, 투자 시나리오, 데이터 출처·방법론
+- React/Vite 앱과 8개 메뉴: 산업 사이클, 제품별 가격, AI 수요·데이터센터, 빅테크 투자, 기업 실적, 장기 사이클, 투자 시나리오, 데이터 출처·방법론
 - 메모리 업황 점수, 7개 지표, 가중치, 근거 설명, 미확보 데이터 처리 및 산식
 - DRAM 16Gb·8Gb, NAND 128Gb 가격 series 및 2025 가격 series
 - 글로벌 반도체 매출, 메모리 시장 전망, IEA 데이터센터 전력, TSMC·NVIDIA 연간/분기 실적
 - 하이퍼스케일러 CAPEX 연간 actual, 분기 actual, YTD, 회계기간·CAPEX 정의
-- 공급능력·재고 가용성, 삼성전자·SK hynix·Micron·TSMC·NVIDIA 재무 actual과 전망
+- 삼성전자·SK hynix·Micron·TSMC·NVIDIA 재무 actual과 전망
 - 장기 사이클 및 투자 시나리오, 출처 링크, 데이터 품질·방법론 주의사항
 - 원본 반응형 UI, 차트, 표, 기간 선택, 모바일 내비게이션
 - 원본 UI 테스트 명세
