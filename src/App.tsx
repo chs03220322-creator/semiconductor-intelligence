@@ -350,10 +350,17 @@ function MemoryThreeForecastChart(){
  const annualized=(rows:{revenue:number;op:number}[])=>({revenue:sum(rows,'revenue')*4/rows.length,op:sum(rows,'op')*4/rows.length});
  const mid=(a:number,b:number)=>(a+b)/2;
  const extend=(rows:MemoryFinancialPoint[],color:string)=>{
-  let rev=rows[rows.length-1].revenue,op=rows[rows.length-1].op||0;
   const out=[...rows];
+  const lastValid=[...rows].reverse().find(p=>typeof p.revenue==='number'&&Number.isFinite(p.revenue));
+  let rev=lastValid?.revenue;
   const growth=[.06,.05,.04],margin=[.48,.45,.42];
-  for(let i=0;i<6-rows.length;i++){rev*=1+growth[i];op=rev*margin[i];out.push({year:String(2029+i)+'E',periodLabel:String(2029+i)+'E · 장기 시나리오(증권사 범위 미확보)',revenue:rev,op})}
+  for(let year=2029;year<=2031;year++){
+   if(out.some(p=>p.year===String(year)+'E')) continue;
+   if(typeof rev!=='number'||!Number.isFinite(rev)) continue;
+   rev*=1+growth[year-2029];
+   const op=rev*margin[year-2029];
+   out.push({year:String(year)+'E',periodLabel:String(year)+'E · 장기 시나리오(증권사 범위 미확보)',revenue:rev,op});
+  }
   return {name:'',data:out,color,currency:'KRW' as const};
  };
  // 삼성전자: 삼성증권(2026-10-08), 미래에셋(2026-10-30), 하나증권(2026-10-30/11-23), 삼성증권 주간전략(2026-11-13).
@@ -381,7 +388,7 @@ function MemoryThreeForecastChart(){
  const series:MemoryFinancialSeries[]=[
   extend(samsung,'#2563eb'),
   extend(sk,'#0f9f6e'),
-  {...mu,name:'Micron',color:'#d97706',currency:'USD'}
+  {name:'Micron',data:mu,color:'#d97706',currency:'USD'}
  ];
  series[0].name='삼성전자';series[1].name='SK하이닉스';
  return <><MemoryComparePanel title="메모리 3사 향후 5년 실적 전망 · 증권사 추정 범위" subtitle="2027~2029 공개 리포트·컨센서스 수치 · 음영은 복수 추정치의 최소~최대 · 2030~2031은 장기 시나리오(범위 미공개)" series={series} forecast/><div className="chart-hint">음영은 동일 회계연도·동일 지표의 공개 추정치 최저~최고입니다. 삼성전자 2027년 매출·영업이익은 공개 리포트 간 범위, 2028년은 삼성증권 단일 추정치입니다. SK하이닉스 2027년은 DS투자증권·하나증권·LS증권 추정치 범위, 2028년은 LS증권 단일 추정치이며 2029년 영업이익은 DS투자증권 단일 추정치입니다. Micron은 FY2027 매출에 대해서만 S&P Global Market Intelligence 기반 애널리스트 최저~최고 범위를 확인했습니다. 자료가 없는 지표는 임의 보간하지 않습니다. 2030~2031은 증권사 전망 범위를 확인하지 못해 장기 시나리오로 별도 표시합니다.</div><div className="source-list"><b>전망 출처</b><ul><li>삼성전자: 삼성증권(2026.10.08), 미래에셋증권(2026.10.30), 하나증권(2026.10.30·11.23), 삼성증권(2026.11.13)</li><li>SK하이닉스: DS투자증권(2026.11.10), LS증권(2026.11.16), 하나증권(2026.11.23)</li><li>Micron: S&P Global Market Intelligence 애널리스트 추정치(2026.11.18, Stock Analysis 공개 집계)</li></ul></div></>;
