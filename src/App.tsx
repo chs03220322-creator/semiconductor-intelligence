@@ -401,7 +401,7 @@ function Method(){return <>
  </>}
 
 function App(){
- const [active,setActive]=useState<Section>('overview');
+ const [active,setActive]=useState<Section>(()=>{const tab=new URLSearchParams(window.location.search).get('tab');return menu.some(m=>m.id===tab)?tab as Section:'overview'});
  const [period,setPeriod]=useState<Period>('3Y');
  const [mobileOpen,setMobileOpen]=useState(false);
  const [query,setQuery]=useState('');
