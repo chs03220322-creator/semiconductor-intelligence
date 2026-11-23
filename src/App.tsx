@@ -179,13 +179,26 @@ function Stat({label,value,sub}:{label:string;value:string;sub:string}){return <
 function Table({headers,rows}:{headers:string[];rows:(string|number|null)[][]}){return <div className="table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{visibleUnit(h)}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c===null?'미확보':krwText(c)}</td>)}</tr>)}</tbody></table></div>}
 function LineChart({data,keyName,label,height=220}:{data:any[];keyName:string;label:string;height?:number}){
  const [selected,setSelected]=useState<number|null>(null);
- const isUsd=/USD/i.test(label);const perChip=/chip/i.test(label);const factor=isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1;const vals=data.map(d=>Number(d[keyName])*factor);const min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;const visibleLabel=visibleUnit(label);
+ const isUsd=/USD/i.test(label);const perChip=/chip/i.test(label);
+ const vals=data.map(d=>Number(d[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1));
+ const min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
  const points=vals.map((v,i)=>[i/(Math.max(1,vals.length-1))*100,88-(v-min)/range*72]);
  const path=points.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');
  const chosen=selected===null?null:data[selected];
- const rawUnit=label.split('·').slice(1).join('·').trim();
- const fmt=(v:number)=>perChip?'₩'+Math.round(v).toLocaleString('ko-KR'):isUsd?'₩'+v.toFixed(1)+'조':Number.isInteger(v)?v.toLocaleString():v.toLocaleString(undefined,{maximumFractionDigits:3});
- const valueWithUnit=(v:number)=>/trillion tokens/i.test(label)?v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'조 개/일':/TWh/i.test(label)?v.toLocaleString('ko-KR')+' TWh/년':/USD bn/i.test(label)?'
+ const fmt=(v:number)=>perChip?'₩'+Math.round(v).toLocaleString('ko-KR'):isUsd?'₩'+v.toFixed(1)+'조':Number.isInteger(v)?v.toLocaleString('ko-KR'):v.toLocaleString('ko-KR',{maximumFractionDigits:2});
+ const unitValue=(v:number)=>{
+  if(/trillion tokens/i.test(label)) return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'조 개/일';
+  if(/TWh/i.test(label)) return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+' TWh/년';
+  if(/USD bn/i.test(label)) return '$'+v.toLocaleString('en-US',{maximumFractionDigits:1})+'B';
+  if(/\bGW\b/i.test(label)) return v.toLocaleString('ko-KR')+' GW';
+  if(perChip) return fmt(v)+' /개';
+  if(isUsd) return fmt(v);
+  const unit=label.split('·').slice(1).join('·').trim().split(/[·(]/)[0].trim();
+  return fmt(v)+(unit?' '+unit:'');
+ };
+ const visibleLabel=label.split('·').slice(0,1).join('').trim();
+ return <div className="line-chart" style={{height}}>
+  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong></>:<span>그래프의 점을 누르면 연도와 단위가 포함된 값이 표시됩니다</span>}</div>
   <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
     <path d={path} fill="none" stroke="#68c5d4" strokeWidth="2.1" vectorEffect="non-scaling-stroke"/>
