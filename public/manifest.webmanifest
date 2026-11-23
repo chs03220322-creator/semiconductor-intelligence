@@ -1,0 +1,18 @@
+{
+  "name": "Semiconductor Intelligence",
+  "short_name": "SI",
+  "description": "AI·반도체 산업 인텔리전스 대시보드",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#071426",
+  "theme_color": "#071426",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
