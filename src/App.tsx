@@ -76,20 +76,13 @@ const globalQuarterly=[
   {year:'3Q26',value:517.7,status:'Actual',note:'SIA 발표 2026-11-03'}
 ];
 const samsungAnnual=[
-  {year:'2023',revenue:258.9,op:6.6,margin:2.5},
-  {year:'2024',revenue:300.9,op:32.7,margin:10.9},
-  {year:'2025',revenue:333.6,op:43.6,margin:13.1}
+ {year:'2016',revenue:201.867,op:29.241},{year:'2017',revenue:239.575,op:53.645},{year:'2018',revenue:243.771,op:58.887},{year:'2019',revenue:230.401,op:27.769},{year:'2020',revenue:236.807,op:35.994},{year:'2021',revenue:279.605,op:51.634},{year:'2022',revenue:302.231,op:43.377},{year:'2023',revenue:258.935,op:6.567},{year:'2024',revenue:300.871,op:32.726},{year:'2025',revenue:333.606,op:43.601}
 ];
 const skAnnual=[
-  {year:'2023',revenue:32.766,op:-7.730,margin:-23.6},
-  {year:'2024',revenue:66.193,op:23.467,margin:35.5},
-  {year:'2025',revenue:97.147,op:47.206,margin:48.6}
+ {year:'2016',revenue:17.198,op:3.276},{year:'2017',revenue:30.109,op:13.721},{year:'2018',revenue:40.445,op:20.844},{year:'2019',revenue:26.991,op:2.719},{year:'2020',revenue:31.900,op:5.013},{year:'2021',revenue:42.998,op:12.410},{year:'2022',revenue:44.622,op:6.809},{year:'2023',revenue:32.766,op:-7.730},{year:'2024',revenue:66.193,op:23.467},{year:'2025',revenue:97.147,op:47.206}
 ];
 const micronAnnual=[
-  {year:'FY2023',revenue:15.540,op:-5.745,margin:-37.0},
-  {year:'FY2024',revenue:25.111,op:1.304,margin:5.2},
-  {year:'FY2025',revenue:37.378,op:9.770,margin:26.1},
-  {year:'FY2026',revenue:133.188,op:99.340,margin:74.6}
+ {year:'2016',revenue:12.399,op:0.168},{year:'2017',revenue:20.322,op:5.870},{year:'2018',revenue:30.391,op:14.990},{year:'2019',revenue:23.406,op:7.384},{year:'2020',revenue:21.435,op:3.000},{year:'2021',revenue:27.705,op:6.276},{year:'2022',revenue:30.758,op:9.703},{year:'2023',revenue:15.540,op:-5.745},{year:'2024',revenue:25.111,op:1.304},{year:'2025',revenue:37.378,op:9.770}
 ];
 const samsungQuarterly=[
   {period:'1Q26',revenue:133.9,op:57.2,margin:42.8},
@@ -261,11 +254,17 @@ function Demand(){return <>
  </>}
 function Capex(){return <>
  <Title eyebrow="04 / HYPERSCALER INVESTMENT" title="빅테크 CAPEX" desc="연간 actual과 2026년 분기 actual·YTD를 구분합니다. FY/CY, PPE 구매·PPE additions·finance lease 포함 여부가 달라 회사 간 CAPEX를 단순 합산하지 않습니다."/>
- <div className="panel"><h3>하이퍼스케일러 연간 CAPEX · 공개 actual</h3><Table headers={['기업','회계 기준','2024','2025','2026 최신 actual','정의']} rows={[
-  ['Microsoft','FY · 6월 결산','$44.48B','$64.55B','$115.95B · FY26','Additions to PPE'],
-  ['Alphabet','CY · 12월 결산','$52.5B','$91.4B','$132.0B · 1~3Q26','PPE purchases'],
-  ['Amazon','CY · 12월 결산','$77.66B','$128.32B','$175.67B · 1~3Q26','Gross PPE purchases'],
-  ['Meta','CY · 12월 결산','$37.26B','$69.69B','$85.82B · 1~3Q26','CAPEX incl. finance lease principal']
+ <div className="panel"><h3>최근 분기 CAPEX 순위 · 높은 순</h3><p className="muted">2026년 7~9월에 해당하는 최신 공개 분기 기준. Microsoft FY27 Q1은 2026년 7~9월이며, 나머지는 CY26 Q3입니다. 회사별 공시 정의는 표 하단 주석을 확인하세요.</p><Table headers={['순위','기업','기간','분기 CAPEX','비교 기준']} rows={[
+  ['1','Amazon','3Q26','$77.259B','Gross PPE purchases'],
+  ['2','Alphabet','3Q26','$51.4B','PPE purchases'],
+  ['3','Microsoft','FY27 Q1','$45.2B','CAPEX incl. finance leases'],
+  ['4','Meta','3Q26','$34.91B','CAPEX incl. finance lease principal']
+ ]}/><Sources items={['Amazon · 3Q26 실적','Alphabet · 3Q26 실적발표 콜','Microsoft · FY2027 Q1 실적발표 콜','Meta · 3Q26 SEC 10-Q']}/></div>
+ <div className="panel"><h3>최근 연간 CAPEX · 2025년 공시 기준</h3><Table headers={['순위','기업','회계기간','CAPEX','정의']} rows={[
+  ['1','Amazon','CY2025','$128.32B','Gross PPE purchases'],
+  ['2','Alphabet','CY2025','$91.4B','PPE purchases'],
+  ['3','Meta','CY2025','$69.69B','PPE purchases; finance lease principal 별도'],
+  ['4','Microsoft','FY2025','$64.55B','Additions to PPE']
  ]}/><Sources items={['Microsoft · FY2026 Annual Report','Alphabet · 3Q26 SEC 10-Q','Amazon · 3Q26 실적','Meta · 3Q26 SEC 10-Q']}/></div>
  <TrendPanel title="연도별 CAPEX 추이" series={capexAnnual.map(x=>({name:x.company+' ('+x.period+')',unit:'USD bn',data:x.values}))} quarterHeaders={['기업','최근 분기','분기 CAPEX','2026 YTD','정의']} quarterRows={capexCurrent.map(x=>[x.company,x.period,x.quarter,x.ytd,x.definition])} note="Microsoft FY26 연간 actual은 6월 종료 회계연도. Alphabet·Amazon·Meta의 2026 YTD는 9월 종료 9개월 누계. Amazon은 gross PPE purchases, Meta는 finance lease principal 포함 CAPEX로 정의가 다릅니다." source={['Microsoft · FY2027 Q1 실적발표 콜','Alphabet · 3Q26 실적발표 콜','Amazon · 3Q26 실적','Meta · 3Q26 SEC 10-Q']}/>
  <div className="panel"><h3>반도체 공급업체 투자 참고</h3><Table headers={['기업','기간','분기 CAPEX','누계','정의']} rows={supplierCapex.map(x=>[x.company,x.period,x.quarter,x.ytd,x.definition])}/><Sources items={['Samsung Electronics · 3Q26 실적','Micron · FY2026 Q4 및 연간 실적']}/></div>
@@ -295,11 +294,38 @@ function Supply(){return <>
  ]}/><Notice>재고 항목은 업황 판단에 중요하지만, 제품별·업체별·고객별 기준이 다른 재고 잔액을 섞으면 왜곡됩니다. 동일 기준 inventory days가 공개되기 전까지 점수화하지 않습니다.</Notice></div>
  </>}
 
+function MemoryThreeChart(){
+ const [metric,setMetric]=useState<'revenue'|'op'>('revenue');
+ const [selected,setSelected]=useState<{company:string;index:number}|null>(null);
+ const series=[{name:'삼성전자',data:samsungAnnual,color:'#2563eb',currency:'KRW'},{name:'SK하이닉스',data:skAnnual,color:'#0f9f6e',currency:'KRW'},{name:'Micron',data:micronAnnual,color:'#d97706',currency:'USD'}];
+ const values=series.flatMap(s=>s.data.map(d=>metric==='revenue'?d.revenue:d.op*(s.currency==='USD'?FX_USDKRW/1000:1)));
+ const min=Math.min(0,...values),max=Math.max(...values),range=max-min||1;
+ const x=(i:number)=>52+i*(650/9), y=(v:number)=>220-(v-min)/range*184;
+ const selectedSeries=selected?series.find(s=>s.name===selected.company):null;
+ const selectedPoint=selectedSeries&&selected?selectedSeries.data[selected.index]:null;
+ const format=(v:number,currency:string)=>currency==='USD'?'₩'+(v*FX_USDKRW/1000).toFixed(2)+'조':'₩'+v.toFixed(2)+'조';
+ return <div className="panel">
+  <div className="panel-head"><div><h3>메모리 3사 10년 실적 비교</h3><p>삼성전자·SK하이닉스·Micron 연간 매출 및 영업이익 · 타점을 누르면 해당 연도 실적 확인</p></div><div className="segmented"><button className={metric==='revenue'?'active':''} onClick={()=>{setMetric('revenue');setSelected(null)}}>매출</button><button className={metric==='op'?'active':''} onClick={()=>{setMetric('op');setSelected(null)}}>영업이익</button></div></div>
+  <div className="legend-row">{series.map(s=><span key={s.name}><i style={{background:s.color}}/>{s.name}</span>)}</div>
+  <svg viewBox="0 0 730 260" role="img" aria-label="메모리 3사 10년 재무 추이" style={{width:'100%',height:'auto',overflow:'visible'}}>
+   {[0,1,2,3,4].map(i=>{const v=min+(max-min)*i/4;return <g key={i}><line x1="48" x2="710" y1={y(v)} y2={y(v)} stroke="currentColor" opacity=".12" strokeDasharray="3 4"/><text x="42" y={y(v)-4} textAnchor="end" fontSize="10" fill="currentColor">{v.toFixed(0)}</text></g>})}
+   {series.map(s=>{const vals=s.data.map(d=>metric==='revenue'?d.revenue:d.op*(s.currency==='USD'?FX_USDKRW/1000:1));const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=><g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {s.data[i].year}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op,s.currency)}</title></g>)}</g>})}
+   {Array.from({length:10},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize="10" fill="currentColor">{2016+i}</text>)}
+  </svg>
+  <div className="chart-unit">단위: 조 원 · Micron은 USD 공시치를 USD/KRW {FX_USDKRW.toLocaleString()}원 고정환산. 회계연도(FY)와 달력연도(CY)는 완전히 일치하지 않습니다.</div>
+  {selectedPoint&&selectedSeries&&selected&&<div className="selected-point"><b>{selectedSeries.name} · {selectedPoint.year}{selectedSeries.name==='Micron'?' FY':''}</b><div>매출 {format(selectedPoint.revenue,selectedSeries.currency)} · 영업이익 {format(selectedPoint.op,selectedSeries.currency)}</div><small>영업이익률 {(selectedPoint.op/selectedPoint.revenue*100).toFixed(1)}% · {selectedSeries.name==='Micron'?'US GAAP':'K-IFRS 연결'} actual</small></div>}
+  {!selectedPoint&&<div className="chart-hint">그래프의 원형 타점을 눌러 연도별 매출·영업이익을 확인하세요.</div>}
+  <Notice>Micron은 FY2016~FY2025(8월 말~9월 초 종료), 삼성전자·SK하이닉스는 CY2016~CY2025 기준입니다. 환산은 현재 대시보드 기준환율 1,345원을 적용한 비교용이며, 각 사 원화/달러 공시 원값과 회계기간은 하단 출처에서 확인할 수 있습니다.</Notice>
+ </div>;
+}
 function Companies(){return <>
- <Title eyebrow="06 / COMPANY FINANCIALS" title="주요 반도체 기업 실적" desc="삼성전자·SK하이닉스는 K-IFRS 연결 기준, Micron은 US GAAP 및 8월 말 종료 회계연도 기준입니다. 2026년은 발표 완료된 분기 actual과 YTD 누계를 반영합니다."/>
- <div className="panel"><h3>삼성전자 · KRW trillion · calendar year</h3><LineChart data={samsungAnnual.map(x=>({year:x.year,value:x.revenue}))} keyName="value" label="Samsung annual revenue · KRW tn" height={170}/><Table headers={['연도','매출','영업이익','영업이익률','상태']} rows={samsungAnnual.map(x=>[x.year,x.revenue.toFixed(1),x.op.toFixed(1),x.margin.toFixed(1)+'%','K-IFRS Actual'])}/><Table headers={['분기','매출','영업이익','영업이익률','상태']} rows={samsungQuarterly.map(x=>[x.period,'₩'+x.revenue.toFixed(1)+'T','₩'+x.op.toFixed(1)+'T',x.margin.toFixed(1)+'%','Actual'])}/><Notice>2026 1~3Q 누계: 매출 ₩500.7T, 영업이익 ₩254.1T. Q3 DS 매출 ₩147.1T·영업이익 ₩106.5T. Memory Business의 Q3 매출·영업이익은 사상 최고라고 공시했으나 절대 금액은 별도 공개되지 않았습니다.</Notice><Sources items={['Samsung Electronics · 1Q26 실적','Samsung Electronics · 2Q26 실적','Samsung Electronics · 3Q26 실적','Samsung Electronics · Facts & Figures']}/></div>
- <div className="panel"><h3>SK하이닉스 · KRW trillion · calendar year</h3><LineChart data={skAnnual.map(x=>({year:x.year,value:x.revenue}))} keyName="value" label="SK hynix annual revenue · KRW tn" height={170}/><Table headers={['연도','매출','영업이익','영업이익률','상태']} rows={skAnnual.map(x=>[x.year,x.revenue.toFixed(3),x.op.toFixed(3),x.margin.toFixed(1)+'%','K-IFRS Actual'])}/><Table headers={['분기','매출','영업이익','영업이익률','상태']} rows={skQuarterly.map(x=>[x.period,'₩'+x.revenue.toFixed(4)+'T','₩'+x.op.toFixed(4)+'T',x.margin.toFixed(1)+'%','Actual'])}/><Notice>2026 1~3Q 누계: 매출 ₩236.51T, 영업이익 ₩181.49T. Q3 매출·영업이익은 전분기 대비 각각 +32%, +38%. 회사는 2027~2028년 생산능력의 50% 이상에 장기공급계약을 확보했다고 발표했습니다.</Notice><Sources items={['SK hynix · 1Q26 실적','SK hynix · 2Q26 실적','SK hynix · 3Q26 실적','SK hynix · FY2025 실적']}/></div>
- <div className="panel"><h3>Micron · USD billion · fiscal year ending in late August/early September</h3><LineChart data={micronAnnual.map(x=>({year:x.year,value:x.revenue}))} keyName="value" label="Micron annual revenue · USD bn" height={170}/><Table headers={['회계연도','매출','영업이익','영업이익률','상태']} rows={micronAnnual.map(x=>[x.year,x.revenue.toFixed(3),x.op.toFixed(3),x.margin.toFixed(1)+'%','US GAAP Actual'])}/><Table headers={['회계분기','매출','영업이익','영업이익률','상태']} rows={micronQuarterly.map(x=>[x.period,'$'+x.revenue.toFixed(3)+'B','$'+x.op.toFixed(3)+'B',x.margin.toFixed(1)+'%','US GAAP Actual'])}/><Notice>FY2026 actual: 매출 $133.188B, 영업이익 $99.340B. FY2026 FQ1~FQ4 누계는 FY 기준이며 삼성·SK의 calendar-year 1~3Q 누계와 직접 같은 기간이 아닙니다.</Notice><Sources items={['Micron · FY2026 Q1 실적','Micron · FY2026 Q2 실적','Micron · FY2026 Q4 및 연간 실적']}/></div>
+ <Title eyebrow="06 / COMPANY FINANCIALS" title="주요 반도체 기업 실적" desc="메모리 3사의 최근 10개 연간 실적을 한 그래프에서 비교합니다. 매출·영업이익 전환 및 데이터 타점 선택이 가능합니다."/>
+ <MemoryThreeChart/>
+ <div className="panel"><h3>최근 분기 실적 · 2026년</h3><Table headers={['기업','기간','매출','영업이익','기준']} rows={[
+  ...samsungQuarterly.map(x=>['삼성전자',x.period,'₩'+x.revenue.toFixed(1)+'조','₩'+x.op.toFixed(1)+'조','K-IFRS Actual']),
+  ...skQuarterly.map(x=>['SK하이닉스',x.period,'₩'+x.revenue.toFixed(2)+'조','₩'+x.op.toFixed(2)+'조','K-IFRS Actual']),
+  ...micronQuarterly.map(x=>['Micron',x.period,'$'+x.revenue.toFixed(3)+'B','$'+x.op.toFixed(3)+'B','US GAAP Actual'])
+ ]}/><Sources items={['Samsung Electronics · 1Q26 실적','Samsung Electronics · 2Q26 실적','Samsung Electronics · 3Q26 실적','SK hynix · 1Q26 실적','SK hynix · 2Q26 실적','SK hynix · 3Q26 실적','Micron · FY2026 Q1 실적','Micron · FY2026 Q2 실적','Micron · FY2026 Q4 및 연간 실적']}/></div>
  <TrendPanel title="AI 공급망 선행지표 · 연간 및 최신 분기 actual" series={[
   {name:'TSMC annual revenue · CY',unit:'USD bn',data:tsmcAnnual},
   {name:'TSMC quarterly revenue · CY26',unit:'USD bn / quarter',data:[{year:'1Q26',value:35.9},{year:'2Q26',value:44.6},{year:'3Q26',value:46.72}]},
@@ -310,8 +336,7 @@ function Companies(){return <>
   ['NVIDIA','FY2024','$60.922B','Annual actual · USD · GAAP','Actual'],['NVIDIA','FY2025','$130.497B','Annual actual · USD · GAAP','Actual'],['NVIDIA','FY2026','$215.938B','Annual actual · USD · GAAP','Actual'],
   ['NVIDIA','1Q FY27','$81.615B','Data Center $75.2B','Actual'],['NVIDIA','2Q FY27','$96.221B','Data Center $89.0B','Actual'],['NVIDIA','3Q FY27','$115.8B','Data Center $107.6B','Actual']
  ]} note="TSMC 연간은 CY, NVIDIA 연간은 FY(1월 말 종료)입니다. TSMC 2026 YTD는 1~3Q 합계, NVIDIA FY27 YTD는 Q1~Q3 합계 $293.636B입니다. GAAP 기준 actual이며 TSMC는 TIFRS 연결 기준, NVIDIA는 US GAAP 기준입니다. 통화·회계기간이 다른 기업의 수치를 합산해 순위를 만들지 않습니다." source={['TSMC · 2025 Annual Report','TSMC · 3Q26 실적','NVIDIA · FY2026 full-year results','NVIDIA · 1Q FY2027 results','NVIDIA · 2Q FY2027 results','NVIDIA · 3Q FY2027 실적']}/>
- </>}
-
+ </>
 function Cycles(){return <>
  <Title eyebrow="07 / LONG-TERM HISTORY" title="장기 반도체 사이클" desc="글로벌 반도체 시장과 메모리 시장의 연간 매출 추이를 실제·추정·전망으로 구분해 장기 사이클을 봅니다."/>
  <TrendPanel title="글로벌 반도체 시장 매출" series={[{name:'SIA annual actual',unit:'USD bn',data:market},{name:'Gartner estimate / forecast',unit:'USD bn',data:marketForecast}]} quarterHeaders={['기간','매출','상태','자료 기준']} quarterRows={[
