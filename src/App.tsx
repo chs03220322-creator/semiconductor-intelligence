@@ -164,21 +164,21 @@ function Stat({label,value,sub}:{label:string;value:string;sub:string}){return <
 function Table({headers,rows}:{headers:string[];rows:(string|number|null)[][]}){return <div className="table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{visibleUnit(h)}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c===null?'미확보':krwText(c)}</td>)}</tr>)}</tbody></table></div>}
 function pointPeriodKey(point:any):{kind:string;period:string;year:number}|null{
  const raw=String(point?.year||point?.period||point?.month||'').trim();
- let m=raw.match(/^(\\d)Q\\s*FY(\\d{2,4})$/i);
+ let m=raw.match(/^(\d)Q\s*FY(\d{2,4})$/i);
  if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^FQ(\\d)[- ](\\d{2,4})$/i);
+ m=raw.match(/^FQ(\d)[- ](\d{2,4})$/i);
  if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^(\\d)Q(\\d{2,4})$/i);
+ m=raw.match(/^(\d)Q(\d{2,4})$/i);
  if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^FY(\\d{2,4})$/i);
+ m=raw.match(/^FY(\d{2,4})$/i);
  if(m)return {kind:'annual',period:'annual',year:Number(m[1].length===2?'20'+m[1]:m[1])};
- m=raw.match(/^([A-Za-z]{3})\\s+(\\d{2,4})$/);
+ m=raw.match(/^([A-Za-z]{3})\s+(\d{2,4})$/);
  if(m)return {kind:'month',period:m[1].toLowerCase(),year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^(\\d{4})(?:\\s+(YTD))?$/i);
+ m=raw.match(/^(\d{4})(?:\s+(YTD))?$/i);
  if(m)return {kind:'year',period:m[2]?'YTD':'annual',year:Number(m[1])};
- m=raw.match(/^(\\d{4})[EF](?:\\*)?$/i);
+ m=raw.match(/^(\d{4})[EF](?:\*)?$/i);
  if(m)return {kind:'year',period:'annual',year:Number(m[1])};
- m=raw.match(/^FY(\\d{2,4})[EF]$/i);
+ m=raw.match(/^FY(\d{2,4})[EF]$/i);
  if(m)return {kind:'annual',period:'annual',year:Number(m[1].length===2?'20'+m[1]:m[1])};
  return null;
 }
