@@ -36,6 +36,9 @@ const sources=[
   {name:'Samsung Electronics · 2Q26 실적',date:'2026-07-30',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-second-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적'},
   {name:'Samsung Electronics · 1Q26 실적',date:'2026-04-30',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-first-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적'},
   {name:'Samsung Electronics · Facts & Figures',date:'상시 공개 페이지',url:'https://www.samsung.com/global/sustainability/digital-library/facts-figures/',desc:'연간 연결 재무 시계열'},
+  {name:'Samsung Electronics · Sustainability Report 2019',date:'2019-06-01',url:'https://www.samsung.com/global/sustainability/media/pdf/SustainabilityReport2019v2-en.pdf',desc:'2016~2018 연결 매출·영업이익 actual'},
+  {name:'SK hynix · FY2025 실적발표',date:'2026-01-29',url:'https://news.skhynix.com/en/sk-hynix-announces-fy25-financial-results/',desc:'2016~2025 연간 재무 추이 및 FY2025 actual'},
+  {name:'Micron · SEC filings',date:'FY2016~FY2025',url:'https://www.sec.gov/edgar/browse/?CIK=723125&owner=exclude',desc:'FY2016~FY2025 10-K 매출·영업이익 actual'},
   {name:'SK hynix · 3Q26 실적',date:'2026-10-28',url:'https://news.skhynix.com/en/q3-2026-business-results/',desc:'HBM4·Server DDR5·장기공급계약 및 2030 공급 전망'},
   {name:'SK hynix · 2Q26 실적',date:'2026-07-23',url:'https://news.skhynix.com/en/q2-2026-business-results/',desc:'분기 매출·영업이익'},
   {name:'SK hynix · 1Q26 실적',date:'2026-04-23',url:'https://news.skhynix.com/en/q1-2026-business-results/',desc:'분기 매출·영업이익'},
@@ -124,9 +127,9 @@ const capexAnnual=[
   {company:'Meta',period:'CY',values:[{year:'2024',value:37.256},{year:'2025',value:69.691}],definition:'PPE purchases; finance lease principal excluded in annual cash flow series'}
 ];
 const capexCurrent=[
-  {company:'Microsoft',period:'FY27 Q1',quarter:'$45.2B',ytd:'$45.2B',definition:'CAPEX; cash PPE $39.4B, finance leases $7.4B 포함'},
-  {company:'Alphabet',period:'3Q26',quarter:'$51.4B',ytd:'$132.0B',definition:'PPE purchases; 2026 1~3Q 누계'},
   {company:'Amazon',period:'3Q26',quarter:'$77.259B',ytd:'$175.670B',definition:'Gross PPE purchases; 2026 1~3Q 누계'},
+  {company:'Alphabet',period:'3Q26',quarter:'$51.4B',ytd:'$132.0B',definition:'PPE purchases; 2026 1~3Q 누계'},
+  {company:'Microsoft',period:'FY27 Q1',quarter:'$45.2B',ytd:'$45.2B',definition:'CAPEX; cash PPE $39.4B, finance leases $7.4B 포함'},
   {company:'Meta',period:'3Q26',quarter:'$34.91B',ytd:'$85.82B',definition:'CAPEX; finance lease principal 포함, 2026 1~3Q 누계'}
 ];
 const supplierCapex=[
