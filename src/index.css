@@ -54,3 +54,25 @@ th{font-size:12px;padding:13px 12px}td{font-size:13px;padding:13px 12px;line-hei
  .line-labels{gap:0}
  .line-labels button{font-size:9px}
 }
+
+
+/* Semantic emphasis palette: distinguish meaning, not just font weight */
+:root{
+ --em-positive:#65d6a5;
+ --em-caution:#f0bd72;
+ --em-key:#73d7e6;
+ --em-forecast:#b8a0f4;
+ --em-number:#f2ce78;
+}
+.notice strong,.notice b{color:var(--em-key)}
+.scenario.bull strong,.scenario.bull b{color:var(--em-positive)}
+.scenario.base strong,.scenario.base b{color:var(--em-forecast)}
+.scenario.bear strong,.scenario.bear b{color:var(--em-caution)}
+.panel>p strong,.panel-head p strong{color:var(--em-key)}
+td strong,td b{color:var(--em-number);font-weight:750}
+.factor strong,.factor-top strong{color:var(--em-positive)}
+.selected-point b{color:var(--em-number)}
+.chart-value-callout>b{color:var(--em-key)}
+.chart-value-callout>strong{color:var(--em-number)}
+/* Keep ordinary emphasis visible without overpowering the surrounding copy */
+p strong{color:var(--em-key);font-weight:750}
