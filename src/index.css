@@ -37,3 +37,23 @@ th{font-size:12px;padding:13px 12px}td{font-size:13px;padding:13px 12px;line-hei
 
 .legend-row{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 4px;font-size:11px;color:#aab8c5}.legend-row span{display:flex;align-items:center;gap:6px}.legend-row i{display:inline-block;width:9px;height:9px;border-radius:50%}.chart-unit,.chart-hint{font-size:10px;color:#8192a2;margin:6px 0 10px;line-height:1.6}.selected-point{margin:10px 0;padding:12px 14px;border:1px solid #35516a;background:#142331;border-radius:8px;font-size:12px;line-height:1.8}.selected-point b{display:block;color:#f1f6fa;margin-bottom:3px}.selected-point small{display:block;color:#94a7b7}.legend-row+svg{margin-top:8px}.panel svg g[style*="cursor"] circle:last-of-type{pointer-events:all}
 @media(max-width:700px){.legend-row{gap:9px;font-size:10px}.panel-head{gap:10px;flex-wrap:wrap}.panel-head .segmented{margin-left:auto}.selected-point{font-size:11px}.chart-unit{font-size:9px}}
+
+/* Mobile chart readability: keep tooltip, plot and x-axis in separate rows */
+.line-chart{height:auto!important;min-height:0!important;padding:13px 12px 11px;margin:14px 0 30px;overflow:hidden}
+.chart-value-callout{display:flex;align-items:center;gap:8px;min-height:42px;margin:0 0 10px;padding:2px 2px 9px;flex-wrap:wrap;border-bottom:1px solid #253441;line-height:1.45}
+.chart-value-callout b{flex:0 0 auto;font-size:13px}
+.chart-value-callout strong{font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+.line-plot{height:145px!important;min-height:145px!important;margin:0 0 8px}
+.line-labels{display:flex;justify-content:space-between;align-items:flex-start;gap:2px;flex-wrap:wrap;min-height:30px;line-height:1.35}
+.line-labels button{flex:1 1 auto;min-width:0;white-space:normal;text-align:center;font-size:10px!important;padding:5px 2px!important;overflow-wrap:anywhere}
+.line-chart>small{display:block;margin-top:5px;line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .line-chart{padding:12px 10px 10px}
+ .chart-value-callout{min-height:48px;gap:7px}
+ .chart-value-callout strong{font-size:15px}
+ .chart-value-callout span{flex:1 1 100%;font-size:10px;line-height:1.4}
+ .line-plot{height:135px!important;min-height:135px!important}
+ .line-y-axis{font-size:9px}
+ .line-labels{gap:0}
+ .line-labels button{font-size:9px!important}
+}
