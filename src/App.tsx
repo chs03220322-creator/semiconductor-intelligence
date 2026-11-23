@@ -317,7 +317,6 @@ function Capex(){return <>
   ['3','Meta','CY2025','$69.69B','PPE purchases; finance lease principal 별도'],
   ['4','Microsoft','FY2025','$64.55B','Additions to PPE']
  ]}/><Sources items={['Microsoft · FY2026 Annual Report','Alphabet · 3Q26 SEC 10-Q','Amazon · 3Q26 실적','Meta · 3Q26 SEC 10-Q']}/></div>
- <TrendPanel title="연도별 CAPEX 추이" series={capexAnnual.map(x=>({name:x.company+' ('+x.period+')',unit:'USD bn',data:x.values}))} quarterHeaders={['기업','최근 분기','분기 CAPEX','2026 YTD','정의']} quarterRows={capexCurrent.map(x=>[x.company,x.period,x.quarter,x.ytd,x.definition])} note="Microsoft FY26 연간 actual은 6월 종료 회계연도. Alphabet·Amazon·Meta의 2026 YTD는 9월 종료 9개월 누계. Amazon은 gross PPE purchases, Meta는 finance lease principal 포함 CAPEX로 정의가 다릅니다." source={['Microsoft · FY2027 Q1 실적발표 콜','Alphabet · 3Q26 실적발표 콜','Amazon · 3Q26 실적','Meta · 3Q26 SEC 10-Q']}/>
  <div className="panel"><h3>반도체 공급업체 투자 참고</h3><Table headers={['기업','기간','분기 CAPEX','누계','정의']} rows={supplierCapex.map(x=>[x.company,x.period,x.quarter,x.ytd,x.definition])}/><Sources items={['Samsung Electronics · 3Q26 실적','Micron · FY2026 Q4 및 연간 실적']}/></div>
  <div className="panel"><h3>CAPEX 해석 시 주의사항</h3><Table headers={['기업','기간·정의','비교 주의']} rows={[
   ['Microsoft','FY 종료 6월 · additions to PPE','FY 기준; FY27 Q1 CAPEX에는 finance leases 포함'],
