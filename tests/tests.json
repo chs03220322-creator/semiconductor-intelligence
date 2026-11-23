@@ -78,21 +78,44 @@
     "expected": "IEA data-centre electricity shows 415 TWh for 2024 actual, 485 TWh for 2025 estimate and 950 TWh for 2030 forecast; TSMC CY and NVIDIA FY annual revenue series remain separate from quarterly actuals."
   },
   {
-    "name": "Use responsive navigation and inspect data gaps",
+    "name": "Verify mobile navigation and chart readability",
     "viewport": "mobile",
     "covers": [
-      "mobile sidebar navigation",
-      "responsive data tables",
-      "inventory and ASP unavailable state",
+      "eight dashboard menu items",
+      "responsive tables",
+      "chart tooltip with units",
+      "non-overlapping chart labels",
       "free-source methodology"
     ],
-    "description": "Verifies mobile navigation and that unavailable inventory and ASP data remain explicitly unavailable.",
+    "description": "Checks that the current eight-tab dashboard is navigable on mobile and chart values remain legible with explicit units.",
     "steps": [
-      "Open the menu",
-      "Select Supply and Inventory",
-      "Scroll to the data availability table",
+      "Open the mobile menu",
+      "Navigate to AI Demand and Data Centers",
+      "Tap the 2026E AI token chart point",
+      "Verify the tooltip reads 400조 개/일",
+      "Scroll through low/base/high scenario charts",
       "Open the Methodology page"
     ],
-    "expected": "The menu closes after selection, tables remain horizontally scrollable, unavailable data is not replaced with fabricated values, and the methodology page lists only public sources."
+    "expected": "Navigation exposes eight current tabs and no removed Supply & Inventory tab; tapping the AI token point shows year and unit; chart title, tooltip, plot, x-axis and note do not overlap; tables remain horizontally scrollable."
+  },
+  {
+    "name": "Verify AI demand annual history and forecast series",
+    "viewport": "desktop",
+    "covers": [
+      "data-centre electricity annual series",
+      "AI-focused data-centre electricity annual series",
+      "AI token historical run-rate",
+      "token low/base/high scenarios",
+      "forecast caveats"
+    ],
+    "description": "Checks annual and historical AI demand chart continuity while keeping observed data, interpolation and scenario assumptions distinct.",
+    "steps": [
+      "Open AI Demand and Data Centers",
+      "Review 2023–2030 data-centre power series",
+      "Review 2025–2030 AI-focused power series",
+      "Review Jan-2024 to Jul-2026 token history",
+      "Compare 2026–2030 low/base/high scenarios"
+    ],
+    "expected": "Data-centre power shows 2023–2030; AI-focused power shows 2025–2030; token history shows Jan-2024 through Jul-2026 and forecast scenarios through 2030; interpolated and scenario values are labeled as such."
   }
 ]
