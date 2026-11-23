@@ -301,7 +301,7 @@ function MemoryThreeChart(){
  const [metric,setMetric]=useState<'revenue'|'op'>('revenue');
  const [selected,setSelected]=useState<{company:string;index:number}|null>(null);
  const series=[{name:'삼성전자',data:samsungAnnual,color:'#2563eb',currency:'KRW'},{name:'SK하이닉스',data:skAnnual,color:'#0f9f6e',currency:'KRW'},{name:'Micron',data:micronAnnual,color:'#d97706',currency:'USD'}];
- const values=series.flatMap(s=>s.data.map(d=>metric==='revenue'?d.revenue:d.op*(s.currency==='USD'?FX_USDKRW/1000:1)));
+ const values=series.flatMap(s=>s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1)));
  const min=Math.min(0,...values),max=Math.max(...values),range=max-min||1;
  const x=(i:number)=>52+i*(650/9), y=(v:number)=>220-(v-min)/range*184;
  const selectedSeries=selected?series.find(s=>s.name===selected.company):null;
@@ -312,7 +312,7 @@ function MemoryThreeChart(){
   <div className="legend-row">{series.map(s=><span key={s.name}><i style={{background:s.color}}/>{s.name}</span>)}</div>
   <svg viewBox="0 0 730 260" role="img" aria-label="메모리 3사 10년 재무 추이" style={{width:'100%',height:'auto',overflow:'visible'}}>
    {[0,1,2,3,4].map(i=>{const v=min+(max-min)*i/4;return <g key={i}><line x1="48" x2="710" y1={y(v)} y2={y(v)} stroke="currentColor" opacity=".12" strokeDasharray="3 4"/><text x="42" y={y(v)-4} textAnchor="end" fontSize="10" fill="currentColor">{v.toFixed(0)}</text></g>})}
-   {series.map(s=>{const vals=s.data.map(d=>metric==='revenue'?d.revenue:d.op*(s.currency==='USD'?FX_USDKRW/1000:1));const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=><g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {s.data[i].year}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op,s.currency)}</title></g>)}</g>})}
+   {series.map(s=>{const vals=s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1));const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=><g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {s.data[i].year}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op,s.currency)}</title></g>)}</g>})}
    {Array.from({length:10},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize="10" fill="currentColor">{2016+i}</text>)}
   </svg>
   <div className="chart-unit">단위: 조 원 · Micron은 USD 공시치를 USD/KRW {FX_USDKRW.toLocaleString()}원 고정환산. 회계연도(FY)와 달력연도(CY)는 완전히 일치하지 않습니다.</div>
@@ -339,7 +339,7 @@ function Companies(){return <>
   ['NVIDIA','FY2024','$60.922B','Annual actual · USD · GAAP','Actual'],['NVIDIA','FY2025','$130.497B','Annual actual · USD · GAAP','Actual'],['NVIDIA','FY2026','$215.938B','Annual actual · USD · GAAP','Actual'],
   ['NVIDIA','1Q FY27','$81.615B','Data Center $75.2B','Actual'],['NVIDIA','2Q FY27','$96.221B','Data Center $89.0B','Actual'],['NVIDIA','3Q FY27','$115.8B','Data Center $107.6B','Actual']
  ]} note="TSMC 연간은 CY, NVIDIA 연간은 FY(1월 말 종료)입니다. TSMC 2026 YTD는 1~3Q 합계, NVIDIA FY27 YTD는 Q1~Q3 합계 $293.636B입니다. GAAP 기준 actual이며 TSMC는 TIFRS 연결 기준, NVIDIA는 US GAAP 기준입니다. 통화·회계기간이 다른 기업의 수치를 합산해 순위를 만들지 않습니다." source={['TSMC · 2025 Annual Report','TSMC · 3Q26 실적','NVIDIA · FY2026 full-year results','NVIDIA · 1Q FY2027 results','NVIDIA · 2Q FY2027 results','NVIDIA · 3Q FY2027 실적']}/>
- </>
+ </>}
 function Cycles(){return <>
  <Title eyebrow="07 / LONG-TERM HISTORY" title="장기 반도체 사이클" desc="글로벌 반도체 시장과 메모리 시장의 연간 매출 추이를 실제·추정·전망으로 구분해 장기 사이클을 봅니다."/>
  <TrendPanel title="글로벌 반도체 시장 매출" series={[{name:'SIA annual actual',unit:'USD bn',data:market},{name:'Gartner estimate / forecast',unit:'USD bn',data:marketForecast}]} quarterHeaders={['기간','매출','상태','자료 기준']} quarterRows={[
