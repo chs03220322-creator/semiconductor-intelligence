@@ -293,56 +293,46 @@ const nasdaqTop10=[
  {company:'Apple',cap:4.98},{company:'Microsoft',cap:3.60},{company:'Alphabet',cap:3.26},{company:'NVIDIA',cap:3.03},{company:'Amazon',cap:2.67},{company:'Broadcom',cap:1.45},{company:'Meta',cap:1.44},{company:'Tesla',cap:1.37},{company:'Walmart',cap:1.02},{company:'AMD',cap:0.696}
 ];
 function NasdaqTop10Panel(){
- const [metric,setMetric]=useState<'revenue'|'op'|'capex'>('capex');
+ const [metric,setMetric]=useState<'revenue'|'op'>('revenue');
  const [selected,setSelected]=useState('전체');
- const metricLabel={revenue:'매출',op:'영업이익',capex:'CAPEX'} as const;
- // USD billions; Microsoft uses fiscal years, the other companies use calendar years.
+ const metricLabel={revenue:'매출',op:'영업이익'} as const;
+ // USD billions. Period labels follow each issuer's reported fiscal year; no quarterly estimates are inserted.
  const series=[
-  {company:'Microsoft',color:'#68c5d4',data:[
-   {year:'2023 FY',revenue:211.915,op:88.523,capex:28.107},
-   {year:'2024 FY',revenue:245.122,op:109.433,capex:44.477},
-   {year:'2025 FY',revenue:281.724,op:128.528,capex:64.551}
-  ]},
-  {company:'Alphabet',color:'#e6a85c',data:[
-   {year:'2023 CY',revenue:307.394,op:84.293,capex:32.3},
-   {year:'2024 CY',revenue:350.018,op:112.390,capex:52.5},
-   {year:'2025 CY',revenue:402.836,op:129.039,capex:91.4}
-  ]},
-  {company:'Amazon',color:'#9b8bea',data:[
-   {year:'2023 CY',revenue:574.785,op:36.852,capex:52.729},
-   {year:'2024 CY',revenue:637.959,op:68.593,capex:77.658},
-   {year:'2025 CY',revenue:716.924,op:79.975,capex:128.320}
-  ]},
-  {company:'Meta',color:'#62bd8b',data:[
-   {year:'2023 CY',revenue:134.902,op:46.751,capex:28.1},
-   {year:'2024 CY',revenue:164.501,op:69.380,capex:37.256},
-   {year:'2025 CY',revenue:200.966,op:83.280,capex:69.691}
-  ]}
+  {company:'Apple',ticker:'AAPL',color:'#68c5d4',data:[{year:2023,label:'FY2023',revenue:383.285,op:114.301},{year:2024,label:'FY2024',revenue:391.035,op:123.216},{year:2025,label:'FY2025',revenue:416.161,op:133.050}]},
+  {company:'Microsoft',ticker:'MSFT',color:'#e6a85c',data:[{year:2023,label:'FY2023',revenue:211.915,op:88.523},{year:2024,label:'FY2024',revenue:245.122,op:109.433},{year:2025,label:'FY2025',revenue:281.724,op:128.528}]},
+  {company:'Alphabet',ticker:'GOOGL',color:'#9b8bea',data:[{year:2023,label:'FY2023',revenue:307.394,op:84.293},{year:2024,label:'FY2024',revenue:350.018,op:112.390},{year:2025,label:'FY2025',revenue:402.836,op:129.039}]},
+  {company:'NVIDIA',ticker:'NVDA',color:'#62bd8b',data:[{year:2023,label:'FY2023',revenue:26.974,op:4.224},{year:2024,label:'FY2024',revenue:60.922,op:32.972},{year:2025,label:'FY2025',revenue:130.497,op:81.453}]},
+  {company:'Amazon',ticker:'AMZN',color:'#e58c9b',data:[{year:2023,label:'FY2023',revenue:574.785,op:36.852},{year:2024,label:'FY2024',revenue:637.959,op:68.593},{year:2025,label:'FY2025',revenue:716.924,op:79.975}]},
+  {company:'Broadcom',ticker:'AVGO',color:'#7fa8e8',data:[{year:2023,label:'FY2023',revenue:35.819,op:16.706},{year:2024,label:'FY2024',revenue:51.574,op:15.798},{year:2025,label:'FY2025',revenue:63.887,op:26.367}]},
+  {company:'Meta',ticker:'META',color:'#d1a1e8',data:[{year:2023,label:'FY2023',revenue:134.902,op:46.751},{year:2024,label:'FY2024',revenue:164.501,op:69.380},{year:2025,label:'FY2025',revenue:200.966,op:83.280}]},
+  {company:'Tesla',ticker:'TSLA',color:'#d5b66c',data:[{year:2023,label:'FY2023',revenue:96.773,op:8.891},{year:2024,label:'FY2024',revenue:97.690,op:7.076},{year:2025,label:'FY2025',revenue:94.827,op:4.355}]},
+  {company:'Walmart',ticker:'WMT',color:'#78c9b4',data:[{year:2024,label:'FY2024',revenue:648.125,op:27.012},{year:2025,label:'FY2025',revenue:680.985,op:29.348},{year:2026,label:'FY2026',revenue:713.163,op:29.825}]},
+  {company:'AMD',ticker:'AMD',color:'#c7a0f2',data:[{year:2023,label:'FY2023',revenue:22.680,op:0.401},{year:2024,label:'FY2024',revenue:25.785,op:1.900},{year:2025,label:'FY2025',revenue:34.639,op:3.694}]}
  ];
  const active=series.filter(s=>selected==='전체'||s.company===selected);
- const chartW=760,chartH=330,left=76,right=24,top=28,bottom=58;
+ const chartW=900,chartH=350,left=82,right=24,top=30,bottom=62;
  const values=active.flatMap(s=>s.data.map(d=>d[metric]));
  const max=Math.max(...values,1)*1.12;
- const x=(i:number)=>left+i*(chartW-left-right)/2;
+ const x=(year:number)=>left+(year-2023)*(chartW-left-right)/3;
  const y=(v:number)=>top+(max-v)/max*(chartH-top-bottom);
  const ticks=[0,0.25,0.5,0.75,1];
  const fmt=(v:number)=>'₩'+(v*FX_USDKRW/1000).toFixed(1)+'조';
  return <div className="panel" style={{marginBottom:18}}>
-  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}><div><h3 style={{marginBottom:4}}>빅테크 4사 재무 추이</h3><p className="muted" style={{margin:0}}>2023~2025 연간 공시 · 원화 환산 · Microsoft는 회계연도(FY), 나머지는 달력연도(CY)</p></div><Pill tone="blue">꺾은선 그래프</Pill></div>
-  <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'16px 0'}}>{(['revenue','op','capex'] as const).map(k=><button key={k} onClick={()=>setMetric(k)} style={{border:'1px solid var(--line)',borderRadius:9,padding:'8px 12px',background:metric===k?'var(--accent)':'var(--panel-2)',color:metric===k?'white':'var(--text)',fontWeight:700,cursor:'pointer'}}>{metricLabel[k]}</button>)}</div>
+  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}><div><h3 style={{marginBottom:4}}>나스닥 시가총액 상위 10개사 실적 추이</h3><p className="muted" style={{margin:0}}>연간 공시 기준 · 매출·영업이익 · 원화 환산 · 기업별 회계연도 표기</p></div><Pill tone="blue">연간 꺾은선 그래프</Pill></div>
+  <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'16px 0'}}>{(['revenue','op'] as const).map(k=><button key={k} onClick={()=>setMetric(k)} style={{border:'1px solid var(--line)',borderRadius:9,padding:'8px 12px',background:metric===k?'var(--accent)':'var(--panel-2)',color:metric===k?'white':'var(--text)',fontWeight:700,cursor:'pointer'}}>{metricLabel[k]}</button>)}</div>
   <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
    <label className="muted" style={{fontSize:12}}>기업 선택</label>
-   <select value={selected} onChange={e=>setSelected(e.target.value)} style={{background:'var(--panel-2)',color:'var(--text)',border:'1px solid var(--line)',borderRadius:8,padding:'7px 10px'}}><option value="전체">전체 기업</option>{series.map(s=><option key={s.company} value={s.company}>{s.company}</option>)}</select>
+   <select value={selected} onChange={e=>setSelected(e.target.value)} style={{background:'var(--panel-2)',color:'var(--text)',border:'1px solid var(--line)',borderRadius:8,padding:'7px 10px'}}><option value="전체">전체 기업</option>{series.map(s=><option key={s.company} value={s.company}>{s.company} ({s.ticker})</option>)}</select>
   </div>
   <div style={{width:'100%',overflowX:'auto'}}>
-   <svg viewBox={`0 0 ${chartW} ${chartH}`} role="img" aria-label={`빅테크 기업별 ${metricLabel[metric]} 연간 꺾은선 그래프`} style={{width:'100%',minWidth:540,height:330,display:'block'}}>
+   <svg viewBox={`0 0 ${chartW} ${chartH}`} role="img" aria-label={`나스닥 상위 10개사 ${metricLabel[metric]} 연간 꺾은선 그래프`} style={{width:'100%',minWidth:600,height:350,display:'block'}}>
     {ticks.map((t,i)=>{const v=max*t;return <g key={i}><line x1={left} x2={chartW-right} y1={y(v)} y2={y(v)} stroke="currentColor" opacity=".14" strokeDasharray="4 4"/><text x={left-9} y={y(v)+4} textAnchor="end" fontSize="11" fill="currentColor">{fmt(v)}</text></g>})}
-    {[0,1,2].map(i=><text key={i} x={x(i)} y={chartH-20} textAnchor="middle" fontSize="11" fill="currentColor">{['2023','2024','2025'][i]}</text>)}
-    {active.map(s=>{const pts=s.data.map((d,i)=>({i,v:d[metric],period:d.year}));const path=pts.map((p,i)=>(i?'L':'M')+x(p.i)+','+y(p.v)).join(' ');return <g key={s.company}><path d={path} fill="none" stroke={s.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>{pts.map(p=><g key={p.i}><circle cx={x(p.i)} cy={y(p.v)} r="4.5" fill={s.color} stroke="var(--panel)" strokeWidth="1.5"/><title>{s.company} · {p.period} · {fmt(p.v)}</title></g>)}</g>})}
+    {[2023,2024,2025,2026].map(year=><text key={year} x={x(year)} y={chartH-22} textAnchor="middle" fontSize="11" fill="currentColor">{year}</text>)}
+    {active.map(s=>{const pts=s.data.map(d=>({x:d.year,v:d[metric],period:d.label}));const path=pts.map((p,i)=>(i?'L':'M')+x(p.x)+','+y(p.v)).join(' ');return <g key={s.company}><path d={path} fill="none" stroke={s.color} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>{pts.map(p=><g key={p.period}><circle cx={x(p.x)} cy={y(p.v)} r="4.2" fill={s.color} stroke="var(--panel)" strokeWidth="1.5"/><title>{s.company} ({s.ticker}) · {p.period} · {fmt(p.v)}</title></g>)}</g>})}
    </svg>
   </div>
   <div className="legend-row">{active.map(s=><span key={s.company}><i style={{background:s.color}}/>{s.company}</span>)}</div>
-  <div className="chart-hint">세로축 단위: 조 원. 환산 기준 USD/KRW {FX_USDKRW.toLocaleString('ko-KR')}원. 원자료는 각 기업 연차보고서의 연결 손익계산서 및 현금흐름표 기준입니다. CAPEX는 유형자산 취득 현금흐름 기준으로, 기업별 리스 포함 여부와 공시 정의 차이가 있어 완전한 동질 비교는 아닙니다. 회계연도 차이를 구분하기 위해 Microsoft는 FY, 나머지는 CY로 표시했습니다.</div>
+  <div className="chart-hint">세로축 단위: 조 원. USD 수치를 환산 기준 USD/KRW {FX_USDKRW.toLocaleString('ko-KR')}원으로 변환했습니다. 각 기업의 회계연도 종료 시점이 다르며, Walmart는 1월 결산 FY2024~FY2026, 나머지는 해당 기업의 공시 회계연도 기준입니다. 연간 수치가 확인되는 구간만 표시했으며 분기 수치를 추정해 채우지 않았습니다. 데이터 기준은 FY2025까지이며 Walmart는 FY2026까지 포함합니다.</div>
  </div>
 }
 function Capex(){return <>
