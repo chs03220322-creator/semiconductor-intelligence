@@ -349,35 +349,39 @@ function MemoryThreeForecastChart(){
  const sum=(rows:{revenue:number;op:number}[],key:'revenue'|'op')=>rows.reduce((v,row)=>v+row[key],0);
  const annualized=(rows:{revenue:number;op:number}[])=>({revenue:sum(rows,'revenue')*4/rows.length,op:sum(rows,'op')*4/rows.length});
  const mid=(a:number,b:number)=>(a+b)/2;
- const extend=(rows:MemoryFinancialPoint[],currency:'KRW'|'USD',color:string)=>{
-  let rev=rows[rows.length-1].revenue,op=rows[rows.length-1].op;
+ const extend=(rows:MemoryFinancialPoint[],color:string)=>{
+  let rev=rows[rows.length-1].revenue,op=rows[rows.length-1].op||0;
   const out=[...rows];
   const growth=[.06,.05,.04],margin=[.48,.45,.42];
-  growth.forEach((g,i)=>{rev*=1+g;op=rev*margin[i];out.push({year:String(2029+i)+'E',periodLabel:String(2029+i)+'E · 장기 시나리오(범위 미공개)',revenue:rev,op})});
-  return {name:'',data:out,color,currency};
+  growth.forEach((g,i)=>{rev*=1+g;op=rev*margin[i];out.push({year:String(2029+i)+'E',periodLabel:String(2029+i)+'E · 장기 시나리오(증권사 범위 미확보)',revenue:rev,op})});
+  return {name:'',data:out,color,currency:'KRW' as const};
  };
+ // 삼성전자: 삼성증권(2026-10-08), 미래에셋(2026-10-30), 하나증권(2026-10-30/11-23), 삼성증권 주간전략(2026-11-13).
  const samsung:MemoryFinancialPoint[]=[
-  {year:'2026E*',periodLabel:'2026E* · 최신 YTD 연환산',revenue:annualized(samsungQuarterly).revenue,op:annualized(samsungQuarterly).op},
+  {year:'2026E*',periodLabel:'2026E* · 1Q~3Q 누계 연환산',revenue:annualized(samsungQuarterly).revenue,op:annualized(samsungQuarterly).op},
   {year:'2027E',revenue:mid(928.268,1193.508),op:mid(532.028,624),revenueLow:928.268,revenueHigh:1193.508,opLow:532.028,opHigh:624},
-  {year:'2028E',revenue:mid(1019.684,1144.46),op:mid(590.302,623.391),revenueLow:1019.684,revenueHigh:1144.46,opLow:590.302,opHigh:623.391}
+  {year:'2028E',periodLabel:'2028E · 삼성증권 단일 추정',revenue:1019.684,op:590.302}
  ];
+ // SK하이닉스: DS투자증권(11/10), 하나증권(11/23), LS증권(11/16).
  const sk:MemoryFinancialPoint[]=[
-  {year:'2026E*',periodLabel:'2026E* · 최신 YTD 연환산',revenue:annualized(skQuarterly).revenue,op:annualized(skQuarterly).op},
-  {year:'2027E',revenue:mid(568,614.979),op:mid(396,489.261),revenueLow:568,revenueHigh:614.979,opLow:396,opHigh:489.261},
-  {year:'2028E',revenue:648.249,op:502.177}
+  {year:'2026E*',periodLabel:'2026E* · 1Q~3Q 누계 연환산',revenue:annualized(skQuarterly).revenue,op:annualized(skQuarterly).op},
+  {year:'2027E',revenue:mid(569.898,643.076),op:mid(443.8,528.138),revenueLow:569.898,revenueHigh:643.076,opLow:443.8,opHigh:528.138},
+  {year:'2028E',periodLabel:'2028E · LS증권 단일 추정',revenue:739.36,op:611.405},
+  {year:'2029E',periodLabel:'2029E · DS투자증권 단일 추정(영업이익)',revenue:undefined as unknown as number,op:290.3}
  ];
+ // Micron: 공개 S&P Global Market Intelligence 애널리스트 추정 범위(2026-11-18); 회계연도(FY).
  const mu:MemoryFinancialPoint[]=[
   {year:'FY2026',periodLabel:'FY2026 · actual',revenue:micronAnnual[micronAnnual.length-1].revenue,op:micronAnnual[micronAnnual.length-1].op},
-  {year:'FY2027E',revenue:276, revenueLow:212.4,revenueHigh:314},
-  {year:'FY2028E',revenue:320.83,revenueLow:224.16,revenueHigh:396.62}
+  {year:'FY2027E',periodLabel:'FY2027E · S&P Global 애널리스트 추정',revenue:276,revenueLow:212.4,revenueHigh:314},
+  {year:'FY2028E',periodLabel:'FY2028E · 공개 범위 미확보',revenue:undefined as unknown as number}
  ];
  const series:MemoryFinancialSeries[]=[
-  extend(samsung,'KRW','#2563eb'),
-  extend(sk,'KRW','#0f9f6e'),
-  extend(mu,'USD','#d97706')
+  extend(samsung,'#2563eb'),
+  extend(sk,'#0f9f6e'),
+  {...mu,name:'Micron',color:'#d97706',currency:'USD'}
  ];
- series[0].name='삼성전자';series[1].name='SK하이닉스';series[2].name='Micron';
- return <><MemoryComparePanel title="메모리 3사 향후 5년 실적 전망 · 증권사 범위" subtitle="증권사·시장 추정치의 최소~최대 음영 · 매출/영업이익 전환 · X축 줌 · 2029~31은 장기 시나리오(추정 범위 미공개)" series={series} forecast/><div className="chart-hint">음영은 공개된 증권사 또는 시장 컨센서스의 최저~최고 추정 범위입니다. 음영이 없는 연도는 비교 가능한 공개 범위 자료가 확인되지 않은 구간이며, 선은 장기 시나리오입니다. Micron의 영업이익 추정 범위는 동일 기준으로 확인되지 않아 음영을 표시하지 않습니다.</div></>;
+ series[0].name='삼성전자';series[1].name='SK하이닉스';
+ return <><MemoryComparePanel title="메모리 3사 향후 5년 실적 전망 · 증권사 추정 범위" subtitle="2027~2029 공개 리포트·컨센서스 수치 · 음영은 복수 추정치의 최소~최대 · 2030~2031은 장기 시나리오(범위 미공개)" series={series} forecast/><div className="chart-hint">음영은 동일 회계연도·동일 지표의 공개 추정치 최저~최고입니다. 삼성전자 2027년 매출·영업이익은 공개 리포트 간 범위, 2028년은 삼성증권 단일 추정치입니다. SK하이닉스 2027년은 DS투자증권·하나증권·LS증권 추정치 범위, 2028년은 LS증권 단일 추정치이며 2029년 영업이익은 DS투자증권 단일 추정치입니다. Micron은 FY2027 매출에 대해서만 S&P Global Market Intelligence 기반 애널리스트 최저~최고 범위를 확인했습니다. 자료가 없는 지표는 임의 보간하지 않습니다. 2030~2031은 증권사 전망 범위를 확인하지 못해 장기 시나리오로 별도 표시합니다.</div><div className="source-list"><b>전망 출처</b><ul><li>삼성전자: 삼성증권(2026.10.08), 미래에셋증권(2026.10.30), 하나증권(2026.10.30·11.23), 삼성증권(2026.11.13)</li><li>SK하이닉스: DS투자증권(2026.11.10), LS증권(2026.11.16), 하나증권(2026.11.23)</li><li>Micron: S&P Global Market Intelligence 애널리스트 추정치(2026.11.18, Stock Analysis 공개 집계)</li></ul></div></>;
 }
 function Companies(){return <>
  <Title eyebrow="06 / COMPANY FINANCIALS" title="주요 반도체 기업 실적" desc="메모리 3사의 2016~2025 연간 실적에 각 사의 최신 공시 분기까지 누적한 실적을 추가해 비교합니다. 매출·영업이익 전환 및 타점별 수치 확인이 가능합니다."/>
