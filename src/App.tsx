@@ -485,8 +485,7 @@ function App(){
   case'pricing':return <Pricing/>;
   case'demand':return <Demand/>;
   case'capex':return <Capex/>;
-  case'supply':return <Supply/>;
-  case'companies':return <Companies/>;
+    case'companies':return <Companies/>;
   case'cycles':return <Cycles/>;
   case'insights':return <Insights/>;
   case'method':return <Method/>;
