@@ -346,6 +346,8 @@ function MemoryThreeChart(){
  return <MemoryComparePanel title="메모리 3사 10년 실적 비교 · 최신 누계 포함" subtitle="2016~2025 연간 actual과 최신 공시 분기 누계 · X축 줌 슬라이더 · 매출/영업이익 전환 · 타점 선택" series={series}/>;
 }
 function MemoryThreeForecastChart(){
+ const sum=(rows:{revenue:number;op:number}[],key:'revenue'|'op')=>rows.reduce((v,row)=>v+row[key],0);
+ const annualized=(rows:{revenue:number;op:number}[])=>({revenue:sum(rows,'revenue')*4/rows.length,op:sum(rows,'op')*4/rows.length});
  const mid=(a:number,b:number)=>(a+b)/2;
  const extend=(rows:MemoryFinancialPoint[],currency:'KRW'|'USD',color:string)=>{
   let rev=rows[rows.length-1].revenue,op=rows[rows.length-1].op;
