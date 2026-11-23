@@ -240,8 +240,8 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
 function Pricing(){return <>
  <Title eyebrow="02 / PRODUCT PRICING" title="무료 공개 메모리 가격 & 수급" desc="정부가 공개한 범용 DRAM·NAND 기준가격과 수출만 반영합니다. 이 수치는 Server DDR5·PC DDR5·DDR4·HBM의 개별 계약 ASP가 아닙니다. 공개되지 않은 제품별 가격은 추정하지 않습니다."/>
  <div className="stats-grid"><Stat label="DRAM 8Gb · Oct 2026" value="$27.5" sub="전월 대비 +5.8% · USD/chip"/><Stat label="NAND 128Gb · Oct 2026" value="$30.6" sub="전월 대비 0.0% · USD/chip"/></div>
- <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DDR5 16Gb 고정가격 (별도 계열)',unit:'USD / chip',data:pricesDdr5_16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand}]} quarterHeaders={['월','DRAM 16Gb','DRAM 8Gb','NAND 128Gb','상태']} quarterRows={[
-  ['Jun 26','$40.0',null,'$28.8','Actual'],['Jul 26','$45.0','$24.0','$30.1','Actual'],['Aug 26','$46.5','$25.0','$30.5','Actual'],['Sep 26','$48.0','$26.0','$30.6','Actual'],['Oct 26',null,'$27.5','$30.6','Actual']
+ <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DDR5 16Gb 고정가격 (별도 계열)',unit:'USD / chip',data:pricesDdr5_16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand}]} quarterHeaders={['월','DRAM 16Gb','DDR5 16Gb','DRAM 8Gb','NAND 128Gb','상태']} quarterRows={[
+  ['Jun 26','$40.0','$40.0',null,'$28.8','Actual'],['Jul 26','$45.0','$45.0','$24.0','$30.1','Actual'],['Aug 26','$46.5','$46.5','$25.0','$30.5','Actual'],['Sep 26','$48.0','$48.0','$26.0','$30.6','Actual'],['Oct 26',null,'$50.0','$27.5','$30.6','Actual']
  ]} note="DRAM 16Gb 범용 기준가격과 DDR5 16Gb 고정가격은 서로 다른 공개 계열이므로 분리했습니다. DDR5 16Gb는 10월 $50.0까지 공개되어 있습니다. 어느 series도 Server DDR5 RDIMM·PC DDR5 모듈 ASP와 동일하지 않습니다." source={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향']}/>
  <div className="panel"><h3>2025년 공개 DRAM 8Gb·NAND 128Gb 기준가격</h3><p className="muted">2025년 7~10월 관측치 · USD/chip · 2026년 series와 연도·시장 환경을 구분</p><LineChart data={prices2025Dram8} keyName="value" label="DRAM 8Gb reference · USD/chip" height={180}/><LineChart data={prices2025Nand} keyName="value" label="NAND 128Gb reference · USD/chip" height={180}/><Table headers={['월','DRAM 8Gb','NAND 128Gb','상태']} rows={prices2025Dram8.map((x,i)=>[x.year,'$'+x.value.toFixed(1),'$'+prices2025Nand[i].value.toFixed(1),'공식 월간 보고서'])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
  <TrendPanel title="메모리 시장 규모 대리지표" series={[{name:'Memory semiconductor revenue',unit:'USD bn · 시장규모, ASP 아님',data:memoryForecast}]} quarterHeaders={['연도','메모리 시장 규모','상태','출처 기준']} quarterRows={memoryForecast.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status,'Gartner Aug 2026 public release'])} note="메모리 시장규모는 연간 매출 estimate/forecast이며 제품 단가·ASP가 아닙니다. 2025 estimate, 2026~2027 forecast를 actual과 분리했습니다." source={['Gartner · 2026년 반도체 시장 공개 전망']}/>
@@ -341,7 +341,7 @@ function Insights(){return <>
   ['하락','제품별 재고·ASP 공개 부족','현재 호황의 후반부 여부를 확정하기 어려움']
  ]}/><Sources items={['Samsung Electronics · 3Q26 실적','SK hynix · 3Q26 실적','Alphabet · 3Q26 실적발표 콜','Amazon · 3Q26 실적']}/></div>
  <div className="panel"><h3>다음 업데이트에서 우선 확인할 항목</h3><Table headers={['우선순위','지표','확인할 변화']} rows={[
-  ['1','DRAM 8Gb·NAND 128Gb 공개 기준가격','11월 가격 발표 시 상승 지속·보합·하락 여부; DRAM 16Gb는 새 공개치가 있을 때만 추가'],
+  ['1','DRAM 8Gb·NAND 128Gb 공개 기준가격','11월 가격 발표 시 상승 지속·보합·하락 여부; 서로 다른 DRAM/DDR5 가격 계열을 혼합하지 않음'],
   ['2','Server DDR5·HBM4','삼성·SK의 Q4 출하·제품 믹스 및 장기계약 코멘트'],
   ['3','PC·모바일 수요','가격 인상 이후 출하량·OEM 구매 조정 신호'],
   ['4','SSD 수출','11월 월간 수출과 1~10일 잠정치의 차이'],
@@ -355,7 +355,7 @@ function Method(){return <>
  <div className="panel"><h3>페이지별 연도·분기·월별 커버리지</h3><Table headers={['페이지','연도별 추이','2026 최신 actual','미확보·한계']} rows={[
   ['산업 사이클','2020~2025 SIA actual, 2025 estimate·2026~27 forecast 별도','SIA Q1~Q3 분기 actual','SIA Q3 QoQ 비교기준 개정 여부 미확인'],
 
-  ['제품별 가격','2025 DRAM 8Gb·NAND 128Gb 일부 월, 2026 DRAM 16Gb Jun~Sep / DRAM 8Gb Jul~Oct / NAND 128Gb Jun~Oct','2026년 10월까지 공개 월별 가격','Server/PC DDR5·DDR4·HBM 계약 ASP 미확보'],
+  ['제품별 가격','2025 DRAM 8Gb·NAND 128Gb 일부 월, 2026 DRAM 16Gb Jun~Sep / DDR5 16Gb Jun~Oct / DRAM 8Gb Jul~Oct / NAND 128Gb Jun~Oct','2026년 10월까지 공개 월별 가격','Server/PC DDR5·DDR4·HBM 계약 ASP 미확보'],
 
   ['AI 수요','IEA 2024 actual, 2025 estimate, 2030 forecast; TSMC CY2023~25; NVIDIA FY2024~26','NVIDIA FY27 Q1~Q3, TSMC CY26 Q1~Q3','전력 분기 실측치 미확보; 기업 FY/CY 구분'],
 
