@@ -209,7 +209,7 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
   <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="사이클 판단에 직접 영향을 주는 가격·AI 수요·기업 실적·공급 신호만 요약합니다. 세부 재무와 출처는 각 메뉴에서 확인할 수 있습니다."/>
-  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 가용 공개지표 메모리 점수 <Pill tone="green">참고용 proxy</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>강한 호황·상승 국면 · 평가 가능 지표 3/7</p><div className="score-foot"><span>HBM·서버 DRAM 강세</span><span>NAND 가격 보합</span><span>재고일수 미확보</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>가용 지표 기준</span></div></div><small>전체 업황의 확정 점수 아님</small></div></div>
+  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 가용 공개지표 정성평가 <Pill tone="green">참고용 proxy</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>강한 호황·상승 국면 · 평가 가능 지표 3/7</p><div className="score-foot"><span>HBM·서버 DRAM 강세</span><span>NAND 가격 보합</span><span>재고일수 미확보</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>가용 지표 기준</span></div></div><small>전체 업황의 확정 점수 아님</small></div></div>
   <div className="stats-grid three">
    <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
    <Stat label="NAND 128Gb · 2026년 10월" value="$30.6" sub="전월 대비 보합 · 공개 기준가격"/>
@@ -222,7 +222,7 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
     ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
     ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
    ]}/>
-   <Notice>점수 92점은 Server DDR5·HBM·NAND 세 항목만으로 계산한 부분 점수입니다. 전체 7개 지표 중 4개가 미확보이므로 점수 하나만으로 사이클 정점이나 하락 시점을 판단하지 않습니다.</Notice>
+   <Notice>92점은 Server DDR5·HBM·NAND에 부여한 정성 점수를 가중 평균한 참고값입니다. 전체 7개 지표 중 4개가 미확보이므로 점수 하나만으로 사이클 정점이나 하락 시점을 판단하지 않습니다.</Notice>
   </div>
   <div className="panel"><div className="panel-head"><div><h3>현재 사이클 해석</h3><p>이번 주 핵심 판단만 읽도록 요약</p></div><Pill tone="green">강한 확장 국면</Pill></div>
    <Table headers={['구분','판단']} rows={[
