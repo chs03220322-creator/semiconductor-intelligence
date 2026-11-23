@@ -326,14 +326,6 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
    {series.map(s=>{const p=selected?selectedRows.find(r=>r.series.name===s.name)?.point:s.data[s.data.length-1];const value=p?(metric==='revenue'?p.revenue:p.op):undefined;return <div key={s.name} onClick={()=>p&&setSelected({company:s.name,index:shown.find(z=>z.name===s.name)?.data.findIndex(d=>d.year===p.year)??0})} style={{background:selected?'#14212c':'#14212c',border:'1px solid '+s.color,borderRadius:7,padding:'9px 10px',minWidth:0,cursor:p?'pointer':'default'}}><div style={{fontSize:10,color:s.color,fontWeight:700}}>{s.name} · {p?label(p):(selected?selectedPoint?.year+' 자료 없음':label(s.data[s.data.length-1]))}</div><div style={{fontSize:17,fontWeight:750,color:'#eef4f8',marginTop:3,whiteSpace:'nowrap'}}>{typeof value==='number'&&Number.isFinite(value)?format(value,s.currency):'자료 미확보'}</div><div style={{fontSize:10,color:'#91a2b1',marginTop:2}}>{selected?'선택한 연도':'최신 시점'} · {metric==='revenue'?'매출':'영업이익'}</div></div>})}
   </div>
   <div className="chart-unit">단위: 조 원 · Micron은 USD 공시/모델 수치를 USD/KRW {FX_USDKRW.toLocaleString()}원으로 환산했습니다.</div>
-  {selectedPoint&&selectedSeries&&selected&&<g pointerEvents="none">
-   {(()=>{const raw=metric==='revenue'?selectedPoint.revenue:selectedPoint.op;const val=typeof raw==='number'&&Number.isFinite(raw)?raw*(selectedSeries.currency==='USD'?FX_USDKRW/1000:1):null;const px=x(selected.index),py=val===null?92:y(val);const bx=Math.max(60,Math.min(chartWidth-214,px-92));const by=Math.max(8,Math.min(164,py-68));return <g>
-    <rect x={bx} y={by} width="204" height="58" rx="7" fill="#101c27" stroke={selectedSeries.color} strokeWidth="1.5" opacity=".97"/>
-    <text x={bx+10} y={by+15} fill={selectedSeries.color} fontSize="10.5" fontWeight="700">{selectedSeries.name} · {label(selectedPoint)}</text>
-    <text x={bx+10} y={by+32} fill="#f2f6fa" fontSize="10.5">매출  {typeof selectedPoint.revenue==='number'?format(selectedPoint.revenue,selectedSeries.currency):'자료 없음'}</text>
-    <text x={bx+10} y={by+47} fill="#f2f6fa" fontSize="10.5">영업이익  {typeof selectedPoint.op==='number'?format(selectedPoint.op,selectedSeries.currency):'자료 없음'}</text>
-   </g>})()}
-  </g>}
   {!selectedPoint&&<div className="chart-hint">그래프의 원형 타점을 누르면 해당 연도/전망 연도의 매출·영업이익을 확인할 수 있습니다.</div>}
  </div>;
 }
