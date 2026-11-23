@@ -189,7 +189,7 @@ function findPreviousPeriodPoint(data:any[],point:any){
 function yoyChange(current:number|undefined,previous:number|undefined){
  return typeof current==='number'&&Number.isFinite(current)&&typeof previous==='number'&&Number.isFinite(previous)&&previous!==0?(current/previous-1)*100:null;
 }
-function LineChart({data,keyName,label,height=220}:{data:any[];keyName:string;label:string;height?:number}){
+function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];keyName:string;label:string;height?:number;comparisonData?:any[]}){
  const [selected,setSelected]=useState<number|null>(null);
  const isUsd=/USD/i.test(label);const perChip=/chip/i.test(label);
  const vals=data.map(d=>Number(d[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1));
@@ -197,7 +197,7 @@ function LineChart({data,keyName,label,height=220}:{data:any[];keyName:string;la
  const points=vals.map((v,i)=>[i/(Math.max(1,vals.length-1))*100,88-(v-min)/range*72]);
  const path=points.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');
  const chosen=selected===null?null:data[selected];
- const chosenPrevious=chosen?findPreviousPeriodPoint(data,chosen):null;
+ const chosenPrevious=chosen?findPreviousPeriodPoint(comparisonData||data,chosen):null;
  const chosenYoy=chosen?yoyChange(Number(chosen[keyName]),chosenPrevious?Number(chosenPrevious[keyName]):undefined):null;
  const fmt=(v:number)=>perChip?'₩'+Math.round(v).toLocaleString('ko-KR'):isUsd?'₩'+v.toFixed(1)+'조':Number.isInteger(v)?v.toLocaleString('ko-KR'):v.toLocaleString('ko-KR',{maximumFractionDigits:2});
  const unitValue=(v:number)=>{
@@ -225,10 +225,10 @@ function LineChart({data,keyName,label,height=220}:{data:any[];keyName:string;la
 }
 function Sources({items}:{items:string[]}){return <div className="source-list">{items.map(name=>{const x=sources.find(v=>v.name===name);return <a href={x?.url||'#'} target="_blank" rel="noreferrer" key={name}><ExternalLink size={12}/>{name}</a>})}</div>}
 function Notice({children}:{children:any}){return <div className="notice"><Info size={16}/><span>{krwText(children)}</span></div>}
-function TrendPanel({title,series,quarterHeaders,quarterRows,note,source}:{title:string;series:{name:string;unit:string;data:{year:string;value:number}[]}[];quarterHeaders?:string[];quarterRows?:(string|number|null)[][];note?:string;source?:string[]}){
+function TrendPanel({title,series,quarterHeaders,quarterRows,note,source}:{title:string;series:{name:string;unit:string;data:{year:string;value:number}[];comparisonData?:{year:string;value:number}[]}[];quarterHeaders?:string[];quarterRows?:(string|number|null)[][];note?:string;source?:string[]}){
  return <div className="panel">
   <div className="panel-head"><div><h3>{title} · 연도별/기간별 추이</h3><p className="muted">실적·추정·전망을 구분하고 단위가 다른 지표는 별도로 표시합니다</p></div><Pill tone="blue">무료 공개자료</Pill></div>
-  {series.map(s=><div key={s.name}><p className="muted"><b>{s.name}</b> · {visibleUnit(s.unit)}</p><LineChart data={s.data} keyName="value" label={s.name+' · '+s.unit} height={185}/></div>)}
+  {series.map(s=><div key={s.name}><p className="muted"><b>{s.name}</b> · {visibleUnit(s.unit)}</p><LineChart data={s.data} comparisonData={s.comparisonData} keyName="value" label={s.name+' · '+s.unit} height={185}/></div>)}
   {quarterRows&&<><h3>최근 공개 분기·월별 데이터</h3><Table headers={quarterHeaders||['기간','값','상태']} rows={quarterRows}/></>}  {note&&<Notice>{note}</Notice>}
   {source&&<Sources items={source}/>}
  </div>
@@ -269,7 +269,7 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
 function Pricing(){return <>
  <Title eyebrow="02 / PRODUCT PRICING" title="무료 공개 메모리 가격 & 수급" desc="정부가 공개한 범용 DRAM·NAND 기준가격과 수출만 반영합니다. 이 수치는 Server DDR5·PC DDR5·DDR4·HBM의 개별 계약 ASP가 아닙니다. 공개되지 않은 제품별 가격은 추정하지 않습니다."/>
  <div className="stats-grid"><Stat label="DRAM 8Gb · Oct 2026" value="$27.5" sub="전월 대비 +5.8% · USD/chip"/><Stat label="NAND 128Gb · Oct 2026" value="$30.6" sub="전월 대비 0.0% · USD/chip"/></div>
- <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DDR5 16Gb 고정가격 (별도 계열)',unit:'USD / chip',data:pricesDdr5_16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand}]} quarterHeaders={['월','DRAM 16Gb','DDR5 16Gb','DRAM 8Gb','NAND 128Gb','상태']} quarterRows={[
+ <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DDR5 16Gb 고정가격 (별도 계열)',unit:'USD / chip',data:pricesDdr5_16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8,comparisonData:prices2025Dram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand,comparisonData:prices2025Nand}]} quarterHeaders={['월','DRAM 16Gb','DDR5 16Gb','DRAM 8Gb','NAND 128Gb','상태']} quarterRows={[
   ['Jun 26','$40.0','$40.0',null,'$28.8','Actual'],['Jul 26','$45.0','$45.0','$24.0','$30.1','Actual'],['Aug 26','$46.5','$46.5','$25.0','$30.5','Actual'],['Sep 26','$48.0','$48.0','$26.0','$30.6','Actual'],['Oct 26',null,'$50.0','$27.5','$30.6','Actual']
  ]} note="DRAM 16Gb 범용 기준가격과 DDR5 16Gb 고정가격은 서로 다른 공개 계열이므로 분리했습니다. DDR5 16Gb는 10월 $50.0까지 공개되어 있습니다. 어느 series도 Server DDR5 RDIMM·PC DDR5 모듈 ASP와 동일하지 않습니다." source={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향']}/>
  <div className="panel"><h3>2025년 공개 DRAM 8Gb·NAND 128Gb 기준가격</h3><p className="muted">2025년 7~10월 관측치 · USD/chip · 2026년 series와 연도·시장 환경을 구분</p><LineChart data={prices2025Dram8} keyName="value" label="DRAM 8Gb reference · USD/chip" height={180}/><LineChart data={prices2025Nand} keyName="value" label="NAND 128Gb reference · USD/chip" height={180}/><Table headers={['월','DRAM 8Gb','NAND 128Gb','상태']} rows={prices2025Dram8.map((x,i)=>[x.year,'$'+x.value.toFixed(1),'$'+prices2025Nand[i].value.toFixed(1),'공식 월간 보고서'])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
@@ -331,6 +331,11 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
  const selectedSeries=selected?shown.find(s=>s.name===selected.company):null;
  const selectedPoint=selectedSeries&&selected?selectedSeries.data[selected.index]:null;
  const selectedYear=selectedPoint?.year.replace(/^FY/,'').replace('*','');
+  const selectedFullSeries=selected?series.find(s=>s.name===selected.company):null;
+  const selectedPrevious=selectedPoint&&selectedFullSeries?findPreviousPeriodPoint(selectedFullSeries.data,selectedPoint):null;
+  const selectedValue=selectedPoint?(metric==='revenue'?selectedPoint.revenue:selectedPoint.op):undefined;
+  const selectedPreviousValue=selectedPrevious?(metric==='revenue'?selectedPrevious.revenue:selectedPrevious.op):undefined;
+  const selectedYoy=yoyChange(selectedValue,selectedPreviousValue);
  const selectedRows=selectedYear?series.map(s=>({series:s,point:s.data.find(p=>p.year.replace(/^FY/,'').replace('*','')===selectedYear)})):[];
  const format=(v:number,currency:string)=>currency==='USD'?'₩'+(v*FX_USDKRW/1000).toFixed(2)+'조':'₩'+v.toFixed(2)+'조';
  const label=(p:MemoryFinancialPoint)=>p.periodLabel||p.year;
@@ -349,6 +354,7 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
     {Array.from({length:zoom},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize="10" fill="currentColor">{label(shown[0].data[i])}</text>)}
    </svg>
   </div>
+  {selectedPoint&&<div className="chart-value-callout" style={{marginTop:8,borderLeft:'3px solid '+(selectedFullSeries?.color||'#68c5d4')}}><b>{selectedFullSeries?.name} · {label(selectedPoint)} · {metric==='revenue'?'매출':'영업이익'}</b><strong>{typeof selectedValue==='number'?format(selectedValue,selectedFullSeries?.currency||'KRW'):'자료 미확보'}</strong><small style={{display:'block',marginTop:4,color:selectedYoy===null?'var(--muted,#9aa9b7)':selectedYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{selectedYoy===null?'전년 동기 대비: 비교 가능한 전년 데이터 없음':`전년 동기 대비 ${selectedYoy>=0?'+':''}${selectedYoy.toFixed(1)}% · 전년 값 ${format(selectedPreviousValue as number,selectedFullSeries?.currency||'KRW')}`}</small></div>}
   <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,margin:'8px 0 4px'}}>
    {series.map(s=>{const p=selected?selectedRows.find(r=>r.series.name===s.name)?.point:s.data[s.data.length-1];const value=p?(metric==='revenue'?p.revenue:p.op):undefined;const previous=p?findPreviousPeriodPoint(s.data,p):null;const previousValue=previous?(metric==='revenue'?previous.revenue:previous.op):undefined;const yoy=yoyChange(value,previousValue);return <div key={s.name} onClick={()=>p&&setSelected({company:s.name,index:shown.find(z=>z.name===s.name)?.data.findIndex(d=>d.year===p.year)??0})} style={{background:'#14212c',border:'1px solid '+s.color,borderRadius:7,padding:'9px 10px',minWidth:0,cursor:p?'pointer':'default'}}><div style={{fontSize:10,color:s.color,fontWeight:700}}>{s.name} · {p?label(p):(selected?selectedPoint?.year+' 자료 없음':label(s.data[s.data.length-1]))}</div><div style={{fontSize:17,fontWeight:750,color:'#eef4f8',marginTop:3,whiteSpace:'nowrap'}}>{typeof value==='number'&&Number.isFinite(value)?format(value,s.currency):'자료 미확보'}</div><div style={{fontSize:10,color:yoy===null?'#91a2b1':yoy>=0?'#55bf98':'#e0a06b',fontWeight:700,marginTop:3}}>{yoy===null?'전년 동기 대비 자료 없음':`YoY ${yoy>=0?'+':''}${yoy.toFixed(1)}% · 전년 ${format(previousValue as number,s.currency)}`}</div><div style={{fontSize:10,color:'#91a2b1',marginTop:2}}>{selected?'선택한 연도':'최신 시점'} · {metric==='revenue'?'매출':'영업이익'}</div></div>})}
   </div>
