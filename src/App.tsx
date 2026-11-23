@@ -297,7 +297,7 @@ function Supply(){return <>
  ]}/><Notice>재고 항목은 업황 판단에 중요하지만, 제품별·업체별·고객별 기준이 다른 재고 잔액을 섞으면 왜곡됩니다. 동일 기준 inventory days가 공개되기 전까지 점수화하지 않습니다.</Notice></div>
  </>}
 
-type MemoryFinancialPoint={year:string;revenue:number;op:number;periodLabel?:string};
+type MemoryFinancialPoint={year:string;revenue:number;op:number;periodLabel?:string;revenueLow?:number;revenueHigh?:number;opLow?:number;opHigh?:number};
 type MemoryFinancialSeries={name:string;data:MemoryFinancialPoint[];color:string;currency:'KRW'|'USD'};
 function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string;subtitle:string;series:MemoryFinancialSeries[];forecast?:boolean}){
  const [metric,setMetric]=useState<'revenue'|'op'>('revenue');
@@ -325,7 +325,7 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
   <div style={{width:'100%',overflowX:'auto',overflowY:'hidden'}}>
    <svg viewBox={`0 0 ${chartWidth} 260`} role="img" aria-label={title} style={{width:'100%',minWidth:Math.min(chartWidth,520)+'px',height:'260px',display:'block',overflow:'visible'}}>
     {[0,1,2,3,4].map(i=>{const v=min+(max-min)*i/4;return <g key={i}><line x1="52" x2={chartWidth-18} y1={y(v)} y2={y(v)} stroke="currentColor" opacity=".12" strokeDasharray="3 4"/><text x="46" y={y(v)-4} textAnchor="end" fontSize="10" fill="currentColor">{v.toFixed(0)}</text></g>})}
-    {shown.map(s=>{const vals=s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1));const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=><g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {label(s.data[i])}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op,s.currency)}</title></g>)}</g>})}
+    {shown.map(s=>{const vals=s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1));const lows=s.data.map(d=>(metric==='revenue'?d.revenueLow:d.opLow));const highs=s.data.map(d=>(metric==='revenue'?d.revenueHigh:d.opHigh));const bandIdx=s.data.map((d,i)=>({i,lo:lows[i],hi:highs[i]})).filter(v=>v.lo!==undefined&&v.hi!==undefined);const bandPath=bandIdx.length>1?[...bandIdx.map(v=>x(v.i)+','+y((v.hi as number)*(s.currency==='USD'?FX_USDKRW/1000:1))),...bandIdx.slice().reverse().map(v=>x(v.i)+','+y((v.lo as number)*(s.currency==='USD'?FX_USDKRW/1000:1)))].join(' '):'';const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');return <g key={s.name}>{bandPath&&<polygon points={bandPath} fill={s.color} opacity=".16" stroke="none"><title>{s.name} 증권사 추정 범위</title></polygon>}<path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=><g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {label(s.data[i])}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op,s.currency)}{lows[i]!==undefined&&highs[i]!==undefined?' · 범위 '+format(lows[i] as number,s.currency)+'~'+format(highs[i] as number,s.currency):''}</title></g>)}</g>})}
     {Array.from({length:zoom},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize="10" fill="currentColor">{label(shown[0].data[i])}</text>)}
    </svg>
   </div>
@@ -346,22 +346,36 @@ function MemoryThreeChart(){
  return <MemoryComparePanel title="메모리 3사 10년 실적 비교 · 최신 누계 포함" subtitle="2016~2025 연간 actual과 최신 공시 분기 누계 · X축 줌 슬라이더 · 매출/영업이익 전환 · 타점 선택" series={series}/>;
 }
 function MemoryThreeForecastChart(){
- const sum=(rows:{revenue:number;op:number}[],key:'revenue'|'op')=>rows.reduce((v,row)=>v+row[key],0);
- const annualized=(rows:{revenue:number;op:number}[])=>({revenue:sum(rows,'revenue')*4/rows.length,op:sum(rows,'op')*4/rows.length});
- const s26=annualized(samsungQuarterly), k26=annualized(skQuarterly);
- const m26={revenue:sum(micronQuarterly,'revenue'),op:sum(micronQuarterly,'op')};
- const build=(name:string,base:{revenue:number;op:number},growth:number[],margins:number[],currency:'KRW'|'USD')=>{
-  const rows:MemoryFinancialPoint[]=[{year:'2026E*',revenue:base.revenue,op:base.op,periodLabel:'2026E* · 연환산 기준'}];
-  let rev=base.revenue;
-  growth.forEach((g,i)=>{rev*=1+g/100;rows.push({year:String(2027+i)+'E',revenue:rev,op:rev*margins[i]/100,periodLabel:String(2027+i)+'E · 기준 시나리오'})});
-  return {name,data:rows,color:name==='삼성전자'?'#2563eb':name==='SK하이닉스'?'#0f9f6e':'#d97706',currency};
+ const mid=(a:number,b:number)=>(a+b)/2;
+ const extend=(rows:MemoryFinancialPoint[],currency:'KRW'|'USD',color:string)=>{
+  let rev=rows[rows.length-1].revenue,op=rows[rows.length-1].op;
+  const out=[...rows];
+  const growth=[.06,.05,.04],margin=[.48,.45,.42];
+  growth.forEach((g,i)=>{rev*=1+g;op=rev*margin[i];out.push({year:String(2029+i)+'E',periodLabel:String(2029+i)+'E · 장기 시나리오(범위 미공개)',revenue:rev,op})});
+  return {name:'',data:out,color,currency};
  };
- const series:MemoryFinancialSeries[]=[
-  build('삼성전자',s26,[10,8,7,6,5],[55,50,46,43,40],'KRW'),
-  build('SK하이닉스',k26,[15,12,9,7,5],[60,55,50,46,42],'KRW'),
-  build('Micron',m26,[15,12,9,7,5],[55,50,46,43,40],'USD')
+ const samsung:MemoryFinancialPoint[]=[
+  {year:'2026E*',periodLabel:'2026E* · 최신 YTD 연환산',revenue:annualized(samsungQuarterly).revenue,op:annualized(samsungQuarterly).op},
+  {year:'2027E',revenue:mid(928.268,1193.508),op:mid(532.028,624),revenueLow:928.268,revenueHigh:1193.508,opLow:532.028,opHigh:624},
+  {year:'2028E',revenue:mid(1019.684,1144.46),op:mid(590.302,623.391),revenueLow:1019.684,revenueHigh:1144.46,opLow:590.302,opHigh:623.391}
  ];
- return <MemoryComparePanel title="메모리 3사 향후 5년 매출·영업이익 전망" subtitle="2026E~2031E 기준 시나리오 · 매출/영업이익 전환 · X축 줌 슬라이더 · 타점별 전망 확인" series={series} forecast/>;
+ const sk:MemoryFinancialPoint[]=[
+  {year:'2026E*',periodLabel:'2026E* · 최신 YTD 연환산',revenue:annualized(skQuarterly).revenue,op:annualized(skQuarterly).op},
+  {year:'2027E',revenue:mid(568,614.979),op:mid(396,489.261),revenueLow:568,revenueHigh:614.979,opLow:396,opHigh:489.261},
+  {year:'2028E',revenue:648.249,op:502.177}
+ ];
+ const mu:MemoryFinancialPoint[]=[
+  {year:'FY2026',periodLabel:'FY2026 · actual',revenue:micronAnnual[micronAnnual.length-1].revenue,op:micronAnnual[micronAnnual.length-1].op},
+  {year:'FY2027E',revenue:276,op:0,revenueLow:212.4,revenueHigh:314},
+  {year:'FY2028E',revenue:320.83,op:0,revenueLow:224.16,revenueHigh:396.62}
+ ];
+ const series:MemoryFinancialSeries[]=[
+  extend(samsung,'KRW','#2563eb'),
+  extend(sk,'KRW','#0f9f6e'),
+  extend(mu,'USD','#d97706')
+ ];
+ series[0].name='삼성전자';series[1].name='SK하이닉스';series[2].name='Micron';
+ return <><MemoryComparePanel title="메모리 3사 향후 5년 실적 전망 · 증권사 범위" subtitle="증권사·시장 추정치의 최소~최대 음영 · 매출/영업이익 전환 · X축 줌 · 2029~31은 장기 시나리오(추정 범위 미공개)" series={series} forecast/><div className="chart-hint">음영은 공개된 증권사 또는 시장 컨센서스의 최저~최고 추정 범위입니다. 음영이 없는 연도는 비교 가능한 공개 범위 자료가 확인되지 않은 구간이며, 선은 장기 시나리오입니다. Micron의 영업이익 추정 범위는 동일 기준으로 확인되지 않아 음영을 표시하지 않습니다.</div></>;
 }
 function Companies(){return <>
  <Title eyebrow="06 / COMPANY FINANCIALS" title="주요 반도체 기업 실적" desc="메모리 3사의 2016~2025 연간 실적에 각 사의 최신 공시 분기까지 누적한 실적을 추가해 비교합니다. 매출·영업이익 전환 및 타점별 수치 확인이 가능합니다."/>
