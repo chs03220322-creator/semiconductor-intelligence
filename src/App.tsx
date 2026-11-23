@@ -300,25 +300,30 @@ function Supply(){return <>
 function MemoryThreeChart(){
  const [metric,setMetric]=useState<'revenue'|'op'>('revenue');
  const [selected,setSelected]=useState<{company:string;index:number}|null>(null);
- const series=[{name:'삼성전자',data:samsungAnnual,color:'#2563eb',currency:'KRW'},{name:'SK하이닉스',data:skAnnual,color:'#0f9f6e',currency:'KRW'},{name:'Micron',data:micronAnnual,color:'#d97706',currency:'USD'}];
+ const sum=(rows:{revenue:number;op:number}[],key:'revenue'|'op')=>rows.reduce((v,row)=>v+row[key],0);
+ const samsungSeries=[...samsungAnnual,{year:'2026 YTD',revenue:sum(samsungQuarterly,'revenue'),op:sum(samsungQuarterly,'op'),periodLabel:'2026 YTD · 1Q~3Q'}];
+ const skSeries=[...skAnnual,{year:'2026 YTD',revenue:sum(skQuarterly,'revenue'),op:sum(skQuarterly,'op'),periodLabel:'2026 YTD · 1Q~3Q'}];
+ const micronSeries=[...micronAnnual,{year:'FY2026',revenue:sum(micronQuarterly,'revenue'),op:sum(micronQuarterly,'op'),periodLabel:'FY2026 · FQ1~FQ4'}];
+ const series=[{name:'삼성전자',data:samsungSeries,color:'#2563eb',currency:'KRW'},{name:'SK하이닉스',data:skSeries,color:'#0f9f6e',currency:'KRW'},{name:'Micron',data:micronSeries,color:'#d97706',currency:'USD'}];
  const values=series.flatMap(s=>s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1)));
  const min=Math.min(0,...values),max=Math.max(...values),range=max-min||1;
- const x=(i:number)=>52+i*(650/9), y=(v:number)=>220-(v-min)/range*184;
+ const x=(i:number)=>52+i*(650/10), y=(v:number)=>220-(v-min)/range*184;
  const selectedSeries=selected?series.find(s=>s.name===selected.company):null;
  const selectedPoint=selectedSeries&&selected?selectedSeries.data[selected.index]:null;
  const format=(v:number,currency:string)=>currency==='USD'?'₩'+(v*FX_USDKRW/1000).toFixed(2)+'조':'₩'+v.toFixed(2)+'조';
+ const pointLabel=(p:any)=>p.periodLabel||p.year;
  return <div className="panel">
-  <div className="panel-head"><div><h3>메모리 3사 10년 실적 비교</h3><p>삼성전자·SK하이닉스·Micron 연간 매출 및 영업이익 · 타점을 누르면 해당 연도 실적 확인</p></div><div className="segmented"><button className={metric==='revenue'?'active':''} onClick={()=>{setMetric('revenue');setSelected(null)}}>매출</button><button className={metric==='op'?'active':''} onClick={()=>{setMetric('op');setSelected(null)}}>영업이익</button></div></div>
+  <div className="panel-head"><div><h3>메모리 3사 10년 실적 비교 · 최신 누계 포함</h3><p>2016~2025 연간 actual + 2026년 최신 공시 분기 누계 · 매출/영업이익 전환 · 타점 선택</p></div><div className="segmented"><button className={metric==='revenue'?'active':''} onClick={()=>{setMetric('revenue');setSelected(null)}}>매출</button><button className={metric==='op'?'active':''} onClick={()=>{setMetric('op');setSelected(null)}}>영업이익</button></div></div>
   <div className="legend-row">{series.map(s=><span key={s.name}><i style={{background:s.color}}/>{s.name}</span>)}</div>
-  <svg viewBox="0 0 730 260" role="img" aria-label="메모리 3사 10년 재무 추이" style={{width:'100%',height:'260px',minHeight:'260px',display:'block',overflow:'visible'}}>
+  <svg viewBox="0 0 730 260" role="img" aria-label="메모리 3사 10년 연간 및 최신 누계 재무 추이" style={{width:'100%',height:'260px',minHeight:'260px',display:'block',overflow:'visible'}}>
    {[0,1,2,3,4].map(i=>{const v=min+(max-min)*i/4;return <g key={i}><line x1="48" x2="710" y1={y(v)} y2={y(v)} stroke="currentColor" opacity=".12" strokeDasharray="3 4"/><text x="42" y={y(v)-4} textAnchor="end" fontSize="10" fill="currentColor">{v.toFixed(0)}</text></g>})}
-   {series.map(s=>{const vals=s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1));const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=><g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {s.data[i].year}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op,s.currency)}</title></g>)}</g>})}
-   {Array.from({length:10},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize="10" fill="currentColor">{2016+i}</text>)}
+   {series.map(s=>{const vals=s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1));const path=vals.map((v,i)=>(i?'L':'M')+x(i)+','+y(v)).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=><g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {pointLabel(s.data[i])}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op,s.currency)}</title></g>)}</g>})}
+   {Array.from({length:11},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize={i===10?9:10} fill={i===10?'#f59e0b':'currentColor'}>{i===10?'최신누계':2016+i}</text>)}
   </svg>
-  <div className="chart-unit">단위: 조 원 · Micron은 USD 공시치를 USD/KRW {FX_USDKRW.toLocaleString()}원 고정환산. 회계연도(FY)와 달력연도(CY)는 완전히 일치하지 않습니다.</div>
-  {selectedPoint&&selectedSeries&&selected&&<div className="selected-point"><b>{selectedSeries.name} · {selectedPoint.year}{selectedSeries.name==='Micron'?' FY':''}</b><div>매출 {format(selectedPoint.revenue,selectedSeries.currency)} · 영업이익 {format(selectedPoint.op,selectedSeries.currency)}</div><small>영업이익률 {(selectedPoint.op/selectedPoint.revenue*100).toFixed(1)}% · {selectedSeries.name==='Micron'?'US GAAP':'K-IFRS 연결'} actual</small></div>}
-  {!selectedPoint&&<div className="chart-hint">그래프의 원형 타점을 눌러 연도별 매출·영업이익을 확인하세요.</div>}
-  <Notice>Micron은 FY2016~FY2025(8월 말~9월 초 종료), 삼성전자·SK하이닉스는 CY2016~CY2025 기준입니다. 환산은 현재 대시보드 기준환율 1,345원을 적용한 비교용이며, 각 사 원화/달러 공시 원값과 회계기간은 하단 출처에서 확인할 수 있습니다.</Notice>
+  <div className="chart-unit">단위: 조 원 · Micron은 USD 공시치를 USD/KRW {FX_USDKRW.toLocaleString()}원 고정환산. 삼성전자·SK하이닉스는 2026년 1~3Q 누계, Micron은 FY2026 FQ1~FQ4 누계(연간)로 회계기간이 다릅니다.</div>
+  {selectedPoint&&selectedSeries&&selected&&<div className="selected-point"><b>{selectedSeries.name} · {pointLabel(selectedPoint)}</b><div>매출 {format(selectedPoint.revenue,selectedSeries.currency)} · 영업이익 {format(selectedPoint.op,selectedSeries.currency)}</div><small>영업이익률 {(selectedPoint.op/selectedPoint.revenue*100).toFixed(1)}% · {selectedSeries.name==='Micron'?'US GAAP':'K-IFRS 연결'} actual. Micron 환산은 USD/KRW {FX_USDKRW.toLocaleString()}원 기준</small></div>}
+  {!selectedPoint&&<div className="chart-hint">그래프의 원형 타점을 누르면 연도별 또는 최신 누계 매출·영업이익을 확인할 수 있습니다.</div>}
+  <Notice>2016~2025는 삼성전자·SK하이닉스 CY, Micron FY 기준 연간 actual입니다. 마지막 점은 삼성전자·SK하이닉스 2026년 1Q~3Q 누계와 Micron FY2026 FQ1~FQ4 누계입니다. 기간 차이가 있으므로 마지막 점은 동일한 9개월/12개월 비교가 아닙니다. 최신 누계는 해당 기업의 다음 분기 실적 발표 시 자동으로 추가 관측치로 교체·확장합니다.</Notice>
  </div>;
 }
 function Companies(){return <>
