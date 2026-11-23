@@ -333,7 +333,7 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
    {series.map(s=>{const latest=s.data[s.data.length-1];const value=metric==='revenue'?latest.revenue:latest.op;return <div key={s.name} style={{background:'#14212c',border:'1px solid #304454',borderRadius:7,padding:'9px 10px',minWidth:0}}><div style={{fontSize:10,color:s.color,fontWeight:700}}>{s.name} · {label(latest)}</div><div style={{fontSize:17,fontWeight:750,color:'#eef4f8',marginTop:3,whiteSpace:'nowrap'}}>{typeof value==='number'?format(value,s.currency):'자료 미확보'}</div><div style={{fontSize:10,color:'#91a2b1',marginTop:2}}>{forecast?'기준 시나리오 전망':metric==='revenue'?'최근 누계 매출':'최근 누계 영업이익'}</div></div>})}
   </div>
   <div className="chart-unit">단위: 조 원 · Micron은 USD 공시/모델 수치를 USD/KRW {FX_USDKRW.toLocaleString()}원으로 환산했습니다.</div>
-  {selectedPoint&&selectedSeries&&selected&&<div className="selected-point"><b>{selectedSeries.name} · {label(selectedPoint)}</b><div>매출 {format(selectedPoint.revenue,selectedSeries.currency)} · 영업이익 {typeof selectedPoint.op==='number'?format(selectedPoint.op,selectedSeries.currency):'자료 미확보'}</div><small>{typeof selectedPoint.op==='number'?'영업이익률 '+(selectedPoint.op/selectedPoint.revenue*100).toFixed(1)+'%':'영업이익 추정 범위/중앙값 미확보'} · {forecast?'모델 추정치':selectedSeries.name==='Micron'?'US GAAP':'K-IFRS 연결'} · {forecast?'실제 실적·기업 가이던스가 아닌 기준 시나리오':''}</small></div>}
+  {selectedPoint&&selectedSeries&&selected&&<div className="selected-point"><b>{selectedSeries.name} · {label(selectedPoint)}</b><div>매출 {typeof selectedPoint.revenue==='number'?format(selectedPoint.revenue,selectedSeries.currency):'자료 미확보'} · 영업이익 {typeof selectedPoint.op==='number'?format(selectedPoint.op,selectedSeries.currency):'자료 미확보'}</div><small>{typeof selectedPoint.op==='number'?'영업이익률 '+(selectedPoint.op/selectedPoint.revenue*100).toFixed(1)+'%':'영업이익 추정 범위/중앙값 미확보'} · {forecast?'모델 추정치':selectedSeries.name==='Micron'?'US GAAP':'K-IFRS 연결'} · {forecast?'실제 실적·기업 가이던스가 아닌 기준 시나리오':''}</small></div>}
   {!selectedPoint&&<div className="chart-hint">그래프의 원형 타점을 누르면 해당 연도/전망 연도의 매출·영업이익을 확인할 수 있습니다.</div>}
  </div>;
 }
@@ -353,7 +353,7 @@ function MemoryThreeForecastChart(){
   let rev=rows[rows.length-1].revenue,op=rows[rows.length-1].op||0;
   const out=[...rows];
   const growth=[.06,.05,.04],margin=[.48,.45,.42];
-  growth.forEach((g,i)=>{rev*=1+g;op=rev*margin[i];out.push({year:String(2029+i)+'E',periodLabel:String(2029+i)+'E · 장기 시나리오(증권사 범위 미확보)',revenue:rev,op})});
+  for(let i=0;i<6-rows.length;i++){rev*=1+growth[i];op=rev*margin[i];out.push({year:String(2029+i)+'E',periodLabel:String(2029+i)+'E · 장기 시나리오(증권사 범위 미확보)',revenue:rev,op})}
   return {name:'',data:out,color,currency:'KRW' as const};
  };
  // 삼성전자: 삼성증권(2026-10-08), 미래에셋(2026-10-30), 하나증권(2026-10-30/11-23), 삼성증권 주간전략(2026-11-13).
@@ -373,7 +373,10 @@ function MemoryThreeForecastChart(){
  const mu:MemoryFinancialPoint[]=[
   {year:'FY2026',periodLabel:'FY2026 · actual',revenue:micronAnnual[micronAnnual.length-1].revenue,op:micronAnnual[micronAnnual.length-1].op},
   {year:'FY2027E',periodLabel:'FY2027E · S&P Global 애널리스트 추정',revenue:276,revenueLow:212.4,revenueHigh:314},
-  {year:'FY2028E',periodLabel:'FY2028E · 공개 범위 미확보',revenue:undefined as unknown as number}
+  {year:'FY2028E',periodLabel:'FY2028E · 공개 범위 미확보',revenue:undefined as unknown as number},
+  {year:'FY2029E',periodLabel:'FY2029E · 공개 추정치 미확보',revenue:undefined as unknown as number},
+  {year:'FY2030E',periodLabel:'FY2030E · 공개 추정치 미확보',revenue:undefined as unknown as number},
+  {year:'FY2031E',periodLabel:'FY2031E · 공개 추정치 미확보',revenue:undefined as unknown as number}
  ];
  const series:MemoryFinancialSeries[]=[
   extend(samsung,'#2563eb'),
