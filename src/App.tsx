@@ -162,6 +162,33 @@ function krwText(value:any){if(typeof value!=='string')return value;return value
 function visibleUnit(value:string){return value.replace(/USD\s*\/\s*chip/gi,'원/칩').replace(/USD\s*bn/gi,'조 원').replace(/USD/gi,'KRW')}
 function Stat({label,value,sub}:{label:string;value:string;sub:string}){return <div className="stat"><span>{krwText(label)}</span><strong>{krwText(value)}</strong><small>{krwText(sub)}</small></div>}
 function Table({headers,rows}:{headers:string[];rows:(string|number|null)[][]}){return <div className="table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{visibleUnit(h)}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c===null?'미확보':krwText(c)}</td>)}</tr>)}</tbody></table></div>}
+function pointPeriodKey(point:any):{kind:string;period:string;year:number}|null{
+ const raw=String(point?.year||point?.period||point?.month||'').trim();
+ let m=raw.match(/^(\\d)Q\\s*FY(\\d{2,4})$/i);
+ if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
+ m=raw.match(/^FQ(\\d)[- ](\\d{2,4})$/i);
+ if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
+ m=raw.match(/^(\\d)Q(\\d{2,4})$/i);
+ if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
+ m=raw.match(/^FY(\\d{2,4})$/i);
+ if(m)return {kind:'annual',period:'annual',year:Number(m[1].length===2?'20'+m[1]:m[1])};
+ m=raw.match(/^([A-Za-z]{3})\\s+(\\d{2,4})$/);
+ if(m)return {kind:'month',period:m[1].toLowerCase(),year:Number(m[2].length===2?'20'+m[2]:m[2])};
+ m=raw.match(/^(\\d{4})(?:\\s+(YTD))?$/i);
+ if(m)return {kind:'year',period:m[2]?'YTD':'annual',year:Number(m[1])};
+ m=raw.match(/^(\\d{4})[EF](?:\\*)?$/i);
+ if(m)return {kind:'year',period:'annual',year:Number(m[1])};
+ m=raw.match(/^FY(\\d{2,4})[EF]$/i);
+ if(m)return {kind:'annual',period:'annual',year:Number(m[1].length===2?'20'+m[1]:m[1])};
+ return null;
+}
+function findPreviousPeriodPoint(data:any[],point:any){
+ const key=pointPeriodKey(point);if(!key)return null;
+ return data.find(candidate=>{const other=pointPeriodKey(candidate);return other&&other.kind===key.kind&&other.period===key.period&&other.year===key.year-1})||null;
+}
+function yoyChange(current:number|undefined,previous:number|undefined){
+ return typeof current==='number'&&Number.isFinite(current)&&typeof previous==='number'&&Number.isFinite(previous)&&previous!==0?(current/previous-1)*100:null;
+}
 function LineChart({data,keyName,label,height=220}:{data:any[];keyName:string;label:string;height?:number}){
  const [selected,setSelected]=useState<number|null>(null);
  const isUsd=/USD/i.test(label);const perChip=/chip/i.test(label);
@@ -170,6 +197,8 @@ function LineChart({data,keyName,label,height=220}:{data:any[];keyName:string;la
  const points=vals.map((v,i)=>[i/(Math.max(1,vals.length-1))*100,88-(v-min)/range*72]);
  const path=points.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');
  const chosen=selected===null?null:data[selected];
+ const chosenPrevious=chosen?findPreviousPeriodPoint(data,chosen):null;
+ const chosenYoy=chosen?yoyChange(Number(chosen[keyName]),chosenPrevious?Number(chosenPrevious[keyName]):undefined):null;
  const fmt=(v:number)=>perChip?'₩'+Math.round(v).toLocaleString('ko-KR'):isUsd?'₩'+v.toFixed(1)+'조':Number.isInteger(v)?v.toLocaleString('ko-KR'):v.toLocaleString('ko-KR',{maximumFractionDigits:2});
  const unitValue=(v:number)=>{
   if(/trillion tokens/i.test(label)) return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'조 개/일';
@@ -182,7 +211,7 @@ function LineChart({data,keyName,label,height=220}:{data:any[];keyName:string;la
  };
  const visibleLabel=label.split('·').slice(0,1).join('').trim();
  return <div className="line-chart" style={{height}}>
-  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong></>:<span>그래프의 점을 누르면 연도와 단위가 포함된 값이 표시됩니다</span>}</div>
+  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small></>:<span>그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다</span>}</div>
   <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
     <path d={path} fill="none" stroke="#68c5d4" strokeWidth="2.1" vectorEffect="non-scaling-stroke"/>
@@ -321,7 +350,7 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
    </svg>
   </div>
   <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,margin:'8px 0 4px'}}>
-   {series.map(s=>{const p=selected?selectedRows.find(r=>r.series.name===s.name)?.point:s.data[s.data.length-1];const value=p?(metric==='revenue'?p.revenue:p.op):undefined;return <div key={s.name} onClick={()=>p&&setSelected({company:s.name,index:shown.find(z=>z.name===s.name)?.data.findIndex(d=>d.year===p.year)??0})} style={{background:selected?'#14212c':'#14212c',border:'1px solid '+s.color,borderRadius:7,padding:'9px 10px',minWidth:0,cursor:p?'pointer':'default'}}><div style={{fontSize:10,color:s.color,fontWeight:700}}>{s.name} · {p?label(p):(selected?selectedPoint?.year+' 자료 없음':label(s.data[s.data.length-1]))}</div><div style={{fontSize:17,fontWeight:750,color:'#eef4f8',marginTop:3,whiteSpace:'nowrap'}}>{typeof value==='number'&&Number.isFinite(value)?format(value,s.currency):'자료 미확보'}</div><div style={{fontSize:10,color:'#91a2b1',marginTop:2}}>{selected?'선택한 연도':'최신 시점'} · {metric==='revenue'?'매출':'영업이익'}</div></div>})}
+   {series.map(s=>{const p=selected?selectedRows.find(r=>r.series.name===s.name)?.point:s.data[s.data.length-1];const value=p?(metric==='revenue'?p.revenue:p.op):undefined;const previous=p?findPreviousPeriodPoint(s.data,p):null;const previousValue=previous?(metric==='revenue'?previous.revenue:previous.op):undefined;const yoy=yoyChange(value,previousValue);return <div key={s.name} onClick={()=>p&&setSelected({company:s.name,index:shown.find(z=>z.name===s.name)?.data.findIndex(d=>d.year===p.year)??0})} style={{background:'#14212c',border:'1px solid '+s.color,borderRadius:7,padding:'9px 10px',minWidth:0,cursor:p?'pointer':'default'}}><div style={{fontSize:10,color:s.color,fontWeight:700}}>{s.name} · {p?label(p):(selected?selectedPoint?.year+' 자료 없음':label(s.data[s.data.length-1]))}</div><div style={{fontSize:17,fontWeight:750,color:'#eef4f8',marginTop:3,whiteSpace:'nowrap'}}>{typeof value==='number'&&Number.isFinite(value)?format(value,s.currency):'자료 미확보'}</div><div style={{fontSize:10,color:yoy===null?'#91a2b1':yoy>=0?'#55bf98':'#e0a06b',fontWeight:700,marginTop:3}}>{yoy===null?'전년 동기 대비 자료 없음':`YoY ${yoy>=0?'+':''}${yoy.toFixed(1)}% · 전년 ${format(previousValue as number,s.currency)}`}</div><div style={{fontSize:10,color:'#91a2b1',marginTop:2}}>{selected?'선택한 연도':'최신 시점'} · {metric==='revenue'?'매출':'영업이익'}</div></div>})}
   </div>
   <div className="chart-unit">단위: 조 원 · Micron은 USD 공시/모델 수치를 USD/KRW {FX_USDKRW.toLocaleString()}원으로 환산했습니다.</div>
   {!selectedPoint&&<div className="chart-hint">그래프의 원형 타점을 누르면 해당 연도/전망 연도의 매출·영업이익을 확인할 수 있습니다.</div>}
