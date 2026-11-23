@@ -293,14 +293,36 @@ const nasdaqTop10=[
  {company:'Apple',cap:4.98},{company:'Microsoft',cap:3.60},{company:'Alphabet',cap:3.26},{company:'NVIDIA',cap:3.03},{company:'Amazon',cap:2.67},{company:'Broadcom',cap:1.45},{company:'Meta',cap:1.44},{company:'Tesla',cap:1.37},{company:'Walmart',cap:1.02},{company:'AMD',cap:0.696}
 ];
 function NasdaqTop10Panel(){
- const [metric,setMetric]=useState<'cap'|'revenue'|'op'|'capex'>('cap');
- const [selected,setSelected]=useState('Apple');
- const max=Math.max(...nasdaqTop10.map(x=>x.cap));
+ const [metric,setMetric]=useState<'cap'|'revenue'|'op'|'capex'>('capex');
+ const [selected,setSelected]=useState('Amazon');
+ const metricLabel={cap:'시가총액',revenue:'매출',op:'영업이익',capex:'CAPEX'} as const;
+ const capexSeries=capexAnnual;
+ const years=Array.from(new Set(capexSeries.flatMap(s=>s.values.map(v=>v.year)))).sort();
+ const chartW=760, chartH=300, left=66, right=24, top=24, bottom=48;
+ const vals=capexSeries.flatMap(s=>s.values.map(v=>v.value*FX_USDKRW/1000));
+ const max=Math.max(...vals,1), min=0;
+ const x=(i:number)=>left+i*(chartW-left-right)/Math.max(1,years.length-1);
+ const y=(v:number)=>top+(max-v)/(max-min)*(chartH-top-bottom);
+ const colors=['#68c5d4','#e6a85c','#9b8bea','#62bd8b'];
+ const active=capexSeries.filter(s=>selected==='전체'||s.company===selected);
  return <div className="panel" style={{marginBottom:18}}>
-  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}><div><h3 style={{marginBottom:4}}>나스닥 시가총액 TOP 10</h3><p className="muted" style={{margin:0}}>2026.11.23 기준 · Alphabet은 GOOG·GOOGL 합산 · USD trillion</p></div><Pill tone="blue">TOP 10</Pill></div>
-  <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'16px 0'}}>{(['cap','revenue','op','capex'] as const).map(k=><button key={k} onClick={()=>setMetric(k)} style={{border:'1px solid var(--line)',borderRadius:9,padding:'8px 12px',background:metric===k?'var(--accent)':'var(--panel-2)',color:metric===k?'white':'var(--text)',fontWeight:700,cursor:'pointer'}}>{({cap:'시가총액',revenue:'매출',op:'영업이익',capex:'CAPEX'} as const)[k]}</button>)}</div>
-  {metric==='cap'?<div style={{display:'grid',gap:10}}>{nasdaqTop10.map((x,i)=><button key={x.company} onClick={()=>setSelected(x.company)} style={{display:'grid',gridTemplateColumns:'minmax(84px,115px) 1fr 76px',alignItems:'center',gap:10,textAlign:'left',border:0,background:selected===x.company?'var(--panel-2)':'transparent',padding:'5px 7px',borderRadius:8,color:'var(--text)',cursor:'pointer'}}><span style={{fontSize:13,fontWeight:700}}>{i+1}. {x.company}</span><span style={{height:13,background:'var(--panel-2)',borderRadius:20,overflow:'hidden'}}><span style={{display:'block',height:'100%',width:(x.cap/max*100)+'%',background:'linear-gradient(90deg,var(--accent),#57b7a5)',borderRadius:20}}/></span><b style={{fontSize:13,textAlign:'right'}}>{x.cap.toFixed(2)}T</b></button>)}</div>:<div className="notice" style={{marginTop:8}}>선택한 지표의 최근 3년 분기별 원자료를 기업별 공시 기준으로 검증한 뒤 표시해야 합니다. 현재 저장소에는 TOP 10 전체의 동일 기준 12분기 데이터가 없어, 확인되지 않은 수치를 그래프에 채우지 않았습니다.</div>}
-  <div className="chart-hint" style={{marginTop:12}}>선택 기업: {selected} · 시가총액은 기준일 스냅샷이며 분기별 시계열이 아닙니다. 매출·영업이익·CAPEX는 검증된 12분기 데이터가 확보되기 전까지 수치를 표시하지 않습니다.</div>
+  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}><div><h3 style={{marginBottom:4}}>나스닥 주요 기업 재무 추이</h3><p className="muted" style={{margin:0}}>공개 공시 기준 · 원화 환산 · 연간 회계기간은 기업별 FY/CY 구분</p></div><Pill tone="blue">추이 그래프</Pill></div>
+  <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'16px 0'}}>{(['cap','revenue','op','capex'] as const).map(k=><button key={k} onClick={()=>setMetric(k)} style={{border:'1px solid var(--line)',borderRadius:9,padding:'8px 12px',background:metric===k?'var(--accent)':'var(--panel-2)',color:metric===k?'white':'var(--text)',fontWeight:700,cursor:'pointer'}}>{metricLabel[k]}</button>)}</div>
+  {metric==='capex'?<>
+   <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:10}}>
+    <label className="muted" style={{fontSize:12}}>기업 선택</label>
+    <select value={selected} onChange={e=>setSelected(e.target.value)} style={{background:'var(--panel-2)',color:'var(--text)',border:'1px solid var(--line)',borderRadius:8,padding:'7px 10px'}}><option value="전체">전체 기업</option>{capexSeries.map(s=><option key={s.company} value={s.company}>{s.company}</option>)}</select>
+   </div>
+   <div style={{width:'100%',overflowX:'auto'}}>
+    <svg viewBox={`0 0 ${chartW} ${chartH}`} role="img" aria-label="기업별 연간 CAPEX 꺾은선 그래프" style={{width:'100%',minWidth:520,height:300,display:'block'}}>
+     {[0,1,2,3,4].map(i=>{const v=max*i/4;return <g key={i}><line x1={left} x2={chartW-right} y1={y(v)} y2={y(v)} stroke="currentColor" opacity=".14" strokeDasharray="4 4"/><text x={left-9} y={y(v)+4} textAnchor="end" fontSize="11" fill="currentColor">{v.toFixed(1)}</text></g>})}
+     {years.map((yr,i)=><text key={yr} x={x(i)} y={chartH-17} textAnchor="middle" fontSize="11" fill="currentColor">{yr}</text>)}
+     {active.map(s=>{const si=capexSeries.indexOf(s);const pts=s.values.map(v=>({i:years.indexOf(v.year),value:v.value*FX_USDKRW/1000}));const path=pts.map((p,i)=>(i?'L':'M')+x(p.i)+','+y(p.value)).join(' ');return <g key={s.company}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/>{pts.map(p=><g key={p.i}><circle cx={x(p.i)} cy={y(p.value)} r="4.5" fill={colors[si%colors.length]} stroke="var(--panel)" strokeWidth="1.5"/><title>{s.company} · {years[p.i]} · ₩{p.value.toFixed(1)}조</title></g>)}</g>})}
+    </svg>
+   </div>
+   <div className="legend-row">{active.map(s=><span key={s.company}><i style={{background:colors[capexSeries.indexOf(s)%colors.length]}}/>{s.company}</span>)}</div>
+   <div className="chart-hint">세로축 단위: 조 원. 환산 기준 USD/KRW {FX_USDKRW.toLocaleString('ko-KR')}원. 현재 검증된 연간 CAPEX 시계열은 Microsoft·Alphabet·Amazon·Meta 일부 연도에 한정됩니다. 회계기간과 CAPEX 정의가 기업별로 다르므로 단순 합산·순위 비교에는 주의가 필요합니다.</div>
+  </>:<div className="notice" style={{marginTop:8}}>{metricLabel[metric]}는 TOP 10 기업 전체의 동일 기준 최근 12개 분기 원자료를 아직 확보하지 못했습니다. 정확한 분기 공시값을 확보한 뒤 꺾은선 그래프로 표시하며, 미확인 수치나 추정 보간값은 넣지 않습니다.</div>}
  </div>
 }
 function Capex(){return <>
