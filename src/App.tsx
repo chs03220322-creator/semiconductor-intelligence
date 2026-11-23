@@ -5,7 +5,7 @@ import {
   TrendingUp, Wallet, X, Info
 } from 'lucide-react';
 
-type Section = 'overview'|'pricing'|'demand'|'capex'|'supply'|'companies'|'cycles'|'insights'|'method';
+type Section = 'overview'|'pricing'|'demand'|'capex'|'companies'|'cycles'|'insights'|'method';
 type Period = '3Y'|'5Y'|'10Y'|'MAX';
 
 const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
@@ -13,7 +13,6 @@ const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
   {id:'pricing',no:'02',label:'제품별 가격',sub:'DRAM·NAND·DDR 가격',icon:Layers3},
   {id:'demand',no:'03',label:'AI 수요 & 데이터센터',sub:'AI 투자와 전력 수요',icon:Server},
   {id:'capex',no:'04',label:'빅테크 투자',sub:'주요 기업 설비투자',icon:Wallet},
-  {id:'supply',no:'05',label:'공급 & 재고',sub:'생산능력과 재고',icon:Factory},
   {id:'companies',no:'06',label:'기업 실적',sub:'반도체 주요 기업',icon:BarChart3},
   {id:'cycles',no:'07',label:'장기 사이클',sub:'과거 흐름과 전망',icon:TrendingUp},
   {id:'insights',no:'08',label:'투자 시나리오',sub:'업황별 투자 관점',icon:Gauge},
@@ -282,22 +281,6 @@ function Capex(){return <>
  ]}/></div>
  </>}
 
-function Supply(){return <>
- <Title eyebrow="05 / SUPPLY & INVENTORY" title="공급능력 & 재고" desc="메모리 공급사의 설비투자·증설 계획과 업체별 재고 공시를 확인합니다. 제품별 재고일수·DRAM/NAND bit supply가 동일 기준으로 공개되지 않으면 미확보로 둡니다."/>
- <div className="stats-grid"><Stat label="삼성전자 DS CAPEX · 1~3Q26" value="₩52.8T" sub="기업 공시 · 실제 누계"/><Stat label="Micron Net CAPEX · FY2026" value="$27.37B" sub="회계연도 actual"/><Stat label="공급사 재고일수" value="미확보" sub="동일 기준 무료 시계열 없음"/></div>
- <div className="panel"><h3>공급능력 확대 및 투자 신호</h3><Table headers={['기업','공개 투자·증설 신호','사이클 해석']} rows={[
-  ['삼성전자','DS CAPEX 1~3Q26 ₩52.8T','선단·메모리 투자 지속 여부와 실제 bit 공급 전환 시차 확인'],
-  ['SK하이닉스','용인 Y2·청주 M17 투자 계획; 2027~2028 생산능력 50% 이상 장기계약 확보','증설 발표와 양산·고객 인증·실제 출하 시점을 분리'],
-  ['Micron','FY2026 Net CAPEX $27.37B','투자액보다 DRAM/HBM bit 공급 증가율과 제품 믹스가 중요']
- ]}/><Sources items={['Samsung Electronics · 3Q26 실적','Micron · FY2026 Q4 및 연간 실적','SK hynix · Yongin Y2 / Cheongju M17 투자']}/></div>
- <div className="panel"><h3>재고·공급 데이터 가용성</h3><Table headers={['지표','최신 공개 상태','앱 처리 원칙']} rows={[
-  ['삼성·SK·Micron 총 재고','분기 재무제표 잔액은 공개','제품별 재고일수와 직접 비교하지 않음'],
-  ['DRAM/NAND supplier inventory days','미확보','점수에서 제외'],
-  ['CSP/OEM memory inventory','동일 기준 미확보','중립점·0점으로 대체하지 않음'],
-  ['DRAM/NAND bit supply','동일 기준 미확보','업체별 웨이퍼 투입량으로 추정하지 않음'],
-  ['전체 wafer shipments','2026 Q3 actual 3,756 MSI','메모리 전용 공급량이 아닌 산업 proxy']
- ]}/><Notice>재고 항목은 업황 판단에 중요하지만, 제품별·업체별·고객별 기준이 다른 재고 잔액을 섞으면 왜곡됩니다. 동일 기준 inventory days가 공개되기 전까지 점수화하지 않습니다.</Notice></div>
- </>}
 
 type MemoryFinancialPoint={year:string;revenue:number;op?:number;periodLabel?:string;revenueLow?:number;revenueHigh?:number;opLow?:number;opHigh?:number};
 type MemoryFinancialSeries={name:string;data:MemoryFinancialPoint[];color:string;currency:'KRW'|'USD'};
@@ -330,26 +313,21 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
    <svg viewBox={`0 0 ${chartWidth} 260`} role="img" aria-label={title} style={{width:'100%',minWidth:Math.min(chartWidth,520)+'px',height:'260px',display:'block',overflow:'visible'}}>
     {[0,1,2,3,4].map(i=>{const v=min+(max-min)*i/4;return <g key={i}><line x1="52" x2={chartWidth-18} y1={y(v)} y2={y(v)} stroke="currentColor" opacity=".12" strokeDasharray="3 4"/><text x="46" y={y(v)-4} textAnchor="end" fontSize="10" fill="currentColor">{v.toFixed(0)}</text></g>})}
     {shown.map(s=>{const vals=s.data.map(d=>{const v=metric==='revenue'?d.revenue:d.op;return typeof v==='number'?v*(s.currency==='USD'?FX_USDKRW/1000:1):undefined});const lows=s.data.map(d=>(metric==='revenue'?d.revenueLow:d.opLow));const highs=s.data.map(d=>(metric==='revenue'?d.revenueHigh:d.opHigh));const bandIdx=s.data.map((d,i)=>({i,lo:lows[i],hi:highs[i]})).filter(v=>v.lo!==undefined&&v.hi!==undefined);const scale=s.currency==='USD'?FX_USDKRW/1000:1;const bandPath=bandIdx.length>1?[...bandIdx.map(v=>x(v.i)+','+y((v.hi as number)*scale)),...bandIdx.slice().reverse().map(v=>x(v.i)+','+y((v.lo as number)*scale))].join(' '):'';const path=vals.map((v,i)=>v===undefined?'':(i?'L':'M')+x(i)+','+y(v)).filter(Boolean).join(' ');return <g key={s.name}>{bandPath&&<polygon points={bandPath} fill={s.color} opacity=".20" stroke="none"><title>{s.name} 증권사 추정 범위</title></polygon>}{bandIdx.filter(v=>Number.isFinite(v.lo)&&Number.isFinite(v.hi)).map(v=><rect key={'band-'+v.i} x={x(v.i)-13} y={y((v.hi as number)*scale)} width="26" height={Math.max(2,y((v.lo as number)*scale)-y((v.hi as number)*scale))} rx="4" fill={s.color} opacity=".24"><title>{s.name} {label(s.data[v.i])} 최소~최대 범위</title></rect>)}<path d={path} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round"/>{vals.map((v,i)=>v===undefined?null:<g key={i} onClick={()=>setSelected({company:s.name,index:i})} style={{cursor:'pointer'}}><circle cx={x(i)} cy={y(v)} r={selected?.company===s.name&&selected.index===i?7:4.5} fill={s.color} stroke="white" strokeWidth="1.5"/><circle cx={x(i)} cy={y(v)} r="11" fill="transparent"/><title>{s.name} {label(s.data[i])}: {format(metric==='revenue'?s.data[i].revenue:s.data[i].op as number,s.currency)}{lows[i]!==undefined&&highs[i]!==undefined?' · 범위 '+format(lows[i] as number,s.currency)+'~'+format(highs[i] as number,s.currency):''}</title></g>)}</g>})}
-    {Array.from({length:zoom},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize="10" fill="currentColor" style={{cursor:'pointer',fontWeight:selected&&selected.index===i?800:500}} onClick={()=>setSelected({company:shown[0].name,index:i})}>{label(shown[0].data[i])}</text>)}
+    {Array.from({length:zoom},(_,i)=><text key={i} x={x(i)} y="245" textAnchor="middle" fontSize="10" fill="currentColor">{label(shown[0].data[i])}</text>)}
    </svg>
   </div>
   <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,margin:'8px 0 4px'}}>
    {series.map(s=>{const p=selected?selectedRows.find(r=>r.series.name===s.name)?.point:s.data[s.data.length-1];const value=p?(metric==='revenue'?p.revenue:p.op):undefined;return <div key={s.name} onClick={()=>p&&setSelected({company:s.name,index:shown.find(z=>z.name===s.name)?.data.findIndex(d=>d.year===p.year)??0})} style={{background:selected?'#14212c':'#14212c',border:'1px solid '+s.color,borderRadius:7,padding:'9px 10px',minWidth:0,cursor:p?'pointer':'default'}}><div style={{fontSize:10,color:s.color,fontWeight:700}}>{s.name} · {p?label(p):(selected?selectedPoint?.year+' 자료 없음':label(s.data[s.data.length-1]))}</div><div style={{fontSize:17,fontWeight:750,color:'#eef4f8',marginTop:3,whiteSpace:'nowrap'}}>{typeof value==='number'&&Number.isFinite(value)?format(value,s.currency):'자료 미확보'}</div><div style={{fontSize:10,color:'#91a2b1',marginTop:2}}>{selected?'선택한 연도':'최신 시점'} · {metric==='revenue'?'매출':'영업이익'}</div></div>})}
   </div>
   <div className="chart-unit">단위: 조 원 · Micron은 USD 공시/모델 수치를 USD/KRW {FX_USDKRW.toLocaleString()}원으로 환산했습니다.</div>
-  {selectedPoint&&selectedSeries&&selected&&<div onClick={()=>setSelected(null)} style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,.62)',display:'flex',alignItems:'center',justifyContent:'center',padding:18}}>
-   <div onClick={e=>e.stopPropagation()} style={{width:'min(520px,100%)',maxHeight:'82vh',overflowY:'auto',background:'var(--panel,#14212c)',border:'1px solid #526575',borderRadius:14,padding:18,boxShadow:'0 18px 60px rgba(0,0,0,.45)'}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}><b>{selectedSeries.name} · {label(selectedPoint)}</b><button onClick={()=>setSelected(null)} aria-label="팝업 닫기" style={{border:0,background:'transparent',color:'inherit',fontSize:22,cursor:'pointer'}}>×</button></div>
-    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:14}}>
-     <div style={{padding:12,borderRadius:8,background:'#203342'}}><small>매출</small><div style={{fontSize:20,fontWeight:800}}>{typeof selectedPoint.revenue==='number'&&Number.isFinite(selectedPoint.revenue)?format(selectedPoint.revenue,selectedSeries.currency):'자료 미확보'}</div>{typeof selectedPoint.revenueLow==='number'&&typeof selectedPoint.revenueHigh==='number'&&<small>범위 {format(selectedPoint.revenueLow,selectedSeries.currency)} ~ {format(selectedPoint.revenueHigh,selectedSeries.currency)}</small>}</div>
-     <div style={{padding:12,borderRadius:8,background:'#203342'}}><small>영업이익</small><div style={{fontSize:20,fontWeight:800}}>{typeof selectedPoint.op==='number'&&Number.isFinite(selectedPoint.op)?format(selectedPoint.op,selectedSeries.currency):'자료 미확보'}</div>{typeof selectedPoint.opLow==='number'&&typeof selectedPoint.opHigh==='number'&&<small>범위 {format(selectedPoint.opLow,selectedSeries.currency)} ~ {format(selectedPoint.opHigh,selectedSeries.currency)}</small>}</div>
-    </div>
-    <div style={{marginTop:12,fontSize:12,color:'#aebdca'}}>{typeof selectedPoint.op==='number'&&typeof selectedPoint.revenue==='number'&&selectedPoint.revenue!==0?'영업이익률 '+(selectedPoint.op/selectedPoint.revenue*100).toFixed(1)+'%':'영업이익률 자료 미확보'} · {selectedPoint.periodLabel||'추정치'}</div>
-    <div style={{marginTop:14,fontWeight:700,fontSize:13}}>동일 연도 기업별 수치</div>
-    <div style={{display:'grid',gap:7,marginTop:8}}>{selectedRows.map(({series:s,point:p})=><div key={s.name} style={{display:'flex',justifyContent:'space-between',gap:8,padding:'8px 10px',borderRadius:7,background:'#203342',fontSize:12}}><b style={{color:s.color}}>{s.name}</b><span>매출 {p&&typeof p.revenue==='number'?format(p.revenue,s.currency):'—'} · 영업이익 {p&&typeof p.op==='number'?format(p.op,s.currency):'—'}</span></div>)}</div>
-    <small style={{display:'block',marginTop:12,color:'#aebdca'}}>그래프의 다른 연도 또는 바깥 영역을 누르면 닫힙니다.</small>
-   </div>
-  </div>}
+  {selectedPoint&&selectedSeries&&selected&&<g pointerEvents="none">
+   {(()=>{const raw=metric==='revenue'?selectedPoint.revenue:selectedPoint.op;const val=typeof raw==='number'&&Number.isFinite(raw)?raw*(selectedSeries.currency==='USD'?FX_USDKRW/1000:1):null;const px=x(selected.index),py=val===null?92:y(val);const bx=Math.max(60,Math.min(chartWidth-214,px-92));const by=Math.max(8,Math.min(164,py-68));return <g>
+    <rect x={bx} y={by} width="204" height="58" rx="7" fill="#101c27" stroke={selectedSeries.color} strokeWidth="1.5" opacity=".97"/>
+    <text x={bx+10} y={by+15} fill={selectedSeries.color} fontSize="10.5" fontWeight="700">{selectedSeries.name} · {label(selectedPoint)}</text>
+    <text x={bx+10} y={by+32} fill="#f2f6fa" fontSize="10.5">매출  {typeof selectedPoint.revenue==='number'?format(selectedPoint.revenue,selectedSeries.currency):'자료 없음'}</text>
+    <text x={bx+10} y={by+47} fill="#f2f6fa" fontSize="10.5">영업이익  {typeof selectedPoint.op==='number'?format(selectedPoint.op,selectedSeries.currency):'자료 없음'}</text>
+   </g>})()}
+  </g>}
   {!selectedPoint&&<div className="chart-hint">그래프의 원형 타점을 누르면 해당 연도/전망 연도의 매출·영업이익을 확인할 수 있습니다.</div>}
  </div>;
 }
