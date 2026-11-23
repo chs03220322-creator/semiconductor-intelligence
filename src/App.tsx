@@ -289,8 +289,22 @@ function Demand(){return <>
  <div className="panel"><h3>전력 인프라 병목·설비 밀도 지표</h3><Table headers={["지표","공개 전망","의미"]} rows={[["AI 서버 랙 전력밀도","2020~2025년 11배 상승, 2027년까지 추가 4배 수준","랙당 전력·냉각·전력반도체 수요 확대"],["AI 데이터센터 배터리 저장","2030년 약 20~25 GW 설치 가능성","전력망 변동 대응 및 UPS·ESS 투자"],["AI 데이터센터 전력 비중","2025~2030년 소비량 약 3배","전체 데이터센터 전력 증가보다 빠른 AI workload 확대"]]}/><Notice>랙 전력밀도와 배터리 저장 전망은 전력 수요량(TWh)과 다른 물리적 인프라 지표입니다. GPU 공급, 변압기·전력전자·냉각장비 리드타임을 함께 보면 실제 데이터센터 증설 속도를 판단하는 데 도움이 됩니다.</Notice><Sources items={["IEA · Key Questions on Energy and AI (2026)"]}/></div>
  <div className="panel"><h3>AI 수요 → 반도체 수요 전달 경로</h3><div className="bridge">{[["AI 학습·추론량","토큰·영상·reasoning·agent 사용량"],["가속기 설치량","GPU·ASIC 출하 및 서버 랙 증설"],["메모리 탑재량","HBM 용량·대역폭, DDR5, eSSD"],["메모리 bit 수요","출하량 × 시스템당 탑재 용량"]].map((x,i)=><div className="bridge-item" key={i}><span>0{i+1}</span><b>{x[0]}</b><small>{x[1]}</small>{i<3&&<ChevronRight/>}</div>)}</div><Notice>전력은 데이터센터 전체의 물리적 수요, 토큰은 AI 서비스 이용량, CAPEX는 투자 의지, GPU·ASIC 출하는 실제 설치 기반을 나타냅니다. 이 네 축이 함께 증가하는지 확인해야 AI 메모리 수요의 지속성을 더 정확히 판단할 수 있습니다.</Notice></div>
  </>}
+const nasdaqTop10=[
+ {company:'Apple',cap:4.98},{company:'Microsoft',cap:3.60},{company:'Alphabet',cap:3.26},{company:'NVIDIA',cap:3.03},{company:'Amazon',cap:2.67},{company:'Broadcom',cap:1.45},{company:'Meta',cap:1.44},{company:'Tesla',cap:1.37},{company:'Walmart',cap:1.02},{company:'AMD',cap:0.696}
+];
+function NasdaqTop10Panel(){
+ const [metric,setMetric]=useState<'cap'|'revenue'|'op'|'capex'>('cap');
+ const [selected,setSelected]=useState('Apple');
+ const max=Math.max(...nasdaqTop10.map(x=>x.cap));
+ return <div className="panel" style={{marginBottom:18}}>
+  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,flexWrap:'wrap'}}><div><h3 style={{marginBottom:4}}>나스닥 시가총액 TOP 10</h3><p className="muted" style={{margin:0}}>2026.11.23 기준 · Alphabet은 GOOG·GOOGL 합산 · USD trillion</p></div><Pill tone="blue">TOP 10</Pill></div>
+  <div style={{display:'flex',gap:8,flexWrap:'wrap',margin:'16px 0'}}>{(['cap','revenue','op','capex'] as const).map(k=><button key={k} onClick={()=>setMetric(k)} style={{border:'1px solid var(--line)',borderRadius:9,padding:'8px 12px',background:metric===k?'var(--accent)':'var(--panel-2)',color:metric===k?'white':'var(--text)',fontWeight:700,cursor:'pointer'}}>{({cap:'시가총액',revenue:'매출',op:'영업이익',capex:'CAPEX'} as const)[k]}</button>)}</div>
+  {metric==='cap'?<div style={{display:'grid',gap:10}}>{nasdaqTop10.map((x,i)=><button key={x.company} onClick={()=>setSelected(x.company)} style={{display:'grid',gridTemplateColumns:'minmax(84px,115px) 1fr 76px',alignItems:'center',gap:10,textAlign:'left',border:0,background:selected===x.company?'var(--panel-2)':'transparent',padding:'5px 7px',borderRadius:8,color:'var(--text)',cursor:'pointer'}}><span style={{fontSize:13,fontWeight:700}}>{i+1}. {x.company}</span><span style={{height:13,background:'var(--panel-2)',borderRadius:20,overflow:'hidden'}}><span style={{display:'block',height:'100%',width:(x.cap/max*100)+'%',background:'linear-gradient(90deg,var(--accent),#57b7a5)',borderRadius:20}}/></span><b style={{fontSize:13,textAlign:'right'}}>{x.cap.toFixed(2)}T</b></button>)}</div>:<div className="notice" style={{marginTop:8}}>선택한 지표의 최근 3년 분기별 원자료를 기업별 공시 기준으로 검증한 뒤 표시해야 합니다. 현재 저장소에는 TOP 10 전체의 동일 기준 12분기 데이터가 없어, 확인되지 않은 수치를 그래프에 채우지 않았습니다.</div>}
+  <div className="chart-hint" style={{marginTop:12}}>선택 기업: {selected} · 시가총액은 기준일 스냅샷이며 분기별 시계열이 아닙니다. 매출·영업이익·CAPEX는 검증된 12분기 데이터가 확보되기 전까지 수치를 표시하지 않습니다.</div>
+ </div>
+}
 function Capex(){return <>
- <Title eyebrow="04 / HYPERSCALER INVESTMENT" title="빅테크 CAPEX" desc="연간 actual과 2026년 분기 actual·YTD를 구분합니다. FY/CY, PPE 구매·PPE additions·finance lease 포함 여부가 달라 회사 간 CAPEX를 단순 합산하지 않습니다."/>
+ <Title eyebrow="04 / HYPERSCALER INVESTMENT" title="빅테크 CAPEX" desc="나스닥 시가총액 상위 기업의 규모와 빅테크 설비투자를 함께 살펴봅니다. 회사별 FY/CY와 CAPEX 정의 차이를 구분합니다."/><NasdaqTop10Panel/>
  <div className="panel"><h3>최근 분기 CAPEX 순위 · 높은 순</h3><p className="muted">2026년 7~9월에 해당하는 최신 공개 분기 기준. Microsoft FY27 Q1은 2026년 7~9월이며, 나머지는 CY26 Q3입니다. 회사별 공시 정의는 표 하단 주석을 확인하세요.</p><Table headers={['순위','기업','기간','분기 CAPEX','비교 기준']} rows={[
   ['1','Amazon','3Q26','$77.259B','Gross PPE purchases'],
   ['2','Alphabet','3Q26','$51.4B','PPE purchases'],
