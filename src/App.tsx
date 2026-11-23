@@ -314,8 +314,8 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
  const y=(v:number)=>218-(v-min)/range*178;
  const selectedSeries=selected?shown.find(s=>s.name===selected.company):null;
  const selectedPoint=selectedSeries&&selected?selectedSeries.data[selected.index]:null;
- const selectedYear=selectedPoint?.year.replace(/^FY/,'').replace(/\\*$/,'');
- const selectedRows=selectedYear?series.map(s=>({series:s,point:s.data.find(p=>p.year.replace(/^FY/,'').replace(/\\*$/,'')===selectedYear)})):[];
+ const selectedYear=selectedPoint?.year.replace(/^FY/,'').replace('*','');
+ const selectedRows=selectedYear?series.map(s=>({series:s,point:s.data.find(p=>p.year.replace(/^FY/,'').replace('*','')===selectedYear)})):[];
  const format=(v:number,currency:string)=>currency==='USD'?'₩'+(v*FX_USDKRW/1000).toFixed(2)+'조':'₩'+v.toFixed(2)+'조';
  const label=(p:MemoryFinancialPoint)=>p.periodLabel||p.year;
  return <div className="panel">
