@@ -305,7 +305,7 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
  const maxZoom=series[0].data.length;
  const [zoom,setZoom]=useState(Math.min(maxZoom,forecast?6:11));
  const shown=series.map(s=>({...s,data:s.data.slice(-zoom),offset:s.data.length-Math.min(zoom,s.data.length)}));
- const values=shown.flatMap(s=>s.data.map(d=>(metric==='revenue'?d.revenue:d.op)*(s.currency==='USD'?FX_USDKRW/1000:1)));
+ const values=shown.flatMap(s=>s.data.flatMap(d=>{const v=metric==='revenue'?d.revenue:d.op;const lo=metric==='revenue'?d.revenueLow:d.opLow;const hi=metric==='revenue'?d.revenueHigh:d.opHigh;return [v,lo,hi].filter((n):n is number=>typeof n==='number'&&Number.isFinite(n)).map(n=>n*(s.currency==='USD'?FX_USDKRW/1000:1))}));
  const min=Math.min(0,...values),max=Math.max(...values),range=max-min||1;
  const chartWidth=Math.max(730,110+(zoom-1)*66);
  const x=(i:number)=>58+i*((chartWidth-105)/Math.max(1,zoom-1));
@@ -383,12 +383,13 @@ function Companies(){return <>
  <Title eyebrow="06 / COMPANY FINANCIALS" title="주요 반도체 기업 실적" desc="메모리 3사의 2016~2025 연간 실적에 각 사의 최신 공시 분기까지 누적한 실적을 추가해 비교합니다. 매출·영업이익 전환 및 타점별 수치 확인이 가능합니다."/>
  <MemoryThreeChart/>
  <MemoryThreeForecastChart/>
- <div className="panel"><h3>향후 5년 전망 산정 기준</h3><Table headers={['기업','2026E 기준값','매출 성장률 가정(2027~31)','영업이익률 가정(2027→31)']} rows={[
-  ['삼성전자','2026년 1Q~3Q 누계 × 4/3','+10% → +5%로 단계 둔화','55% → 40%'],
-  ['SK하이닉스','2026년 1Q~3Q 누계 × 4/3','+15% → +5%로 단계 둔화','60% → 42%'],
-  ['Micron','FY2026 FQ1~FQ4 연간 actual','+15% → +5%로 단계 둔화','55% → 40%']
+ <div className="panel"><h3>향후 5년 전망 산정 기준</h3><Table headers={['기업','공개 추정 범위의 출처','범위가 확인된 기간','미확보 구간']} rows={[
+  ['삼성전자','미래에셋·삼성증권 등 공개 리포트의 추정치 최저~최고','2027~2028 매출·영업이익','2029~2031'],
+  ['SK하이닉스','미래에셋 등 공개 리포트의 추정치 최저~최고','2027 매출·영업이익; 2028 단일 추정치','2029~2031'],
+  ['Micron','S&P Global Market Intelligence 기반 공개 애널리스트 추정 범위','FY2027~FY2028 매출','영업이익 범위 및 FY2029~FY2031']
 ]}/>
- <Notice>이 그래프는 회사 공식 가이던스나 증권사 컨센서스가 아니라, 최신 실적을 출발점으로 성장률·영업이익률 가정을 적용한 자체 기준 시나리오입니다. 2026E 삼성전자·SK하이닉스 값은 9개월 실적 단순 연환산이므로 계절성·분기 변동을 반영하지 않습니다. Micron은 FY2026 실제 연간값을 사용하며 회계연도 차이가 있습니다. 실제 투자 판단 전 각 분기 실적과 가정을 다시 검증해야 합니다.</Notice></div>
+ <Notice>음영은 공개 리포트·시장 데이터에 실제 기재된 최소~최대 범위이며, 여러 기관의 추정치가 존재하는 연도만 표시합니다. 2029~2031은 공신력 있는 비교 가능 범위를 확인하지 못해 기존 장기 시나리오 선만 표시하고 음영은 넣지 않았습니다. Micron은 매출 범위는 확인되지만 동일 기준의 영업이익 범위는 확인되지 않아 영업이익 음영을 표시하지 않습니다. 삼성전자·SK하이닉스·Micron의 회계연도와 추정 기준은 서로 다를 수 있습니다.</Notice>
+ <Sources items={['Mirae Asset Securities · Samsung Electronics · 2026-10-30','Samsung Securities · Samsung Electronics · 2026-10-08','Mirae Asset Securities · SK hynix · 2026-11','S&P Global Market Intelligence · Micron consensus estimates · 2026-11-18']}/></div>
  <div className="panel"><h3>최근 분기 실적 · 2026년</h3><Table headers={['기업','기간','매출','영업이익','기준']} rows={[
   ...samsungQuarterly.map(x=>['삼성전자',x.period,'₩'+x.revenue.toFixed(1)+'조','₩'+x.op.toFixed(1)+'조','K-IFRS Actual']),
   ...skQuarterly.map(x=>['SK하이닉스',x.period,'₩'+x.revenue.toFixed(2)+'조','₩'+x.op.toFixed(2)+'조','K-IFRS Actual']),
