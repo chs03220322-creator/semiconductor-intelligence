@@ -110,6 +110,7 @@ const tsmcAnnual=[{year:'2023',value:69.30},{year:'2024',value:90.08},{year:'202
 const nvidiaAnnual=[{year:'FY2024',value:60.922},{year:'FY2025',value:130.497},{year:'FY2026',value:215.938}];
 const nvidiaQuarterly=[{year:'1Q FY27',value:81.615},{year:'2Q FY27',value:96.221},{year:'3Q FY27',value:115.8}];
 const pricesDram16=[{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0}];
+const pricesDdr5_16=[{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0},{year:'Oct 26',value:50.0}];
 const pricesDram8=[{year:'Jul 26',value:24.0},{year:'Aug 26',value:25.0},{year:'Sep 26',value:26.0},{year:'Oct 26',value:27.5}];
 const pricesNand=[
   {year:'Jun 26',value:28.8},{year:'Jul 26',value:30.1},{year:'Aug 26',value:30.5},
@@ -206,22 +207,41 @@ function TrendPanel({title,series,quarterHeaders,quarterRows,note,source}:{title
 function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void}){
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
-  <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 대시보드" desc="무료 공개 원문으로 글로벌 반도체 매출, 메모리 가격, AI 투자, 공급·재고와 주요 기업 실적을 추적합니다. 메모리 점수는 공개 근거가 있는 지표만 반영하고 미확보 항목은 제외합니다."/>
-  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> FREE-DATA MEMORY CYCLE SCORE <Pill tone="green">무료 공개자료 기반</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>메모리 업황 proxy · 강한 호황/상승 · 평가 가능 지표 3/7</p><div className="score-foot"><span>Server DDR5·HBM 강세</span><span>NAND 가격 보합</span><span>재고·제품별 ASP 미확보</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>강한 호황</span></div></div><small>가용 공개지표 가중치 재배분</small></div></div>
-  <div className="stats-grid"><Stat label="SIA 글로벌 반도체 매출 · 3Q26" value="$517.7B" sub="Actual · SIA 발표 2026-11-03"/><Stat label="SK hynix 영업이익 · 3Q26" value="₩83.33T" sub="K-IFRS · Actual · QoQ +38%"/><Stat label="평가 가능 메모리 지표" value="3 / 7" sub="미확보 지표는 점수에서 제외"/></div>
-  <div className="panel"><div className="panel-head"><div><h3>메모리 업황 7대 지표</h3><p>직접 공개되지 않은 가격·재고·ASP는 수치화하지 않고 미확보로 둠</p></div><Pill tone="amber">3 / 7 scored</Pill></div><Table headers={['지표','평가','점수','근거·최신 공개 변화']} rows={memorySignals.map(x=>[x.name,x.direction,x.score===null?'미산정':x.score+' / 100',x.basis])}/><Notice>Server DDR5 점수는 기업의 제품별 수요 코멘트와 정부 범용 DRAM 16Gb·8Gb 기준가격을 함께 본 정성 proxy입니다. 해당 기준가격을 DDR5 전용 또는 서버 전용 ASP로 간주하지 않습니다.</Notice></div>
-  <div className="panel"><h3>메모리 점수 산식과 가중치 재배분</h3><Table headers={['지표','기본 가중치','점수 반영 여부','실제 반영 가중치']} rows={memorySignals.map(x=>[x.name,x.baseWeight+'%',x.score===null?'제외 · 미확보':x.score+'점',x.score===null?'0%':normalizedWeight(x.baseWeight)+'%'])}/><div className="formula">Score = Σ(score × base weight) ÷ scored base weight = {cycleScore} / 100</div><Notice>정량·정성 근거가 확인된 Server DDR5, HBM, NAND만 산식에 반영했습니다. PC DDR5·DDR4·재고·삼성/하이닉스 ASP는 제외 후 가용 항목의 가중치를 재배분했습니다. 평가 커버리지는 3/7이며 전체 시장의 완전한 점수로 해석하면 안 됩니다. 전주와 점수 체계가 달라 점수 증감은 직접 비교하지 않습니다.</Notice></div>
-  <div className="period-bar"><div><b>글로벌 반도체 시장 매출</b><span>USD billion · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','10Y','MAX'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p==='MAX'?'전체':p}</button>)}</div></div>
-  <div className="grid-2"><div className="panel"><h3>글로벌 반도체 매출 · 연도별 actual</h3><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={220}/><Table headers={['연도','매출','전년 대비','상태']} rows={market.map((x,i)=>[x.year,'$'+x.value.toFixed(1)+'B',i===0?'—':((x.value/market[i-1].value-1)*100).toFixed(1)+'%','Actual'])}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div><div className="panel"><h3>2026년 분기 actual · 글로벌 시장</h3><LineChart data={globalQuarterly.map(x=>({year:x.year,value:x.value}))} keyName="value" label="Quarterly semiconductor sales · USD bn" height={220}/><Table headers={['분기','매출','상태','출처 기준']} rows={globalQuarterly.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status,x.note])}/><Notice>Q3 발표문은 QoQ +24.1%라고 기재했으나, Q2 최초 발표치 $403.3B와 단순 계산한 증가율은 일치하지 않습니다. 원문 수치를 임의 수정하지 않고 분기별 발표치를 그대로 보존하며, 2026 YTD 단순 합계는 잠정 합산치로만 취급합니다.</Notice><Sources items={['SIA · 2026년 1분기 글로벌 반도체 매출','SIA · 2026년 2분기 글로벌 반도체 매출','SIA · 2026년 3분기 글로벌 반도체 매출']}/></div></div>
+  <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="사이클 판단에 직접 영향을 주는 가격·AI 수요·기업 실적·공급 신호만 요약합니다. 세부 재무와 출처는 각 메뉴에서 확인할 수 있습니다."/>
+  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 가용 공개지표 메모리 점수 <Pill tone="green">참고용 proxy</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>강한 호황·상승 국면 · 평가 가능 지표 3/7</p><div className="score-foot"><span>HBM·서버 DRAM 강세</span><span>NAND 가격 보합</span><span>재고일수 미확보</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>가용 지표 기준</span></div></div><small>전체 업황의 확정 점수 아님</small></div></div>
+  <div className="stats-grid three">
+   <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
+   <Stat label="NAND 128Gb · 2026년 10월" value="$30.6" sub="전월 대비 보합 · 공개 기준가격"/>
+   <Stat label="SK하이닉스 영업이익 · 3Q26" value="₩83.33T" sub="K-IFRS actual · 전분기 대비 +38%"/>
+  </div>
+  <div className="panel"><div className="panel-head"><div><h3>사이클 판단에 필요한 핵심 신호</h3><p>중복되는 기업별 수치·세부 가중치 표는 이 화면에서 제외했습니다.</p></div><Pill tone="blue">핵심 3개 지표</Pill></div>
+   <Table headers={['핵심 신호','현재 판단','해석']} rows={[
+    ['HBM·서버 DRAM 수요','강세','삼성·SK하이닉스의 AI 메모리 및 서버 제품 판매 확대'],
+    ['범용 DRAM 가격','상승','정부 공개 기준가격 상승. 단, 서버 DDR5 계약 ASP와 동일한 수치가 아님'],
+    ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
+    ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
+   ]}/>
+   <Notice>점수 92점은 Server DDR5·HBM·NAND 세 항목만으로 계산한 부분 점수입니다. 전체 7개 지표 중 4개가 미확보이므로 점수 하나만으로 사이클 정점이나 하락 시점을 판단하지 않습니다.</Notice>
+  </div>
+  <div className="panel"><div className="panel-head"><div><h3>현재 사이클 해석</h3><p>이번 주 핵심 판단만 읽도록 요약</p></div><Pill tone="green">강한 확장 국면</Pill></div>
+   <Table headers={['구분','판단']} rows={[
+    ['현재 위치','호황·강한 확장 국면'],
+    ['방향','상승 지속. 다만 NAND는 DRAM보다 가격 모멘텀이 약함'],
+    ['상승 동력','AI 데이터센터 투자, HBM4 및 서버 DRAM 수요, 메모리 가격 상승'],
+    ['가장 큰 위험','신규 공급 증가가 수요를 앞서거나, 메모리 가격 상승이 PC·모바일 수요를 위축시키는 경우'],
+    ['판단 신뢰도','중간 이하: 재고일수·제품별 ASP·bit 공급 데이터 부족']
+   ]}/>
+  </div>
+  <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','10Y','MAX'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p==='MAX'?'전체':p}</button>)}</div></div>
+  <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={market.map((x,i)=>[x.year,'$'+x.value.toFixed(1)+'B',i===0?'—':((x.value/market[i-1].value-1)*100).toFixed(1)+'%'])}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
  </>;
 }
-
 function Pricing(){return <>
  <Title eyebrow="02 / PRODUCT PRICING" title="무료 공개 메모리 가격 & 수급" desc="정부가 공개한 범용 DRAM·NAND 기준가격과 수출만 반영합니다. 이 수치는 Server DDR5·PC DDR5·DDR4·HBM의 개별 계약 ASP가 아닙니다. 공개되지 않은 제품별 가격은 추정하지 않습니다."/>
  <div className="stats-grid"><Stat label="DRAM 8Gb · Oct 2026" value="$27.5" sub="전월 대비 +5.8% · USD/chip"/><Stat label="NAND 128Gb · Oct 2026" value="$30.6" sub="전월 대비 0.0% · USD/chip"/></div>
- <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand}]} quarterHeaders={['월','DRAM 16Gb','DRAM 8Gb','NAND 128Gb','상태']} quarterRows={[
+ <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DDR5 16Gb 고정가격 (별도 계열)',unit:'USD / chip',data:pricesDdr5_16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand}]} quarterHeaders={['월','DRAM 16Gb','DRAM 8Gb','NAND 128Gb','상태']} quarterRows={[
   ['Jun 26','$40.0',null,'$28.8','Actual'],['Jul 26','$45.0','$24.0','$30.1','Actual'],['Aug 26','$46.5','$25.0','$30.5','Actual'],['Sep 26','$48.0','$26.0','$30.6','Actual'],['Oct 26',null,'$27.5','$30.6','Actual']
- ]} note="10월 산업부 자료는 DRAM 8Gb를 공개했고 DRAM 16Gb 가격은 9월까지 확인됩니다. 16Gb 10월 가격은 미확보로 두며 보간하지 않습니다. 두 DRAM 밀도는 별도 series로 유지합니다. 어느 series도 Server DDR5 RDIMM·PC DDR5 모듈 ASP가 아닙니다." source={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향']}/>
+ ]} note="DRAM 16Gb 범용 기준가격과 DDR5 16Gb 고정가격은 서로 다른 공개 계열이므로 분리했습니다. DDR5 16Gb는 10월 $50.0까지 공개되어 있습니다. 어느 series도 Server DDR5 RDIMM·PC DDR5 모듈 ASP와 동일하지 않습니다." source={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향']}/>
  <div className="panel"><h3>2025년 공개 DRAM 8Gb·NAND 128Gb 기준가격</h3><p className="muted">2025년 7~10월 관측치 · USD/chip · 2026년 series와 연도·시장 환경을 구분</p><LineChart data={prices2025Dram8} keyName="value" label="DRAM 8Gb reference · USD/chip" height={180}/><LineChart data={prices2025Nand} keyName="value" label="NAND 128Gb reference · USD/chip" height={180}/><Table headers={['월','DRAM 8Gb','NAND 128Gb','상태']} rows={prices2025Dram8.map((x,i)=>[x.year,'$'+x.value.toFixed(1),'$'+prices2025Nand[i].value.toFixed(1),'공식 월간 보고서'])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
  <TrendPanel title="메모리 시장 규모 대리지표" series={[{name:'Memory semiconductor revenue',unit:'USD bn · 시장규모, ASP 아님',data:memoryForecast}]} quarterHeaders={['연도','메모리 시장 규모','상태','출처 기준']} quarterRows={memoryForecast.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status,'Gartner Aug 2026 public release'])} note="메모리 시장규모는 연간 매출 estimate/forecast이며 제품 단가·ASP가 아닙니다. 2025 estimate, 2026~2027 forecast를 actual과 분리했습니다." source={['Gartner · 2026년 반도체 시장 공개 전망']}/>
  <div className="panel"><h3>제품별 무료 데이터 범위</h3><Table headers={['제품군','무료로 확인 가능한 항목','미확보 항목']} rows={[
