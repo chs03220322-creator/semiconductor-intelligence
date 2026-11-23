@@ -1,0 +1,98 @@
+[
+  {
+    "name": "Review weekly memory score and seven indicators",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": [
+      "seven memory indicators",
+      "public-data weighted score",
+      "missing metrics excluded from scoring",
+      "weekly data cadence limitation"
+    ],
+    "description": "Verifies the seven indicators, transparent 3-of-7 score coverage and the limitation that official product prices are not published weekly.",
+    "steps": [
+      "Open Industry Cycle",
+      "Review all seven indicators",
+      "Inspect the score formula and normalized weights",
+      "Read the weekly data cadence notice"
+    ],
+    "expected": "All seven indicators are visible; only Server DDR5, HBM and NAND are scored; unavailable PC DDR5, DDR4, inventory days and company ASP are excluded; the score is 92/100 with 3-of-7 coverage and a note that price releases are monthly or quarterly."
+  },
+  {
+    "name": "Verify correctly labeled public DRAM and NAND references",
+    "viewport": "desktop",
+    "covers": [
+      "DRAM 16Gb public reference",
+      "DRAM 8Gb public reference",
+      "NAND 128Gb public reference",
+      "price and ASP distinction"
+    ],
+    "description": "Verifies government-published reference series retain their actual density labels and do not imply product-specific contract ASP.",
+    "steps": [
+      "Open Product Pricing",
+      "Review DRAM 16Gb June to September 2026",
+      "Review DRAM 8Gb July to October 2026",
+      "Review NAND 128Gb June to October 2026",
+      "Check October values and unavailable DRAM 16Gb field"
+    ],
+    "expected": "DRAM 16Gb ends at September; DRAM 8Gb October is $27.5 per chip; NAND 128Gb October is $30.6 per chip; no October DRAM 16Gb value is interpolated and no series is labeled as Server DDR5 or PC DDR5 ASP."
+  },
+  {
+    "name": "Review annual and quarterly company actuals",
+    "viewport": "desktop",
+    "covers": [
+      "Samsung 2026 quarterly actuals",
+      "SK hynix 2026 quarterly actuals",
+      "Micron FY2026 quarterly actuals",
+      "TSMC annual and quarterly actuals",
+      "NVIDIA annual and quarterly actuals",
+      "accounting-period distinctions"
+    ],
+    "description": "Verifies annual actual series and latest released quarterly actuals for memory suppliers and AI supply-chain leaders.",
+    "steps": [
+      "Open Company Financials",
+      "Review Samsung and SK hynix 1Q to 3Q 2026",
+      "Review Micron FY2026 FQ1 to FQ4",
+      "Review TSMC CY2023 to CY2025 and 2026 Q1 to Q3",
+      "Review NVIDIA FY2024 to FY2026 and FY2027 Q1 to Q3"
+    ],
+    "expected": "Annual and quarter actuals are visible in separate series; TSMC uses CY and TIFRS; NVIDIA and Micron use fiscal years and US GAAP; currencies and periods are not mixed."
+  },
+  {
+    "name": "Verify updated IEA and AI demand series",
+    "viewport": "desktop",
+    "covers": [
+      "IEA 2024 actual",
+      "IEA 2025 estimate",
+      "IEA 2030 forecast",
+      "NVIDIA and TSMC annual demand proxies",
+      "HBM shortage outlook source"
+    ],
+    "description": "Verifies the latest free IEA demand outlook and annual revenue series for AI supply-chain leaders are separated from quarterly actuals.",
+    "steps": [
+      "Open AI Demand and Data Centers",
+      "Review 2024 actual, 2025 estimate and 2030 forecast",
+      "Review TSMC annual and NVIDIA annual series",
+      "Review the latest NVIDIA and TSMC quarterly actuals"
+    ],
+    "expected": "IEA data-centre electricity shows 415 TWh for 2024 actual, 485 TWh for 2025 estimate and 950 TWh for 2030 forecast; TSMC CY and NVIDIA FY annual revenue series remain separate from quarterly actuals."
+  },
+  {
+    "name": "Use responsive navigation and inspect data gaps",
+    "viewport": "mobile",
+    "covers": [
+      "mobile sidebar navigation",
+      "responsive data tables",
+      "inventory and ASP unavailable state",
+      "free-source methodology"
+    ],
+    "description": "Verifies mobile navigation and that unavailable inventory and ASP data remain explicitly unavailable.",
+    "steps": [
+      "Open the menu",
+      "Select Supply and Inventory",
+      "Scroll to the data availability table",
+      "Open the Methodology page"
+    ],
+    "expected": "The menu closes after selection, tables remain horizontally scrollable, unavailable data is not replaced with fabricated values, and the methodology page lists only public sources."
+  }
+]
