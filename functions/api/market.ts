@@ -22,7 +22,7 @@ const YAHOO_HEADERS = {
 };
 
 async function fetchYahooChart(symbol: string): Promise<Quote> {
-  const hosts = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com'];
+  const hosts = ['query1.finance.yahoo.com'];
   let lastError = 'Yahoo chart request failed';
 
   for (const host of hosts) {
@@ -34,7 +34,7 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
     try {
       const response = await fetch(endpoint.toString(), {
         headers: YAHOO_HEADERS,
-        cf: { cacheTtl: 3600, cacheEverything: true }
+        cf: { cacheTtl: 86400, cacheEverything: true }
       } as RequestInit);
       if (!response.ok) {
         lastError = `Yahoo ${host} HTTP ${response.status} for ${symbol}`;
@@ -85,7 +85,7 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
   };
   const url = new URL(request.url);
   const raw = url.searchParams.get('symbols') || '';
-  const symbols = [...new Set(raw.split(',').map(s => s.trim().toUpperCase()).filter(s => /^[A-Z0-9^=.-]{1,20}$/.test(s)))].slice(0, 12);
+  const symbols = [...new Set(raw.split(',').map(s => s.trim().toUpperCase()).filter(s => /^[A-Z0-9^=.-]{1,20}$/.test(s)))].slice(0, 8);
   if (!symbols.length) return new Response(JSON.stringify({ error: 'No valid symbols supplied' }), { status: 400, headers: corsHeaders });
 
   const quotes: Record<string, Quote> = {};
