@@ -575,29 +575,23 @@ function Market(){
  const symbols=useMemo(()=>Array.from(new Set(['^GSPC','^IXIC','^DJI','^RUT','^VIX','NVDA','MSFT','GOOGL','AMZN','META','AAPL','AVGO','TSLA',...MARKET_GROUPS.flatMap(g=>[g.ticker,...g.symbols])])),[]);
  const load=async()=>{
   setLoading(true);setError('');
-  const next:Record<string,MarketQuote>={};
-  const results=await Promise.allSettled(symbols.map(async symbol=>{
-   const url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?range=1mo&interval=1d&includePrePost=false';
-   const response=await fetch(url,{cache:'no-store'});
-   if(!response.ok)throw new Error('HTTP '+response.status);
-   const json=await response.json();
-   const result=json?.chart?.result?.[0];const meta=result?.meta;
-   const closes=(result?.indicators?.quote?.[0]?.close||[]).filter((v:any)=>Number.isFinite(v));
-   const price=Number(meta?.regularMarketPrice??closes[closes.length-1]);
-   const previous=Number(meta?.chartPreviousClose??meta?.previousClose??closes[closes.length-2]);
-   if(!Number.isFinite(price)||!Number.isFinite(previous)||previous===0)throw new Error('no quote');
-   const five=closes.length>=6?(price/closes[closes.length-6]-1)*100:null;
-   return {symbol,name:MARKET_NAMES[symbol]||symbol,price,change:(price/previous-1)*100,change5d:five,currency:meta?.currency||'USD',time:meta?.regularMarketTime} as MarketQuote;
-  }));
-  results.forEach((r)=>{if(r.status==='fulfilled')next[r.value.symbol]=r.value;});
-  setQuotes(next);
   try{
-   const res=await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2,DGS10,DGS30&cosd=2026-01-01',{cache:'no-store'});
-   if(res.ok){const csv=await res.text();const rows=csv.trim().split(/\r?\n/);const latest:Record<string,{value:number;date:string}>={};for(const row of rows.slice(1).reverse()){const [date,...vals]=row.split(',');['DGS2','DGS10','DGS30'].forEach((key,i)=>{const v=Number(vals[i]);if(!latest[key]&&Number.isFinite(v)&&vals[i]!=='.')latest[key]={value:v,date};});if(Object.keys(latest).length===3)break;}setYields(latest);}
-  }catch{}
-  setUpdated(new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
-  if(Object.keys(next).length<8)setError('일부 시세 데이터 연결이 제한되었습니다. 잠시 후 새로고침하거나 출처 링크를 확인해 주세요.');
-  setLoading(false);
+   const response=await fetch('/api/market?symbols='+encodeURIComponent(symbols.join(',')),{cache:'no-store'});
+   const payload=await response.json();
+   if(!response.ok)throw new Error(payload?.error||('HTTP '+response.status));
+   const next=(payload?.quotes||{}) as Record<string,MarketQuote>;
+   setQuotes(next);
+   setYields(payload?.yields||{});
+   if(Object.keys(next).length<8){
+    const detail=Array.isArray(payload?.errors)&&payload.errors.length?payload.errors.join(' · '):'';
+    setError('시세 일부만 수신했습니다. '+detail);
+   }
+  }catch(e){
+   setError('시장 데이터 서버 연결 실패: '+(e instanceof Error?e.message:'알 수 없는 오류'));
+  }finally{
+   setUpdated(new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
+   setLoading(false);
+  }
  };
  useEffect(()=>{void load();const id=window.setInterval(()=>void load(),300000);return()=>window.clearInterval(id);},[]);
  const fmt=(v:number)=>v.toLocaleString('en-US',{maximumFractionDigits:2});
