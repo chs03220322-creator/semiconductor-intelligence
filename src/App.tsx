@@ -572,7 +572,7 @@ function Market(){
  const load=async()=>{
   setLoading(true);setError('');
   try{
-   const batches=Array.from({length:Math.ceil(symbols.length/12)},(_,i)=>symbols.slice(i*12,(i+1)*12));
+   const batches=Array.from({length:Math.ceil(symbols.length/8)},(_,i)=>symbols.slice(i*8,(i+1)*8));
    const merged:Record<string,MarketQuote>={};
    const allErrors:string[]=[];
    let latestYields:Record<string,{value:number;date:string}>={};
@@ -590,10 +590,10 @@ function Market(){
    setYields(latestYields);
    if(Object.keys(merged).length<8||allErrors.length>0){
     const detail=allErrors.join(' · ');
-    setError('시세 일부만 수신했습니다. '+detail);
+    setError('일부 시세를 불러오지 못했습니다. 잠시 후 다시 시도합니다.');
    }
   }catch(e){
-   setError('시장 데이터 서버 연결 실패: '+(e instanceof Error?e.message:'알 수 없는 오류'));
+   setError('시장 데이터 연결이 원활하지 않습니다. 잠시 후 다시 시도합니다.');
   }finally{
    setUpdated(new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
    setLoading(false);
