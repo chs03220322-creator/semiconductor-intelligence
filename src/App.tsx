@@ -126,18 +126,6 @@ const aiPowerAnnual=[{year:'2025E',value:150},{year:'2026E',value:190},{year:'20
 // Token forecast is a transparent scenario model, not an official global census. Anchor: JPMorgan AI Tracker estimated about 360T tokens/day in Jul-2026.
 const tokenHistory=[{year:'Jan 2024',value:1},{year:'Jul 2024',value:3},{year:'Jan 2025',value:15},{year:'Jul 2025',value:70},{year:'Jan 2026',value:200},{year:'Jul 2026',value:360}];
 const tokenBase=[...tokenHistory,{year:'2026E',value:400},{year:'2027E',value:600},{year:'2028E',value:900},{year:'2029E',value:1350},{year:'2030F',value:2000}];
-const capexAnnual=[
-  {company:'Microsoft',period:'FY',values:[{year:'FY2024',value:44.477},{year:'FY2025',value:64.551},{year:'FY2026',value:115.948}],definition:'Additions to property and equipment'},
-  {company:'Alphabet',period:'CY',values:[{year:'2024',value:52.5},{year:'2025',value:91.4}],definition:'PPE purchases; 2026 YTD 별도'},
-  {company:'Amazon',period:'CY',values:[{year:'2024',value:77.658},{year:'2025',value:128.320}],definition:'Gross PPE purchases; 2026 YTD 별도'},
-  {company:'Meta',period:'CY',values:[{year:'2024',value:37.256},{year:'2025',value:69.691}],definition:'PPE purchases; finance lease principal excluded in annual cash flow series'}
-];
-const capexCurrent=[
-  {company:'Amazon',period:'3Q26',quarter:'$77.259B',ytd:'$175.670B',definition:'Gross PPE purchases; 2026 1~3Q 누계'},
-  {company:'Alphabet',period:'3Q26',quarter:'$51.4B',ytd:'$132.0B',definition:'PPE purchases; 2026 1~3Q 누계'},
-  {company:'Microsoft',period:'FY27 Q1',quarter:'$45.2B',ytd:'$45.2B',definition:'CAPEX; cash PPE $39.4B, finance leases $7.4B 포함'},
-  {company:'Meta',period:'3Q26',quarter:'$34.91B',ytd:'$85.82B',definition:'CAPEX; finance lease principal 포함, 2026 1~3Q 누계'}
-];
 const supplierCapex=[
   {company:'Samsung Electronics',period:'3Q26',quarter:'₩29.0T',ytd:'₩56.9T',definition:'전사 CAPEX; DS 3Q ₩27.2T, 1~3Q ₩52.8T'},
   {company:'Micron',period:'FY2026 Q4',quarter:'$10.77B',ytd:'$27.37B',definition:'Net CAPEX; FY2026 누계'}
@@ -189,15 +177,6 @@ function findPreviousPeriodPoint(data:any[],point:any){
 }
 function yoyChange(current:number|undefined,previous:number|undefined){
  return typeof current==='number'&&Number.isFinite(current)&&typeof previous==='number'&&Number.isFinite(previous)&&previous!==0?(current/previous-1)*100:null;
-}
-function monthOverMonthText(data:{year:string;value:number}[],period:string){
- const index=data.findIndex(point=>point.year===period);
- if(index<=0)return '—';
- const previous=data[index-1];
- const current=data[index];
- if(!previous||previous.value===0)return '—';
- const change=(current.value/previous.value-1)*100;
- return (change>0?'+':'')+change.toFixed(1)+'%';
 }
 function priceChangeCell(data:{year:string;value:number}[],period:string,kind:'delta'|'rate'){
  const index=data.findIndex(point=>point.year===period);
@@ -318,9 +297,6 @@ function Demand(){return <>
  <div className="panel"><h3>전력 인프라 병목·설비 밀도 지표</h3><Table headers={["지표","공개 전망","의미"]} rows={[["AI 서버 랙 전력밀도","2020~2025년 11배 상승, 2027년까지 추가 4배 수준","랙당 전력·냉각·전력반도체 수요 확대"],["AI 데이터센터 배터리 저장","2030년 약 20~25 GW 설치 가능성","전력망 변동 대응 및 UPS·ESS 투자"],["AI 데이터센터 전력 비중","2025~2030년 소비량 약 3배","전체 데이터센터 전력 증가보다 빠른 AI workload 확대"]]}/><Notice>랙 전력밀도와 배터리 저장 전망은 전력 수요량(TWh)과 다른 물리적 인프라 지표입니다. GPU 공급, 변압기·전력전자·냉각장비 리드타임을 함께 보면 실제 데이터센터 증설 속도를 판단하는 데 도움이 됩니다.</Notice><Sources items={["IEA · Key Questions on Energy and AI (2026)"]}/></div>
  <div className="panel"><h3>AI 수요 → 반도체 수요 전달 경로</h3><div className="bridge">{[["AI 학습·추론량","토큰·영상·reasoning·agent 사용량"],["가속기 설치량","GPU·ASIC 출하 및 서버 랙 증설"],["메모리 탑재량","HBM 용량·대역폭, DDR5, eSSD"],["메모리 bit 수요","출하량 × 시스템당 탑재 용량"]].map((x,i)=><div className="bridge-item" key={i}><span>0{i+1}</span><b>{x[0]}</b><small>{x[1]}</small>{i<3&&<ChevronRight/>}</div>)}</div><Notice>전력은 데이터센터 전체의 물리적 수요, 토큰은 AI 서비스 이용량, CAPEX는 투자 의지, GPU·ASIC 출하는 실제 설치 기반을 나타냅니다. 이 네 축이 함께 증가하는지 확인해야 AI 메모리 수요의 지속성을 더 정확히 판단할 수 있습니다.</Notice></div>
  </>}
-const nasdaqTop10=[
- {company:'Apple',cap:4.98},{company:'Microsoft',cap:3.60},{company:'Alphabet',cap:3.26},{company:'NVIDIA',cap:3.03},{company:'Amazon',cap:2.67},{company:'Broadcom',cap:1.45},{company:'Meta',cap:1.44},{company:'Tesla',cap:1.37},{company:'Walmart',cap:1.02},{company:'AMD',cap:0.696}
-];
 function NasdaqTop10Panel(){
  const [selected,setSelected]=useState('전체');
  // Quarter-end market capitalization snapshots, USD billions. Values are included only where the cited public quarterly ranking reports them.
