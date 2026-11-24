@@ -7,7 +7,6 @@ interface Quote {
   currency: string;
   time?: number;
 }
-interface YieldPoint { value: number; date: string }
 
 const MARKET_NAMES: Record<string, string> = {
   '^GSPC': 'S&P 500', '^IXIC': 'NASDAQ Composite', '^DJI': 'Dow Jones',
