@@ -34,7 +34,7 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
     try {
       const response = await fetch(endpoint.toString(), {
         headers: YAHOO_HEADERS,
-        cf: { cacheTtl: 86400, cacheEverything: true }
+        cf: { cacheTtl: 300, cacheEverything: true }
       } as RequestInit);
       if (!response.ok) {
         lastError = `Yahoo ${host} HTTP ${response.status} for ${symbol}`;
@@ -50,23 +50,38 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
       const result = body?.chart?.result?.[0];
       const meta = result?.meta;
       const quote = result?.indicators?.quote?.[0];
-      const closes: number[] = (quote?.close || []).filter(
-        (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+      const timestamps: number[] = result?.timestamp || [];
+      const rawCloses: unknown[] = quote?.close || [];
+      const validCloses = timestamps.map((time, index) => ({
+        time, close: rawCloses[index]
+      })).filter((point): point is { time: number; close: number } =>
+        typeof point.close === 'number' && Number.isFinite(point.close)
       );
-      const price = Number(meta?.regularMarketPrice ?? closes[closes.length - 1]);
-      const previous = Number(meta?.chartPreviousClose ?? meta?.previousClose ?? closes[closes.length - 2]);
+      const price = Number(meta?.regularMarketPrice ?? validCloses[validCloses.length - 1]?.close);
+      const marketTime = Number(meta?.regularMarketTime);
+      const marketDate = Number.isFinite(marketTime)
+        ? new Date(marketTime * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+        : '';
+      const lastClose = validCloses[validCloses.length - 1];
+      const lastCloseDate = lastClose
+        ? new Date(lastClose.time * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+        : '';
+      // Calculate against the previous completed session, not chartPreviousClose metadata.
+      const previous = lastClose && lastCloseDate === marketDate
+        ? validCloses[validCloses.length - 2]?.close
+        : lastClose?.close;
 
-      if (!result || !meta || !Number.isFinite(price) || !Number.isFinite(previous) || previous <= 0) {
+      if (!result || !meta || !Number.isFinite(price) || !Number.isFinite(previous) || Number(previous) <= 0) {
         lastError = `Yahoo returned incomplete quote data for ${symbol}`;
         continue;
       }
 
-      const fiveBase = closes.length >= 6 ? closes[closes.length - 6] : closes[0];
+      const fiveBase = validCloses.length >= 6 ? validCloses[validCloses.length - 6].close : validCloses[0]?.close;
       return {
         symbol,
         name: MARKET_NAMES[symbol] || symbol,
         price,
-        change: (price / previous - 1) * 100,
+        change: (price / Number(previous) - 1) * 100,
         change5d: Number.isFinite(fiveBase) && fiveBase > 0 ? (price / fiveBase - 1) * 100 : null,
         currency: meta.currency || 'USD',
         time: meta.regularMarketTime
@@ -81,7 +96,7 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
 export async function onRequestGet({ request }: { request: Request }): Promise<Response> {
   const corsHeaders = {
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=300, s-maxage=86400, stale-while-revalidate=86400'
+    'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=300'
   };
   const url = new URL(request.url);
   const raw = url.searchParams.get('symbols') || '';
