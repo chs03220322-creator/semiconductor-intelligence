@@ -582,7 +582,7 @@ function Market(){
    const next=(payload?.quotes||{}) as Record<string,MarketQuote>;
    setQuotes(next);
    setYields(payload?.yields||{});
-   if(Object.keys(next).length<8){
+   if(Object.keys(next).length<8||(Array.isArray(payload?.errors)&&payload.errors.length>0)){
     const detail=Array.isArray(payload?.errors)&&payload.errors.length?payload.errors.join(' · '):'';
     setError('시세 일부만 수신했습니다. '+detail);
    }
