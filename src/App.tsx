@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, BarChart3, CalendarDays, ChevronRight, ExternalLink,
-  Gauge, Layers3, Menu, Search, Server, ShieldCheck,
+  Gauge, Layers3, Menu, Server, ShieldCheck,
   TrendingUp, Wallet, X, Info
 } from 'lucide-react';
 
@@ -145,7 +145,7 @@ const supplierCapex=[
 const FX_USDKRW=1345; // 2026-11-23 spot mid-market reference
 const memorySignals=[
   {id:'server',name:'Server DDR5',baseWeight:25,score:93,direction:'상승 · 강한 수요',basis:'SK hynix 3Q26는 server DDR5 판매가 크게 늘었다고 공시했고, 삼성은 서버 수요가 전 응용처 가격을 끌어올렸다고 설명. 정부 공개 범용 DRAM 16Gb 기준가격은 Jun $40.0 → Sep $48.0, DRAM 8Gb는 Jul $24.0 → Oct $27.5(+5.8% MoM). 이 가격은 서버 전용 ASP가 아닌 범용 proxy.'},
-  {id:'pc',name:'PC DDR5',baseWeight:10,score:null,direction:'정량 미확보',basis:'PC 전용 DDR5 계약 ASP·출하량의 무료 공개 시계열 미확보. 범용 DRAM 기준가격을 PC DDR5 가격으로 대체하지 않음.'},
+  {id:'pc',name:'PC DDR5',baseWeight:10,score:null,direction:'정량 미확보',basis:'PC 전용 DDR5 계약 ASP·출하량의 공개 시계열 미확보. 범용 DRAM 기준가격을 PC DDR5 가격으로 대체하지 않음.'},
   {id:'ddr4',name:'DDR4',baseWeight:5,score:null,direction:'정량 미확보',basis:'DDR4 전용 무료 고정거래가격·계약 ASP 시계열 미확보. DRAM 8Gb/16Gb 범용 지표를 DDR4 가격으로 간주하지 않음.'},
   {id:'hbm',name:'HBM',baseWeight:25,score:98,direction:'초강세',basis:'SK hynix 3Q26 HBM4 출하 본격화, 4Q26 HBM4가 HBM3E를 출하량·매출에서 넘어 주력 제품이 될 전망, 2027~2028 생산능력의 50% 이상 장기계약 확보. IEA는 HBM 부족이 적어도 2027년 말까지 지속될 수 있다고 평가.'},
   {id:'nand',name:'NAND',baseWeight:15,score:80,direction:'가격 보합',basis:'NAND 128Gb 정부 공개 기준가격은 Sep~Oct $30.6으로 보합. 가격 흐름과 기업의 NAND 사업·수요 관련 공식 코멘트만 참고하며 수출액은 점수 산정에서 제외.'},
@@ -551,8 +551,8 @@ function Insights(){return <>
  </>}
 
 function Method(){return <>
- <Title eyebrow="09 / DATA GOVERNANCE" title="무료 데이터 출처 & 방법론" desc="유료 API·유료 구독·유료 데이터베이스·유료 리서치 링크는 사용하지 않습니다. 공개 원문, 발표일, 단위, 기간, 데이터 상태와 결측 한계를 누적합니다."/>
- <div className="stats-grid"><Stat label="공개 원문 레지스트리" value={sources.length.toString()} sub="정부·기업 IR·SEC·협회·IEA"/><Stat label="연도별 시장 actual" value="2020~2025" sub="SIA 글로벌 매출"/><Stat label="최신 기업 실적" value="2026 Q3" sub="발표 완료 분기까지"/><Stat label="유료 데이터 사용" value="0" sub="유료 전용 페이지·수치 제외"/></div>
+ <Title eyebrow="09 / DATA GOVERNANCE" title="데이터 출처 & 방법론" desc="공개 원문, 발표일, 단위, 기간, 데이터 상태와 결측 한계를 누적합니다."/>
+ <div className="stats-grid"><Stat label="공개 원문 레지스트리" value={sources.length.toString()} sub="정부·기업 IR·SEC·협회·IEA"/><Stat label="연도별 시장 actual" value="2020~2025" sub="SIA 글로벌 매출"/><Stat label="최신 기업 실적" value="2026 Q3" sub="발표 완료 분기까지"/><Stat label="데이터 기준" value="원문" sub="발표일·단위·기간 구분"/></div>
  <div className="panel"><h3>페이지별 연도·분기·월별 커버리지</h3><Table headers={['페이지','연도별 추이','2026 최신 actual','미확보·한계']} rows={[
   ['산업 사이클','2020~2025 SIA actual, 2025 estimate·2026~27 forecast 별도','SIA Q1~Q3 분기 actual','SIA Q3 QoQ 비교기준 개정 여부 미확인'],
 
@@ -568,9 +568,12 @@ function Method(){return <>
 
   ['투자 시나리오','연도별 actual·forecast 분리','최신 기업 가이던스·분기 실적','투자 판단은 분석이며 예측 보장 아님']
  ]}/></div>
- <div className="panel"><h3>메모리 점수 모델 · 공개지표 커버리지</h3><Table headers={['지표','기본 가중치','점수','산식 반영 가중치','결측 처리']} rows={memorySignals.map(x=>[x.name,x.baseWeight+'%',x.score===null?'미산정':x.score+'점',x.score===null?'0%':normalizedWeight(x.baseWeight)+'%',x.score===null?'제외·재배분':'공개 proxy'])}/><div className="formula">Cycle Score = Σ(score × base weight) ÷ scored base weight = {cycleScore}점</div><Notice>현재 점수는 7개 항목 중 3개만 점수화한 무료 공개자료 proxy입니다. Server DDR5와 HBM은 기업의 정성적 수요·제품 코멘트, NAND는 정부 고정가격·SSD 수출을 반영합니다. PC DDR5·DDR4·재고·회사별 ASP는 미확보라 제외하고 가중치를 재배분했습니다. 점수는 투자수익률 예측이 아닙니다.</Notice></div>
- <div className="panel"><h3>출처 레지스트리 · 무료 공개 원문</h3><Table headers={['출처','발표일/상태','활용 데이터','접근']} rows={sources.map(s=>[s.name,s.date,s.desc,'Free public'])}/><div className="source-list">{sources.map(s=><a href={s.url} target="_blank" rel="noreferrer" key={s.name}><ExternalLink size={12}/><span>{s.name}<small style={{display:'block',opacity:.7,marginTop:3}}>{s.date} · {s.desc}</small></span></a>)}</div></div>
- <div className="panel"><h3>데이터 품질 원칙</h3><div className="quality-list"><div><ShieldCheck size={16}/> 유료 API·유료 구독·유료 데이터베이스 미사용</div><div><ShieldCheck size={16}/> 실제·추정·전망·잠정치 구분</div><div><ShieldCheck size={16}/> FY·CY·통화·단위 구분</div><div><ShieldCheck size={16}/> 결측치를 0점·중립점으로 대체하지 않음</div><div><ShieldCheck size={16}/> 신규 수치는 기존 연도·분기 시
+ <div className="panel"><h3>메모리 점수 모델 · 공개지표 커버리지</h3><Table headers={['지표','기본 가중치','점수','산식 반영 가중치','결측 처리']} rows={memorySignals.map(x=>[x.name,x.baseWeight+'%',x.score===null?'미산정':x.score+'점',x.score===null?'0%':normalizedWeight(x.baseWeight)+'%',x.score===null?'제외·재배분':'공개 proxy'])}/><div className="formula">Cycle Score = Σ(score × base weight) ÷ scored base weight = {cycleScore}점</div><Notice>현재 점수는 7개 항목 중 3개만 점수화한 공개자료 proxy입니다. Server DDR5와 HBM은 기업의 정성적 수요·제품 코멘트, NAND는 정부 고정가격·SSD 수출을 반영합니다. PC DDR5·DDR4·재고·회사별 ASP는 미확보라 제외하고 가중치를 재배분했습니다. 점수는 투자수익률 예측이 아닙니다.</Notice></div>
+ <div className="panel"><h3>출처 레지스트리 · 원문 자료</h3><Table headers={['출처','발표일/상태','활용 데이터']} rows={sources.map(s=>[s.name,s.date,s.desc])}/><div className="source-list">{sources.map(s=><a href={s.url} target="_blank" rel="noreferrer" key={s.name}><ExternalLink size={12}/><span>{s.name}<small style={{display:'block',opacity:.7,marginTop:3}}>{s.date} · {s.desc}</small></span></a>)}</div></div>
+ <div className="panel"><h3>데이터 품질 원칙</h3><div className="quality-list"><div><ShieldCheck size={16}/> 공개 원문 및 데이터 기준 명시</div><div><ShieldCheck size={16}/> 실제·추정·전망·잠정치 구분</div><div><ShieldCheck size={16}/> FY·CY·통화·단위 구분</div><div><ShieldCheck size={16}/> 결측치를 0점·중립점으로 대체하지 않음</div><div><ShieldCheck size={16}/> 신규 수치는 기존 연도·분기 시계열 뒤에 누적</div><div><ShieldCheck size={16}/> 직접 ASP가 없으면 매출·수출을 ASP로 표시하지 않음</div></div></div>
+ </>}
+
+
 type MarketQuote={symbol:string;name:string;price:number;change:number;change5d:number|null;currency:string;time?:number};
 const MARKET_GROUPS=[
  {name:'AI · 반도체',ticker:'SOXX',symbols:['NVDA','AVGO','AMD','MU'],desc:'AI 가속기·메모리·네트워크'},
@@ -629,7 +632,7 @@ function Market(){
  const benchmark=quotes['^GSPC']?.change;
  return <><Title eyebrow="10 / GLOBAL MARKET PULSE" title="글로벌 금융시장 & 산업별 강세 지도" desc="미국 주요 지수·빅테크·산업별 대표 종목·국채 금리를 한 화면에서 확인합니다. 초록은 상승, 빨강은 하락이며 모든 주가 수치는 전일 종가 기준 등락률입니다."/>
  <div className="market-toolbar"><div><span className="market-live-dot"/><b>시장 데이터</b><small>{updated?'최근 확인 '+updated+' (한국시간)':'데이터 확인 중'}</small></div><button className="market-refresh" onClick={()=>void load()} disabled={loading}><Activity size={14}/>{loading?'업데이트 중':'새로고침'}</button></div>
- {error&&<div className="market-warning"><Info size={15}/>{error} · 무료 공개 시세 API의 접속 정책에 따라 일부 브라우저에서 제한될 수 있습니다.</div>}
+ {error&&<div className="market-warning"><Info size={15}/>{error} · 시세 제공처의 접속 정책에 따라 일부 브라우저에서 제한될 수 있습니다.</div>}
  <div className="market-index-grid">{['^GSPC','^IXIC','^DJI','^RUT','^VIX'].map(s=>{const q=quotes[s];return <div className={'market-index '+(q?'tone-'+tone(s==='^VIX'?-q.change:q.change):'')} key={s}><span>{MARKET_NAMES[s]}</span><strong>{q?fmt(q.price):'—'}</strong><b>{q?pct(q.change):loading?'불러오는 중':'미확보'}</b><small>{s==='^VIX'?'변동성 지수 · 상승은 위험 신호':'전일 대비'}{q&&q.change5d!=null?' · 5일 '+pct(q.change5d):''}</small></div>})}</div>
  <section className="panel market-panel"><div className="panel-head"><div><h3>산업별 강세 지도</h3><p>구성 대표 종목의 단순 평균 수익률 기준 · 종목 수익률로 계산한 테마 지표</p></div><span className="pill blue">{up} / {sectorData.length}개 산업 상승</span></div>
  <div className="market-legend"><span><i className="heat-strong"/> 강한 상승 +1% 이상</span><span><i className="heat-up"/> 상승 0~+1%</span><span><i className="heat-flat"/> 보합</span><span><i className="heat-down"/> 하락 0~-1%</span><span><i className="heat-weak"/> 강한 하락 -1% 이하</span></div>
@@ -650,8 +653,6 @@ function App(){
  const [active,setActive]=useState<Section>(()=>{const tab=new URLSearchParams(window.location.search).get('tab');return menu.some(m=>m.id===tab)?tab as Section:'overview'});
  const [period,setPeriod]=useState<Period>('3Y');
  const [mobileOpen,setMobileOpen]=useState(false);
- const [query,setQuery]=useState('');
- const filtered=useMemo(()=>menu.filter(m=>(m.label+m.sub).toLowerCase().includes(query.toLowerCase())),[query]);
  const current=menu.find(m=>m.id===active)!;
  const render=()=>{switch(active){
   case'overview':return <Overview period={period} setPeriod={setPeriod}/>;
@@ -667,11 +668,10 @@ function App(){
  return <div className="app-shell">
   <aside className={'sidebar '+(mobileOpen?'open':'')}>
    <div className="brand"><div className="brand-mark">SI<span>.</span></div><div><b>SEMICONDUCTOR</b><small>INTELLIGENCE</small></div><button className="mobile-close" onClick={()=>setMobileOpen(false)}><X size={18}/></button></div>
-   <div className="workspace"><span className="live-dot"/><span>무료 공개 데이터</span><Pill tone="green">유료 API 미사용</Pill></div>
+   
    <div className="nav-label">대시보드 메뉴</div>
-   <div className="nav-search"><Search size={14}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="메뉴 검색"/></div>
-   <nav>{filtered.map(item=>{const Icon=item.icon;return <button key={item.id} className={'nav-item '+(active===item.id?'selected':'')} onClick={()=>{setActive(item.id);setMobileOpen(false);}}><Icon size={17}/><span><b>{item.label}</b><small>{item.sub}</small></span><em>{item.no}</em></button>})}</nav>
-   <div className="sidebar-bottom"><div className="source-status"><ShieldCheck size={16}/><div><b>무료 공개 출처만 사용</b><small>기업 공시·정부·협회 원문 기준</small></div></div><div className="version">반도체 산업 분석 <span>v1.1</span></div></div>
+   <nav>{menu.map(item=>{const Icon=item.icon;return <button key={item.id} className={'nav-item '+(active===item.id?'selected':'')} onClick={()=>{setActive(item.id);setMobileOpen(false);}}><Icon size={17}/><span><b>{item.label}</b><small>{item.sub}</small></span><em>{item.no}</em></button>})}</nav>
+   <div className="sidebar-bottom"><div className="source-status"><ShieldCheck size={16}/><div><b>출처 원문 기준</b><small>기업 공시·정부·협회 원문 기준</small></div></div><div className="version">반도체 산업 분석 <span>v1.1</span></div></div>
   </aside>
   {mobileOpen&&<div className="scrim" onClick={()=>setMobileOpen(false)}/>}
   <main className="main">
