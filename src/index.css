@@ -109,3 +109,31 @@ p strong{color:var(--em-key);font-weight:750}
 .market-footnote{padding:13px 15px;border:1px solid #2b3c49;border-radius:7px;background:#101a23;color:#9baab7;font-size:11px;line-height:1.75}.market-footnote>b{color:#dbe5ed}.market-footnote p{margin:6px 0 10px}.market-source-links{display:flex;gap:14px;flex-wrap:wrap}.market-source-links a{display:flex;align-items:center;gap:4px;color:#91cbd7;text-decoration:none}
 @media(max-width:1050px){.market-index-grid{grid-template-columns:repeat(3,1fr)}.market-heatmap{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.market-index-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.market-index{padding:12px}.market-index strong{font-size:18px}.market-index b{font-size:13px}.market-heatmap{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.heat-card{min-height:104px;padding:11px 9px}.heat-card>span{font-size:11px}.heat-card>strong{font-size:18px}.heat-card>small{font-size:9px}.market-stock-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.market-stock-list{grid-template-columns:repeat(2,minmax(0,1fr))}.market-yield-grid{gap:7px}.market-yield-grid>div{padding:11px}.market-yield-grid strong{font-size:20px}.market-readthrough{grid-template-columns:repeat(2,1fr)}.market-toolbar small{flex-basis:100%}.market-legend{font-size:10px;gap:8px 10px}.market-rank-table th,.market-rank-table td{padding:10px 7px;font-size:10px}}
+
+/* Treasury yield chart and readable rate tables */
+.market-yield-history{margin-top:18px;padding-top:4px}
+.rate-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.rate-section-heading h4{margin:0 0 5px;font-size:15px;color:#e8eef5}
+.rate-section-heading p{margin:0;color:#91a1af;font-size:11px;line-height:1.5}
+.rate-section-heading>small,.yield-updated{color:#7f91a0;font-size:10px}
+.yield-chart-legend{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0}
+.yield-chart-legend span{display:flex;align-items:center;gap:7px;color:#c0ccd6;font-size:11px}
+.yield-chart-legend i{display:inline-block;width:18px;height:3px;border-radius:3px}
+.yield-line-2y{background:#60A5FA}.yield-line-10y{background:#34D399}.yield-line-30y{background:#FBBF24}
+.market-yield-history svg{width:100%;height:auto;min-height:210px;overflow:visible}
+.market-empty{display:flex;flex-direction:column;gap:9px;padding:18px;background:#17232e;border:1px solid #394957;border-radius:7px;color:#f0c77d;font-size:12px}
+.market-empty span{color:#aebdca;font-size:11px;overflow-wrap:anywhere}
+.market-empty a{color:#80c9d2;font-size:11px;text-decoration:underline}
+.yield-updated{display:block;margin-top:8px}
+.market-rate-outlook{margin-top:22px}
+.market-rate-outlook h5{margin:18px 0 9px;font-size:12px;color:#cbd7e1}
+.rate-current{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;background:#172530;border:1px solid #304452;border-radius:7px}
+.rate-current b{display:block;font-size:12px}.rate-current small{display:block;color:#91a1af;font-size:10px;margin-top:5px}
+.rate-current>strong{font:700 19px 'DM Mono';color:#f0d28b;white-space:nowrap}
+.rate-data-table{width:100%;border-collapse:collapse;font-size:11px}
+.rate-data-table th,.rate-data-table td{padding:11px 12px;border-bottom:1px solid #293946;text-align:left}
+.rate-data-table th{color:#91a1af;background:#17232e;font-weight:600}
+.rate-data-table td{color:#d5dfe7}
+.rate-data-table td:last-child{font-variant-numeric:tabular-nums}
+.rate-summary{margin:14px 0 0;padding:13px 14px;background:#17232e;border-left:3px solid #5b9eae;border-radius:4px;color:#aebdca;font-size:11px;line-height:1.8}
+@media(max-width:760px){.rate-data-table th,.rate-data-table td{padding:10px 8px;font-size:10px}.rate-current>strong{font-size:16px}.market-yield-history svg{min-height:180px}}
