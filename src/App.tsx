@@ -590,8 +590,7 @@ function App(){
   </main>
  </div>;
 }
-export default App;
-+x.value.toFixed(1),monthOverMonthText(prices2025Dram8,x.year),'<Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
+export default App;+x.value.toFixed(1),monthOverMonthText(prices2025Dram8,x.year),'<Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
  <TrendPanel title="메모리 시장 규모 대리지표" series={[{name:'Memory semiconductor revenue',unit:'USD bn · 시장규모, ASP 아님',data:memoryForecast}]} quarterHeaders={['연도','메모리 시장 규모','상태','출처 기준']} quarterRows={memoryForecast.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status,'Gartner Aug 2026 public release'])} note="메모리 시장규모는 연간 매출 estimate/forecast이며 제품 단가·ASP가 아닙니다. 2025 estimate, 2026~2027 forecast를 actual과 분리했습니다." source={['Gartner · 2026년 반도체 시장 공개 전망']}/>
  <div className="panel"><h3>제품별 무료 데이터 범위</h3><Table headers={['제품군','무료로 확인 가능한 항목','미확보 항목']} rows={[
   ['Server DDR5','기업 IR의 서버 DDR5 수요·제품 믹스 코멘트, 범용 DRAM 8Gb·16Gb 기준가격','Server RDIMM 계약 ASP·제품별 출하 bit'],['PC DDR5','글로벌 시장·기업 실적의 간접 신호','PC 전용 DDR5 계약 ASP·출하량'],['DDR4','기업 코멘트 및 범용 DRAM 시장 지표 일부','DDR4 단독 고정가격·계약 ASP'],['HBM','삼성·SK hynix의 HBM4 출하·사업 코멘트','고객별 HBM3E/HBM4 계약가격·ASP'],['NAND','NAND 128Gb 기준가격·SSD 수출','Enterprise SSD 제품별 계약 ASP'],['삼성·SK ASP','분기 매출·이익 및 가격 방향 코멘트','회사별·제품별 ASP 증감률']
@@ -896,8 +895,7 @@ function App(){
   </main>
  </div>;
 }
-export default App;
-+prices2025Nand[i].value.toFixed(1),monthOverMonthText(prices2025Nand,x.year),'공식 월간 보고서'])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
+export default App;+prices2025Nand[i].value.toFixed(1),monthOverMonthText(prices2025Nand,x.year),'공식 월간 보고서'])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
  <TrendPanel title="메모리 시장 규모 대리지표" series={[{name:'Memory semiconductor revenue',unit:'USD bn · 시장규모, ASP 아님',data:memoryForecast}]} quarterHeaders={['연도','메모리 시장 규모','상태','출처 기준']} quarterRows={memoryForecast.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status,'Gartner Aug 2026 public release'])} note="메모리 시장규모는 연간 매출 estimate/forecast이며 제품 단가·ASP가 아닙니다. 2025 estimate, 2026~2027 forecast를 actual과 분리했습니다." source={['Gartner · 2026년 반도체 시장 공개 전망']}/>
  <div className="panel"><h3>제품별 무료 데이터 범위</h3><Table headers={['제품군','무료로 확인 가능한 항목','미확보 항목']} rows={[
   ['Server DDR5','기업 IR의 서버 DDR5 수요·제품 믹스 코멘트, 범용 DRAM 8Gb·16Gb 기준가격','Server RDIMM 계약 ASP·제품별 출하 bit'],['PC DDR5','글로벌 시장·기업 실적의 간접 신호','PC 전용 DDR5 계약 ASP·출하량'],['DDR4','기업 코멘트 및 범용 DRAM 시장 지표 일부','DDR4 단독 고정가격·계약 ASP'],['HBM','삼성·SK hynix의 HBM4 출하·사업 코멘트','고객별 HBM3E/HBM4 계약가격·ASP'],['NAND','NAND 128Gb 기준가격·SSD 수출','Enterprise SSD 제품별 계약 ASP'],['삼성·SK ASP','분기 매출·이익 및 가격 방향 코멘트','회사별·제품별 ASP 증감률']
