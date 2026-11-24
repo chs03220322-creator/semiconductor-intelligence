@@ -141,8 +141,16 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
         const rawValue = values[index];
         const value = rawValue === undefined || rawValue === '.' ? NaN : Number(rawValue);
         if (Number.isFinite(value)) quarterly[quarter][key].push(value);
+      });
+    }
+    for (const row of rows.slice(1).reverse()) {
+      const [date, ...values] = row.split(',');
+      (['DGS2', 'DGS10', 'DGS30'] as const).forEach((key, index) => {
+        const rawValue = values[index];
+        const value = rawValue === undefined || rawValue === '.' ? NaN : Number(rawValue);
         if (!yields[key] && Number.isFinite(value)) yields[key] = { value, date };
       });
+      if (Object.keys(yields).length === 3) break;
     }
     for (const quarter of Object.keys(quarterly).sort()) {
       const values = quarterly[quarter];
