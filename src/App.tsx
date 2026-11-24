@@ -646,8 +646,6 @@ function Market(){
  <div className="market-footnote"><b>데이터·해석 기준</b><p>주가: Yahoo Finance 공개 차트 데이터(전일 종가 대비). 산업별 평균: 표시된 대표 종목들의 단순 평균이며 공식 업종지수와 다릅니다. 산업별 ETF는 참고용입니다. 국채 금리: FRED DGS2·DGS10·DGS30 최신 관측치로, 주가와 발표 시점이 다를 수 있습니다. 5거래일 수익률은 각 종목의 최근 5개 거래일 데이터가 충분할 때만 표시합니다. 투자 추천이 아닌 시장 모니터링 자료입니다.</p><div className="market-source-links"><a href="https://finance.yahoo.com/" target="_blank" rel="noreferrer">Yahoo Finance <ExternalLink size={11}/></a><a href="https://fred.stlouisfed.org/" target="_blank" rel="noreferrer">FRED <ExternalLink size={11}/></a><a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates" target="_blank" rel="noreferrer">U.S. Treasury <ExternalLink size={11}/></a></div></div>
  </>;
 }
-계열 뒤에 누적</div><div><ShieldCheck size={16}/> 직접 ASP가 없으면 매출·수출을 ASP로 표시하지 않음</div></div></div>
- </>}
 
 function App(){
  const [active,setActive]=useState<Section>(()=>{const tab=new URLSearchParams(window.location.search).get('tab');return menu.some(m=>m.id===tab)?tab as Section:'overview'});
