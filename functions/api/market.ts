@@ -16,10 +16,72 @@ const MARKET_NAMES: Record<string, string> = {
   AVGO: 'Broadcom', TSLA: 'Tesla'
 };
 
+const YAHOO_HEADERS = {
+  Accept: 'application/json',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+};
+
+async function fetchYahooChart(symbol: string): Promise<Quote> {
+  const hosts = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com'];
+  let lastError = 'Yahoo chart request failed';
+
+  for (const host of hosts) {
+    const endpoint = new URL(`https://${host}/v8/finance/chart/${encodeURIComponent(symbol)}`);
+    endpoint.searchParams.set('range', '1mo');
+    endpoint.searchParams.set('interval', '1d');
+    endpoint.searchParams.set('events', 'div,splits');
+
+    try {
+      const response = await fetch(endpoint.toString(), {
+        headers: YAHOO_HEADERS,
+        cf: { cacheTtl: 3600, cacheEverything: true }
+      } as RequestInit);
+      if (!response.ok) {
+        lastError = `Yahoo ${host} HTTP ${response.status} for ${symbol}`;
+        if (response.status === 429) break;
+        continue;
+      }
+
+      const body = await response.json() as any;
+      if (body?.chart?.error) {
+        lastError = body.chart.error.description || `Yahoo chart error for ${symbol}`;
+        continue;
+      }
+      const result = body?.chart?.result?.[0];
+      const meta = result?.meta;
+      const quote = result?.indicators?.quote?.[0];
+      const closes: number[] = (quote?.close || []).filter(
+        (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+      );
+      const price = Number(meta?.regularMarketPrice ?? closes[closes.length - 1]);
+      const previous = Number(meta?.chartPreviousClose ?? meta?.previousClose ?? closes[closes.length - 2]);
+
+      if (!result || !meta || !Number.isFinite(price) || !Number.isFinite(previous) || previous <= 0) {
+        lastError = `Yahoo returned incomplete quote data for ${symbol}`;
+        continue;
+      }
+
+      const fiveBase = closes.length >= 6 ? closes[closes.length - 6] : closes[0];
+      return {
+        symbol,
+        name: MARKET_NAMES[symbol] || symbol,
+        price,
+        change: (price / previous - 1) * 100,
+        change5d: Number.isFinite(fiveBase) && fiveBase > 0 ? (price / fiveBase - 1) * 100 : null,
+        currency: meta.currency || 'USD',
+        time: meta.regularMarketTime
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : `Yahoo request failed for ${symbol}`;
+    }
+  }
+  throw new Error(lastError);
+}
+
 export async function onRequestGet({ request }: { request: Request }): Promise<Response> {
   const corsHeaders = {
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=30, s-maxage=60, stale-while-revalidate=120'
+    'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=7200'
   };
   const url = new URL(request.url);
   const raw = url.searchParams.get('symbols') || '';
@@ -28,46 +90,16 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
 
   const quotes: Record<string, Quote> = {};
   const errors: string[] = [];
-  const batches: string[][] = [];
-  for (let i = 0; i < symbols.length; i += 20) batches.push(symbols.slice(i, i + 20));
 
-  await Promise.all(batches.map(async batch => {
-    const endpoint = new URL('https://query1.finance.yahoo.com/v7/finance/spark');
-    endpoint.searchParams.set('symbols', batch.join(','));
-    endpoint.searchParams.set('range', '1mo');
-    endpoint.searchParams.set('interval', '1d');
-    try {
-      const response = await fetch(endpoint.toString(), {
-        headers: { Accept: 'application/json' },
-        cf: { cacheTtl: 30, cacheEverything: true }
-      } as RequestInit);
-      if (!response.ok) throw new Error('Yahoo HTTP ' + response.status);
-      const body = await response.json() as any;
-      const items = body?.spark?.result || [];
-      for (const item of items) {
-        const symbol = String(item?.symbol || '');
-        const result = item?.response?.[0];
-        const meta = result?.meta;
-        const closes: number[] = (result?.indicators?.quote?.[0]?.close || []).filter((v: unknown): v is number => typeof v === 'number' && Number.isFinite(v));
-        const price = Number(meta?.regularMarketPrice ?? closes[closes.length - 1]);
-        const previous = Number(meta?.chartPreviousClose ?? meta?.previousClose);
-        if (!symbol || !Number.isFinite(price) || !Number.isFinite(previous) || previous === 0) continue;
-        const fiveBase = closes.length >= 6 ? closes[closes.length - 6] : NaN;
-        quotes[symbol] = {
-          symbol,
-          name: MARKET_NAMES[symbol] || symbol,
-          price,
-          change: (price / previous - 1) * 100,
-          change5d: Number.isFinite(fiveBase) && fiveBase !== 0 ? (price / fiveBase - 1) * 100 : null,
-          currency: meta?.currency || 'USD',
-          time: meta?.regularMarketTime
-        };
-      }
-      if (items.length === 0) errors.push('Yahoo 시세 응답에 종목이 없습니다.');
-    } catch (error) {
-      errors.push(error instanceof Error ? error.message : 'Yahoo 시세 요청 실패');
-    }
-  }));
+  // Limit concurrency to avoid triggering Yahoo's rate limits.
+  for (let i = 0; i < symbols.length; i += 5) {
+    const batch = symbols.slice(i, i + 5);
+    const results = await Promise.allSettled(batch.map(fetchYahooChart));
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') quotes[result.value.symbol] = result.value;
+      else errors.push(result.reason instanceof Error ? result.reason.message : `Yahoo failed for ${batch[index]}`);
+    });
+  }
 
   const yields: Record<string, YieldPoint> = {};
   try {
@@ -80,7 +112,7 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
       cf: { cacheTtl: 3600, cacheEverything: true }
     } as RequestInit);
     if (!response.ok) throw new Error('FRED HTTP ' + response.status);
-    const rows = (await response.text()).trim().split(/\r?\n/);
+    const rows = (await response.text()).trim().split(/\\r?\\n/);
     for (const row of rows.slice(1).reverse()) {
       const [date, ...values] = row.split(',');
       ['DGS2', 'DGS10', 'DGS30'].forEach((key, index) => {
@@ -94,8 +126,13 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
     errors.push(error instanceof Error ? error.message : 'FRED 금리 요청 실패');
   }
 
-  return new Response(JSON.stringify({ quotes, yields, errors, updatedAt: new Date().toISOString() }), {
-    status: 200,
-    headers: corsHeaders
-  });
+  return new Response(JSON.stringify({
+    quotes,
+    yields,
+    errors,
+    provider: 'Yahoo Finance Chart (unofficial)',
+    quoteCount: Object.keys(quotes).length,
+    requestedCount: symbols.length,
+    updatedAt: new Date().toISOString()
+  }), { status: 200, headers: corsHeaders });
 }
