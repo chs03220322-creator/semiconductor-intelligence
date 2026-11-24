@@ -120,7 +120,7 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
 
   const yields: Record<string, YieldPoint> = {};
   if (url.searchParams.get('includeYields') !== '0') try {
-    const since = new Date(Date.now() - 120 * 86400000).toISOString().slice(0, 10);
+    const since = new Date(Date.now() - 5 * 366 * 86400000).toISOString().slice(0, 10);
     const fredUrl = new URL('https://fred.stlouisfed.org/graph/fredgraph.csv');
     fredUrl.searchParams.set('id', 'DGS2,DGS10,DGS30');
     fredUrl.searchParams.set('cosd', since);
