@@ -151,3 +151,12 @@ p strong{color:var(--em-key);font-weight:750}
 .yield-quarter-grid small{display:block;font-size:11px;color:var(--muted,#94a3b8)}
 .yield-quarter-grid small b{color:var(--text,#e2e8f0);font-weight:700}
 @media(max-width:560px){.yield-quarter-grid{gap:5px}.yield-quarter-grid>div{padding:7px}.yield-quarter-grid strong{font-size:16px}.yield-quarter-grid span{font-size:10px}.yield-quarter-grid small{font-size:10px}.yield-quarter-title{align-items:flex-start;flex-direction:column;gap:3px}}
+
+
+/* Treasury chart quarter-range zoom slider */
+.yield-zoom-control{margin:10px 0 14px;padding:12px 14px;border:1px solid #304452;border-radius:8px;background:#111e28}
+.yield-zoom-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;color:#b9c7d2;font-size:12px}
+.yield-zoom-label strong{color:#f0d28b;font:700 13px 'DM Mono'}
+.yield-zoom-control input[type=range]{display:block;width:100%;height:22px;margin:0;accent-color:#73cbd5;cursor:pointer;touch-action:pan-y}
+.yield-zoom-range{display:flex;justify-content:space-between;gap:8px;color:#8395a4;font-size:10px}
+@media(max-width:560px){.yield-zoom-control{padding:10px}.yield-zoom-label{font-size:11px}.yield-zoom-label strong{font-size:12px}}
