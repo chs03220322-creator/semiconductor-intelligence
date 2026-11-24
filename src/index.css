@@ -76,3 +76,10 @@ td strong,td b{color:var(--em-number);font-weight:750}
 .chart-value-callout>strong{color:var(--em-number)}
 /* Keep ordinary emphasis visible without overpowering the surrounding copy */
 p strong{color:var(--em-key);font-weight:750}
+
+/* Month-over-month price change: positive red, negative blue */
+.price-change{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
+.price-change.up{color:#ff7777}
+.price-change.down{color:#78b7ff}
+.price-change.flat,.price-change-na{color:#9aa7b3}
+.price-change-na{font-weight:500}
