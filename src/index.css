@@ -160,3 +160,11 @@ p strong{color:var(--em-key);font-weight:750}
 .yield-zoom-control input[type=range]{display:block;width:100%;height:22px;margin:0;accent-color:#73cbd5;cursor:pointer;touch-action:pan-y}
 .yield-zoom-range{display:flex;justify-content:space-between;gap:8px;color:#8395a4;font-size:10px}
 @media(max-width:560px){.yield-zoom-control{padding:10px}.yield-zoom-label{font-size:11px}.yield-zoom-label strong{font-size:12px}}
+
+
+/* Separate daily and 5-day performance rows on market index cards */
+.market-index-changes{display:grid;gap:5px;margin-top:9px}
+.market-index-changes>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:5px;border-top:1px solid rgba(150,170,190,.16)}
+.market-index-changes>div>span{display:block;color:#aebbc7;font-size:11px;white-space:nowrap}
+.market-index-changes>div>b{display:block;margin:0;font:700 13px 'DM Mono';text-align:right;white-space:nowrap}
+.market-index-note{margin-top:8px;color:#9babb9;font-size:10px;line-height:1.4}
