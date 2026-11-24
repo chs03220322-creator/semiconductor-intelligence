@@ -5,7 +5,7 @@ function readXmlField(entry: string, field: string): string | null {
   const pattern = new RegExp('<(?:[A-Za-z0-9_]+:)?' + field + '(?:\\s[^>]*)?>([\\s\\S]*?)<\\/(?:[A-Za-z0-9_]+:)?' + field + '>');
   const match = entry.match(pattern);
   if (!match) return null;
-  const value = match[1].replace(/<!\\[CDATA\\[|\\]\\]>/g, '').trim();
+  const value = match[1].replaceAll('<![CDATA[', '').replaceAll(']]>', '').trim();
   return !value || value.toLowerCase() === 'null' || value.toUpperCase() === 'N/A' ? null : value;
 }
 
@@ -14,11 +14,14 @@ function parseTreasuryXml(xml: string, year: number): YieldRow[] {
     throw new Error('Treasury ' + year + ': unexpected XML schema');
   }
   const rows: YieldRow[] = [];
-  for (const match of xml.matchAll(/<entry[\\s\\S]*?<\\/entry>/g)) {
+  const entryPattern = new RegExp('<entry[\\s\\S]*?<\\/entry>', 'g');
+  const datePattern = new RegExp('\\d{4}-\\d{2}-\\d{2}');
+  const slashDatePattern = new RegExp('\\d{2}\\/\\d{2}\\/\\d{4}');
+  for (const match of xml.matchAll(entryPattern)) {
     const entry = match[0];
     const rawDate = readXmlField(entry, 'NEW_DATE');
     if (!rawDate) continue;
-    const dateMatch = rawDate.match(/\\d{4}-\\d{2}-\\d{2}/) || rawDate.match(/\\d{2}\\/\\d{2}\\/\\d{4}/);
+    const dateMatch = rawDate.match(datePattern) || rawDate.match(slashDatePattern);
     if (!dateMatch) continue;
     const date = dateMatch[0].includes('/')
       ? dateMatch[0].split('/').reverse().join('-')
