@@ -554,9 +554,10 @@ function Market(){
    const allErrors:string[]=[];
    let latestYields:Record<string,{value:number;date:string}>={};
    let latestYieldHistory:Array<{quarter:string;DGS2:number|null;DGS10:number|null;DGS30:number|null}>=[];
-   const yieldResponse=await fetch('/api/yields',{cache:'no-store'});\n   if(yieldResponse.ok){const yieldPayload=await yieldResponse.json();latestYields=yieldPayload?.latest||{};latestYieldHistory=yieldPayload?.history||[];}\n   for(let i=0;i<batches.length;i+=2){
-    const results=await Promise.all(batches.slice(i,i+2).map(async(batch,j)=>{
-     const includeYields=false;
+   const yieldResponse=await fetch('/api/yields',{cache:'no-store'});
+   if(yieldResponse.ok){const yieldPayload=await yieldResponse.json();latestYields=yieldPayload?.latest||{};latestYieldHistory=yieldPayload?.history||[];}
+   for(let i=0;i<batches.length;i+=2){
+    const results=await Promise.all(batches.slice(i,i+2).map(async(batch)=>{
      const response=await fetch('/api/market?symbols='+encodeURIComponent(batch.join(','))+'&includeYields=0',{cache:'no-store'});
      const payload=await response.json();
      if(!response.ok)throw new Error(payload?.error||('HTTP '+response.status));
