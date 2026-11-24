@@ -522,29 +522,6 @@ function Insights(){return <>
  ]}/></div>
  </>}
 
-function Method(){return <>
- <Title eyebrow="09 / DATA GOVERNANCE" title="데이터 출처 & 방법론" desc="공개 원문, 발표일, 단위, 기간, 데이터 상태와 결측 한계를 누적합니다."/>
- <div className="stats-grid"><Stat label="공개 원문 레지스트리" value={sources.length.toString()} sub="정부·기업 IR·SEC·협회·IEA"/><Stat label="연도별 시장 actual" value="2020~2025" sub="SIA 글로벌 매출"/><Stat label="최신 기업 실적" value="2026 Q3" sub="발표 완료 분기까지"/><Stat label="데이터 기준" value="원문" sub="발표일·단위·기간 구분"/></div>
- <div className="panel"><h3>페이지별 연도·분기·월별 커버리지</h3><Table headers={['페이지','연도별 추이','2026 최신 actual','미확보·한계']} rows={[
-  ['산업 사이클','2020~2025 SIA actual, 2025 estimate·2026~27 forecast 별도','SIA Q1~Q3 분기 actual','SIA Q3 QoQ 비교기준 개정 여부 미확인'],
-
-  ['제품별 가격','2025 DRAM 8Gb·NAND 128Gb 일부 월, 2026 DRAM 16Gb Jun~Sep / DDR5 16Gb Jun~Oct / DRAM 8Gb Jul~Oct / NAND 128Gb Jun~Oct','2026년 10월까지 공개 월별 가격','Server/PC DDR5·DDR4·HBM 계약 ASP 미확보'],
-
-  ['AI 수요','IEA 2024 actual, 2025 estimate, 2030 forecast; TSMC CY2023~25; NVIDIA FY2024~26','NVIDIA FY27 Q1~Q3, TSMC CY26 Q1~Q3','전력 분기 실측치 미확보; 기업 FY/CY 구분'],
-
-  ['빅테크 CAPEX','2024~2025 CY/FY actual, Microsoft FY26 actual','Alphabet·Amazon·Meta 1~3Q YTD, Microsoft FY27 Q1','회사별 CAPEX 정의·회계기간 차이'],
-  ['공급·재고','공급사 투자·증설 계획','삼성·SK하이닉스·Micron 최신 공시','제품별 재고일수·bit supply 미확보'],
-
-  ['기업 실적','삼성·SK 2023~25, Micron FY2023~26','삼성·SK 1Q~3Q26, Micron FY26 FQ1~FQ4','회계기간·통화·회계기준 차이'],
-  ['장기 사이클','SIA actual 및 Gartner estimate/forecast 별도','SIA Q1~Q3','메모리 분기 매출 actual series 미확보'],
-
-  ['투자 시나리오','연도별 actual·forecast 분리','최신 기업 가이던스·분기 실적','투자 판단은 분석이며 예측 보장 아님']
- ]}/></div>
- <div className="panel"><h3>메모리 점수 모델 · 공개지표 커버리지</h3><Table headers={['지표','기본 가중치','점수','산식 반영 가중치','결측 처리']} rows={memorySignals.map(x=>[x.name,x.baseWeight+'%',x.score===null?'미산정':x.score+'점',x.score===null?'0%':normalizedWeight(x.baseWeight)+'%',x.score===null?'제외·재배분':'공개 proxy'])}/><div className="formula">Cycle Score = Σ(score × base weight) ÷ scored base weight = {cycleScore}점</div><Notice>현재 점수는 7개 항목 중 3개만 점수화한 공개자료 proxy입니다. Server DDR5와 HBM은 기업의 정성적 수요·제품 코멘트, NAND는 정부 고정가격·SSD 수출을 반영합니다. PC DDR5·DDR4·재고·회사별 ASP는 미확보라 제외하고 가중치를 재배분했습니다. 점수는 투자수익률 예측이 아닙니다.</Notice></div>
- <div className="panel"><h3>출처 레지스트리 · 원문 자료</h3><Table headers={['출처','발표일/상태','활용 데이터']} rows={sources.map(s=>[s.name,s.date,s.desc])}/><div className="source-list">{sources.map(s=><a href={s.url} target="_blank" rel="noreferrer" key={s.name}><ExternalLink size={12}/><span>{s.name}<small style={{display:'block',opacity:.7,marginTop:3}}>{s.date} · {s.desc}</small></span></a>)}</div></div>
- <div className="panel"><h3>데이터 품질 원칙</h3><div className="quality-list"><div><ShieldCheck size={16}/> 공개 원문 및 데이터 기준 명시</div><div><ShieldCheck size={16}/> 실제·추정·전망·잠정치 구분</div><div><ShieldCheck size={16}/> FY·CY·통화·단위 구분</div><div><ShieldCheck size={16}/> 결측치를 0점·중립점으로 대체하지 않음</div><div><ShieldCheck size={16}/> 신규 수치는 기존 연도·분기 시계열 뒤에 누적</div><div><ShieldCheck size={16}/> 직접 ASP가 없으면 매출·수출을 ASP로 표시하지 않음</div></div></div>
- </>}
-
 
 type MarketQuote={symbol:string;name:string;price:number;change:number;change5d:number|null;currency:string;time?:number};
 const MARKET_GROUPS=[
@@ -589,7 +566,6 @@ function Market(){
    setQuotes(merged);
    setYields(latestYields);
    if(Object.keys(merged).length<8||allErrors.length>0){
-    const detail=allErrors.join(' · ');
     setError('일부 시세를 불러오지 못했습니다. 잠시 후 다시 시도합니다.');
    }
   }catch(e){
