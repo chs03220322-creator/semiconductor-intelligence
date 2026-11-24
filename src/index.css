@@ -168,3 +168,10 @@ p strong{color:var(--em-key);font-weight:750}
 .market-index-changes>div>span{display:block;color:#aebbc7;font-size:11px;white-space:nowrap}
 .market-index-changes>div>b{display:block;margin:0;font:700 13px 'DM Mono';text-align:right;white-space:nowrap}
 .market-index-note{margin-top:8px;color:#9babb9;font-size:10px;line-height:1.4}
+
+
+/* Big Tech / AI stock performance: value first, period label second on one line */
+.market-stock-changes{grid-column:1/-1;display:grid;gap:6px;margin-top:4px}
+.market-stock-changes>div{display:flex;align-items:baseline;justify-content:flex-start;gap:8px;min-width:0;white-space:nowrap}
+.market-stock-changes>div strong{font:700 14px "DM Mono";line-height:1.35}
+.market-stock-changes>div small{color:#aebbc7;font-size:10px}
