@@ -137,3 +137,17 @@ p strong{color:var(--em-key);font-weight:750}
 .rate-data-table td:last-child{font-variant-numeric:tabular-nums}
 .rate-summary{margin:14px 0 0;padding:13px 14px;background:#17232e;border-left:3px solid #5b9eae;border-radius:4px;color:#aebdca;font-size:11px;line-height:1.8}
 @media(max-width:760px){.rate-data-table th,.rate-data-table td{padding:10px 8px;font-size:10px}.rate-current>strong{font-size:16px}.market-yield-history svg{min-height:180px}}
+
+
+.yield-point-hint{margin:4px 0 10px;color:var(--muted,#94a3b8);font-size:12px}
+.yield-quarter-detail{border:1px solid var(--border,rgba(148,163,184,.22));border-radius:12px;padding:12px;background:rgba(148,163,184,.06);margin:8px 0 4px}
+.yield-quarter-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.yield-quarter-title b{font-size:14px}.yield-quarter-title small{font-size:11px;color:var(--muted,#94a3b8)}
+.yield-quarter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.yield-quarter-grid>div{min-width:0;padding:9px;border-radius:9px;background:rgba(148,163,184,.08)}
+.yield-quarter-grid span{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted,#94a3b8)}
+.yield-quarter-grid span i{display:inline-block;width:7px;height:7px;border-radius:50%;flex:0 0 7px}
+.yield-quarter-grid strong{display:block;font-size:19px;margin:5px 0}
+.yield-quarter-grid small{display:block;font-size:11px;color:var(--muted,#94a3b8)}
+.yield-quarter-grid small b{color:var(--text,#e2e8f0);font-weight:700}
+@media(max-width:560px){.yield-quarter-grid{gap:5px}.yield-quarter-grid>div{padding:7px}.yield-quarter-grid strong{font-size:16px}.yield-quarter-grid span{font-size:10px}.yield-quarter-grid small{font-size:10px}.yield-quarter-title{align-items:flex-start;flex-direction:column;gap:3px}}
