@@ -119,6 +119,7 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
   }
 
   const yields: Record<string, YieldPoint> = {};
+  const yieldHistory: Array<{ quarter: string; DGS2: number | null; DGS10: number | null; DGS30: number | null }> = [];
   if (url.searchParams.get('includeYields') !== '0') try {
     const since = new Date(Date.now() - 5 * 366 * 86400000).toISOString().slice(0, 10);
     const fredUrl = new URL('https://fred.stlouisfed.org/graph/fredgraph.csv');
@@ -130,14 +131,23 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
     } as RequestInit);
     if (!response.ok) throw new Error('FRED HTTP ' + response.status);
     const rows = (await response.text()).trim().split(/\r?\n/);
-    for (const row of rows.slice(1).reverse()) {
+    const quarterly: Record<string, { DGS2: number[]; DGS10: number[]; DGS30: number[] }> = {};
+    for (const row of rows.slice(1)) {
       const [date, ...values] = row.split(',');
-      ['DGS2', 'DGS10', 'DGS30'].forEach((key, index) => {
+      if (!date) continue;
+      const quarter = date.slice(0, 4) + 'Q' + (Math.floor((Number(date.slice(5, 7)) - 1) / 3) + 1);
+      quarterly[quarter] ||= { DGS2: [], DGS10: [], DGS30: [] };
+      (['DGS2', 'DGS10', 'DGS30'] as const).forEach((key, index) => {
         const rawValue = values[index];
         const value = rawValue === undefined || rawValue === '.' ? NaN : Number(rawValue);
+        if (Number.isFinite(value)) quarterly[quarter][key].push(value);
         if (!yields[key] && Number.isFinite(value)) yields[key] = { value, date };
       });
-      if (Object.keys(yields).length === 3) break;
+    }
+    for (const quarter of Object.keys(quarterly).sort()) {
+      const values = quarterly[quarter];
+      const average = (items: number[]) => items.length ? Math.round(items.reduce((a, b) => a + b, 0) / items.length * 1000) / 1000 : null;
+      yieldHistory.push({ quarter, DGS2: average(values.DGS2), DGS10: average(values.DGS10), DGS30: average(values.DGS30) });
     }
   } catch (error) {
     errors.push(error instanceof Error ? error.message : 'FRED 금리 요청 실패');
@@ -146,6 +156,7 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
   return new Response(JSON.stringify({
     quotes,
     yields,
+    yieldHistory,
     errors,
     provider: 'Yahoo Finance Chart (unofficial)',
     quoteCount: Object.keys(quotes).length,
