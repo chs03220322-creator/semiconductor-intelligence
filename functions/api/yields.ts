@@ -8,7 +8,7 @@ export async function onRequestGet(): Promise<Response> {
     url.searchParams.set('cosd', since);
     const response = await fetch(url.toString(), { headers: { Accept: 'text/csv' }, cf: { cacheTtl: 3600, cacheEverything: true } } as RequestInit);
     if (!response.ok) throw new Error('FRED HTTP ' + response.status);
-    const rows = (await response.text()).trim().split(/\\r?\\n/);
+    const rows = (await response.text()).trim().split(/\r?\n/)
     const latest: Record<string, YieldPoint> = {};
     const quarters: Record<string, { DGS2: number[]; DGS10: number[]; DGS30: number[] }> = {};
     for (const row of rows.slice(1)) {
