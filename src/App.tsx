@@ -564,7 +564,7 @@ function Method(){return <>
   ['공급·재고','공급사 투자·증설 계획','삼성·SK하이닉스·Micron 최신 공시','제품별 재고일수·bit supply 미확보'],
 
   ['기업 실적','삼성·SK 2023~25, Micron FY2023~26','삼성·SK 1Q~3Q26, Micron FY26 FQ1~FQ4','회계기간·통화·회계기준 차이'],
-  ['장기 사이클','SIA actual 및 Gartner estimate/forecast 별도','SIA Q1~Q3','메모리 분기 매출 무료 actual series 미확보'],
+  ['장기 사이클','SIA actual 및 Gartner estimate/forecast 별도','SIA Q1~Q3','메모리 분기 매출 actual series 미확보'],
 
   ['투자 시나리오','연도별 actual·forecast 분리','최신 기업 가이던스·분기 실적','투자 판단은 분석이며 예측 보장 아님']
  ]}/></div>
