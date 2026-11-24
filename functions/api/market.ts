@@ -59,13 +59,13 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
       );
       const price = Number(meta?.regularMarketPrice ?? validCloses[validCloses.length - 1]?.close);
       const marketTime = Number(meta?.regularMarketTime);
-      const marketDate = Number.isFinite(marketTime)
-        ? new Date(marketTime * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
-        : '';
+      const exchangeTimeZone = meta.exchangeTimezoneName || 'America/New_York';
+      const dateKey = (seconds: number) => new Intl.DateTimeFormat('en-CA', {
+        timeZone: exchangeTimeZone, year: 'numeric', month: '2-digit', day: '2-digit'
+      }).format(new Date(seconds * 1000));
+      const marketDate = Number.isFinite(marketTime) ? dateKey(marketTime) : '';
       const lastClose = validCloses[validCloses.length - 1];
-      const lastCloseDate = lastClose
-        ? new Date(lastClose.time * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
-        : '';
+      const lastCloseDate = lastClose ? dateKey(lastClose.time) : '';
       // Calculate against the previous completed session, not chartPreviousClose metadata.
       const previous = lastClose && lastCloseDate === marketDate
         ? validCloses[validCloses.length - 2]?.close
@@ -76,7 +76,9 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
         continue;
       }
 
-      const fiveBase = validCloses.length >= 6 ? validCloses[validCloses.length - 6].close : validCloses[0]?.close;
+      const hasCompletedCurrentSession = Boolean(lastClose && lastCloseDate === marketDate);
+      const fiveBaseIndex = validCloses.length - (hasCompletedCurrentSession ? 6 : 5);
+      const fiveBase = fiveBaseIndex >= 0 ? validCloses[fiveBaseIndex].close : undefined;
       return {
         symbol,
         name: MARKET_NAMES[symbol] || symbol,
@@ -96,11 +98,11 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
 export async function onRequestGet({ request }: { request: Request }): Promise<Response> {
   const corsHeaders = {
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=300'
+    'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=300'
   };
   const url = new URL(request.url);
   const raw = url.searchParams.get('symbols') || '';
-  const symbols = [...new Set(raw.split(',').map(s => s.trim().toUpperCase()).filter(s => /^[A-Z0-9^=.-]{1,20}$/.test(s)))].slice(0, 8);
+  const symbols = [...new Set(raw.split(',').map(s => s.trim().toUpperCase()).filter(s => /^[A-Z0-9^=.-]{1,20}$/.test(s)))].slice(0, 5);
   if (!symbols.length) return new Response(JSON.stringify({ error: 'No valid symbols supplied' }), { status: 400, headers: corsHeaders });
 
   const quotes: Record<string, Quote> = {};
