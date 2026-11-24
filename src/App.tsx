@@ -142,7 +142,6 @@ const memorySignals=[
 const scoreable=memorySignals.filter(x=>x.score!==null);
 const scoredBaseWeight=scoreable.reduce((s,x)=>s+x.baseWeight,0);
 const cycleScore=Math.round(scoreable.reduce((s,x)=>s+(x.score as number)*x.baseWeight,0)/scoredBaseWeight);
-const normalizedWeight=(base:number)=>Math.round(base/scoredBaseWeight*1000)/10;
 
 function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
 function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow.replace('01 / CYCLE MONITOR','01 / 산업 사이클').replace('02 / PRODUCT PRICING','02 / 제품별 가격').replace('03 / COMPUTE DEMAND','03 / AI 수요').replace('04 / HYPERSCALER INVESTMENT','04 / 빅테크 투자').replace('05 / SUPPLY & INVENTORY','05 / 공급과 재고').replace('06 / COMPANY FINANCIALS','06 / 기업 실적').replace('07 / LONG-TERM CYCLES','07 / 장기 사이클').replace('08 / INVESTMENT SCENARIOS','08 / 투자 시나리오').replace('09 / DATA & METHODOLOGY','09 / 데이터 방법론')}</div><h1>{title}</h1><p>{desc}</p></div>}
@@ -549,12 +548,12 @@ function Market(){
  const load=async()=>{
   setLoading(true);setError('');
   try{
-   const batches=Array.from({length:Math.ceil(symbols.length/8)},(_,i)=>symbols.slice(i*8,(i+1)*8));
+   const batches=Array.from({length:Math.ceil(symbols.length/5)},(_,i)=>symbols.slice(i*5,(i+1)*5));
    const merged:Record<string,MarketQuote>={};
    const allErrors:string[]=[];
    let latestYields:Record<string,{value:number;date:string}>={};
-   for(let i=0;i<batches.length;i+=3){
-    const results=await Promise.all(batches.slice(i,i+3).map(async(batch,j)=>{
+   for(let i=0;i<batches.length;i+=2){
+    const results=await Promise.all(batches.slice(i,i+2).map(async(batch,j)=>{
      const includeYields=i===0&&j===0;
      const response=await fetch('/api/market?symbols='+encodeURIComponent(batch.join(','))+(includeYields?'':'&includeYields=0'),{cache:'no-store'});
      const payload=await response.json();
