@@ -81,7 +81,7 @@ async function fetchYahooChart(symbol: string): Promise<Quote> {
 export async function onRequestGet({ request }: { request: Request }): Promise<Response> {
   const corsHeaders = {
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=7200'
+    'Cache-Control': 'public, max-age=300, s-maxage=86400, stale-while-revalidate=86400'
   };
   const url = new URL(request.url);
   const raw = url.searchParams.get('symbols') || '';
