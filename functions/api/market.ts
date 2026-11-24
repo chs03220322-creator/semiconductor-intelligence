@@ -112,7 +112,7 @@ export async function onRequestGet({ request }: { request: Request }): Promise<R
       cf: { cacheTtl: 3600, cacheEverything: true }
     } as RequestInit);
     if (!response.ok) throw new Error('FRED HTTP ' + response.status);
-    const rows = (await response.text()).trim().split(/\\r?\\n/);
+    const rows = (await response.text()).trim().split(/\r?\n/);
     for (const row of rows.slice(1).reverse()) {
       const [date, ...values] = row.split(',');
       ['DGS2', 'DGS10', 'DGS30'].forEach((key, index) => {
