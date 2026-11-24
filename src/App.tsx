@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, BarChart3, CalendarDays, ChevronRight, ExternalLink,
   Gauge, Layers3, Menu, Search, Server, ShieldCheck,
   TrendingUp, Wallet, X, Info
 } from 'lucide-react';
 
-type Section = 'overview'|'pricing'|'demand'|'capex'|'companies'|'cycles'|'insights'|'method';
+type Section = 'overview'|'pricing'|'demand'|'capex'|'companies'|'cycles'|'insights'|'method'|'market';
 type Period = '3Y'|'5Y'|'10Y'|'MAX';
 
 const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
@@ -17,6 +17,7 @@ const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
   {id:'cycles',no:'07',label:'장기 사이클',sub:'과거 흐름과 전망',icon:TrendingUp},
   {id:'insights',no:'08',label:'투자 시나리오',sub:'업황별 투자 관점',icon:Gauge},
   {id:'method',no:'09',label:'데이터 출처 & 방법론',sub:'무료 공개자료와 산식',icon:ShieldCheck},
+  {id:'market',no:'10',label:'글로벌 금융시장',sub:'미국 증시·산업별 강세 지도',icon:TrendingUp},
 ];
 
 const sources=[
@@ -569,7 +570,80 @@ function Method(){return <>
  ]}/></div>
  <div className="panel"><h3>메모리 점수 모델 · 공개지표 커버리지</h3><Table headers={['지표','기본 가중치','점수','산식 반영 가중치','결측 처리']} rows={memorySignals.map(x=>[x.name,x.baseWeight+'%',x.score===null?'미산정':x.score+'점',x.score===null?'0%':normalizedWeight(x.baseWeight)+'%',x.score===null?'제외·재배분':'공개 proxy'])}/><div className="formula">Cycle Score = Σ(score × base weight) ÷ scored base weight = {cycleScore}점</div><Notice>현재 점수는 7개 항목 중 3개만 점수화한 무료 공개자료 proxy입니다. Server DDR5와 HBM은 기업의 정성적 수요·제품 코멘트, NAND는 정부 고정가격·SSD 수출을 반영합니다. PC DDR5·DDR4·재고·회사별 ASP는 미확보라 제외하고 가중치를 재배분했습니다. 점수는 투자수익률 예측이 아닙니다.</Notice></div>
  <div className="panel"><h3>출처 레지스트리 · 무료 공개 원문</h3><Table headers={['출처','발표일/상태','활용 데이터','접근']} rows={sources.map(s=>[s.name,s.date,s.desc,'Free public'])}/><div className="source-list">{sources.map(s=><a href={s.url} target="_blank" rel="noreferrer" key={s.name}><ExternalLink size={12}/><span>{s.name}<small style={{display:'block',opacity:.7,marginTop:3}}>{s.date} · {s.desc}</small></span></a>)}</div></div>
- <div className="panel"><h3>데이터 품질 원칙</h3><div className="quality-list"><div><ShieldCheck size={16}/> 유료 API·유료 구독·유료 데이터베이스 미사용</div><div><ShieldCheck size={16}/> 실제·추정·전망·잠정치 구분</div><div><ShieldCheck size={16}/> FY·CY·통화·단위 구분</div><div><ShieldCheck size={16}/> 결측치를 0점·중립점으로 대체하지 않음</div><div><ShieldCheck size={16}/> 신규 수치는 기존 연도·분기 시계열 뒤에 누적</div><div><ShieldCheck size={16}/> 직접 ASP가 없으면 매출·수출을 ASP로 표시하지 않음</div></div></div>
+ <div className="panel"><h3>데이터 품질 원칙</h3><div className="quality-list"><div><ShieldCheck size={16}/> 유료 API·유료 구독·유료 데이터베이스 미사용</div><div><ShieldCheck size={16}/> 실제·추정·전망·잠정치 구분</div><div><ShieldCheck size={16}/> FY·CY·통화·단위 구분</div><div><ShieldCheck size={16}/> 결측치를 0점·중립점으로 대체하지 않음</div><div><ShieldCheck size={16}/> 신규 수치는 기존 연도·분기 시
+type MarketQuote={symbol:string;name:string;price:number;change:number;change5d:number|null;currency:string;time?:number};
+const MARKET_GROUPS=[
+ {name:'AI · 반도체',ticker:'SOXX',symbols:['NVDA','AVGO','AMD','MU'],desc:'AI 가속기·메모리·네트워크'},
+ {name:'데이터센터 · 전력',ticker:'XLU',symbols:['VRT','ETN','CEG','GEV'],desc:'서버 인프라·전력망·발전'},
+ {name:'경기방어 · 필수소비재',ticker:'XLP',symbols:['WMT','COST','PG','KO'],desc:'필수소비·유통·생활용품'},
+ {name:'바이오 · 헬스케어',ticker:'XBI',symbols:['LLY','ABBV','REGN','ISRG'],desc:'제약·바이오·의료기기'},
+ {name:'금융',ticker:'XLF',symbols:['JPM','GS','BAC','MS'],desc:'은행·투자은행·자본시장'},
+ {name:'에너지',ticker:'XLE',symbols:['XOM','CVX','COP','SLB'],desc:'석유·가스·에너지 서비스'},
+ {name:'산업재 · 방산',ticker:'XLI',symbols:['CAT','GE','RTX','HON'],desc:'산업 자동화·항공우주·방산'},
+ {name:'커뮤니케이션 · 플랫폼',ticker:'XLC',symbols:['GOOGL','META','NFLX','T'],desc:'광고·플랫폼·통신'},
+ {name:'경기민감 · 소비재',ticker:'XLY',symbols:['AMZN','TSLA','HD','MCD'],desc:'소매·자동차·외식·주택'},
+ {name:'부동산',ticker:'XLRE',symbols:['PLD','AMT','EQIX','O'],desc:'리츠·물류·데이터센터 부동산'},
+ {name:'소재',ticker:'XLB',symbols:['LIN','APD','SHW','FCX'],desc:'화학·산업소재·구리'}
+];
+const MARKET_NAMES:Record<string,string>={'^GSPC':'S&P 500','^IXIC':'NASDAQ Composite','^DJI':'Dow Jones','^RUT':'Russell 2000','^VIX':'VIX','NVDA':'NVIDIA','MSFT':'Microsoft','GOOGL':'Alphabet','AMZN':'Amazon','META':'Meta','AAPL':'Apple','AVGO':'Broadcom','TSLA':'Tesla'};
+function Market(){
+ const [quotes,setQuotes]=useState<Record<string,MarketQuote>>({});
+ const [yields,setYields]=useState<Record<string,{value:number;date:string}>>({});
+ const [loading,setLoading]=useState(false);
+ const [updated,setUpdated]=useState('');
+ const [error,setError]=useState('');
+ const [expanded,setExpanded]=useState<string|null>(null);
+ const symbols=useMemo(()=>Array.from(new Set(['^GSPC','^IXIC','^DJI','^RUT','^VIX','NVDA','MSFT','GOOGL','AMZN','META','AAPL','AVGO','TSLA',...MARKET_GROUPS.flatMap(g=>[g.ticker,...g.symbols])])),[]);
+ const load=async()=>{
+  setLoading(true);setError('');
+  const next:Record<string,MarketQuote>={};
+  const results=await Promise.allSettled(symbols.map(async symbol=>{
+   const url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?range=5d&interval=1d&includePrePost=false';
+   const response=await fetch(url,{cache:'no-store'});
+   if(!response.ok)throw new Error('HTTP '+response.status);
+   const json=await response.json();
+   const result=json?.chart?.result?.[0];const meta=result?.meta;
+   const closes=(result?.indicators?.quote?.[0]?.close||[]).filter((v:any)=>Number.isFinite(v));
+   const price=Number(meta?.regularMarketPrice??closes.at(-1));
+   const previous=Number(meta?.chartPreviousClose??meta?.previousClose??closes.at(-2));
+   if(!Number.isFinite(price)||!Number.isFinite(previous)||previous===0)throw new Error('no quote');
+   const five=closes.length>=2?(price/closes[0]-1)*100:null;
+   return {symbol,name:MARKET_NAMES[symbol]||symbol,price,change:(price/previous-1)*100,change5d:five,currency:meta?.currency||'USD',time:meta?.regularMarketTime} as MarketQuote;
+  }));
+  results.forEach((r)=>{if(r.status==='fulfilled')next[r.value.symbol]=r.value;});
+  setQuotes(next);
+  try{
+   const res=await fetch('https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS2,DGS10,DGS30&cosd=2026-01-01',{cache:'no-store'});
+   if(res.ok){const csv=await res.text();const rows=csv.trim().split(/\r?\n/);const latest:Record<string,{value:number;date:string}>={};for(const row of rows.slice(1).reverse()){const [date,...vals]=row.split(',');['DGS2','DGS10','DGS30'].forEach((key,i)=>{const v=Number(vals[i]);if(!latest[key]&&Number.isFinite(v)&&vals[i]!=='.')latest[key]={value:v,date};});if(Object.keys(latest).length===3)break;}setYields(latest);}
+  }catch{}
+  setUpdated(new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
+  if(Object.keys(next).length<8)setError('일부 시세 데이터 연결이 제한되었습니다. 잠시 후 새로고침하거나 출처 링크를 확인해 주세요.');
+  setLoading(false);
+ };
+ useEffect(()=>{void load();const id=window.setInterval(()=>void load(),300000);return()=>window.clearInterval(id);},[]);
+ const fmt=(v:number)=>v.toLocaleString('en-US',{maximumFractionDigits:2});
+ const pct=(v:number|null|undefined)=>v==null?'—':(v>0?'+':'')+v.toFixed(2)+'%';
+ const tone=(v:number|null|undefined)=>v==null?'flat':v>=1?'strong':v>0?'up':v<=-1?'weak':v<0?'down':'flat';
+ const sectorData=MARKET_GROUPS.map(g=>{const list=g.symbols.map(s=>quotes[s]).filter(Boolean);const avg=list.length?list.reduce((a,q)=>a+q.change,0)/list.length:null;const etf=quotes[g.ticker];return {...g,avg,etf,coverage:list.length};}).sort((a,b)=>(b.avg??-999)-(a.avg??-999));
+ const up=sectorData.filter(g=>(g.avg??0)>0).length;
+ const benchmark=quotes['^GSPC']?.change;
+ return <><Title eyebrow="10 / GLOBAL MARKET PULSE" title="글로벌 금융시장 & 산업별 강세 지도" desc="미국 주요 지수·빅테크·산업별 대표 종목·국채 금리를 한 화면에서 확인합니다. 초록은 상승, 빨강은 하락이며 모든 주가 수치는 전일 종가 기준 등락률입니다."/>
+ <div className="market-toolbar"><div><span className="market-live-dot"/><b>시장 데이터</b><small>{updated?'최근 확인 '+updated+' (한국시간)':'데이터 확인 중'}</small></div><button className="market-refresh" onClick={()=>void load()} disabled={loading}><Activity size={14}/>{loading?'업데이트 중':'새로고침'}</button></div>
+ {error&&<div className="market-warning"><Info size={15}/>{error} · 무료 공개 시세 API의 접속 정책에 따라 일부 브라우저에서 제한될 수 있습니다.</div>}
+ <div className="market-index-grid">{['^GSPC','^IXIC','^DJI','^RUT','^VIX'].map(s=>{const q=quotes[s];return <div className={'market-index '+(q?'tone-'+tone(q.change):'')} key={s}><span>{MARKET_NAMES[s]}</span><strong>{q?fmt(q.price):'—'}</strong><b>{q?pct(q.change):loading?'불러오는 중':'미확보'}</b><small>{s==='^VIX'?'변동성 지수':'전일 대비'}</small></div>})}</div>
+ <section className="panel market-panel"><div className="panel-head"><div><h3>산업별 강세 지도</h3><p>구성 대표 종목의 단순 평균 수익률 기준 · 종목 수익률로 계산한 테마 지표</p></div><span className="pill blue">{up} / {sectorData.length}개 산업 상승</span></div>
+ <div className="market-legend"><span><i className="heat-strong"/> 강한 상승 +1% 이상</span><span><i className="heat-up"/> 상승 0~+1%</span><span><i className="heat-flat"/> 보합</span><span><i className="heat-down"/> 하락 0~-1%</span><span><i className="heat-weak"/> 강한 하락 -1% 이하</span></div>
+ <div className="market-heatmap">{sectorData.map(g=><button key={g.name} className={'heat-card tone-'+tone(g.avg)} onClick={()=>setExpanded(expanded===g.name?null:g.name)}><span>{g.name}</span><strong>{pct(g.avg)}</strong><small>{g.ticker} · {g.coverage}/{g.symbols.length} 종목</small><em>{g.avg==null?'데이터 미확보':g.avg>=1?'강한 강세':g.avg>0?'강세':g.avg<=-1?'강한 약세':g.avg<0?'약세':'보합'}</em></button>)}</div>
+ {expanded&&(()=>{const g=sectorData.find(x=>x.name===expanded);if(!g)return null;return <div className="market-detail"><div className="market-detail-head"><b>{g.name} 대표 종목</b><span>ETF {g.ticker} {g.etf?pct(g.etf.change):'—'}</span></div><div className="market-stock-list">{g.symbols.map(s=>{const q=quotes[s];return <div key={s}><b>{s}</b><span>{q?fmt(q.price):'—'}</span><strong className={'market-pct tone-'+tone(q?.change)}>{q?pct(q.change):'미확보'}</strong></div>})}</div><small>{g.desc} · 카드를 다시 누르면 접힙니다.</small></div>})()}
+ </section>
+ <section className="panel market-panel"><div className="panel-head"><div><h3>미국 빅테크 · AI 핵심 종목</h3><p>시가총액 상위 기술기업과 AI 인프라 대표 종목</p></div><span className="pill">USD · 전일 대비</span></div><div className="market-stock-grid">{['NVDA','MSFT','GOOGL','AMZN','META','AAPL','AVGO','TSLA'].map(s=>{const q=quotes[s];return <div className={'market-stock-card tone-'+tone(q?.change)} key={s}><b>{s}</b><span>{q?fmt(q.price):'—'}</span><strong>{q?pct(q.change):'미확보'}</strong></div>})}</div></section>
+ <section className="panel market-panel"><div className="panel-head"><div><h3>미국 국채 금리</h3><p>미 재무부·연준 공개 통계 · 최신 발표 관측치</p></div><a className="market-source" href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noreferrer">FRED 원문 <ExternalLink size={12}/></a></div><div className="market-yield-grid">{[['DGS2','2년물'],['DGS10','10년물'],['DGS30','30년물']].map(([k,n])=><div key={k}><span>{n}</span><strong>{yields[k]?yields[k].value.toFixed(2)+'%':'—'}</strong><small>{yields[k]?.date||'최신 관측치 확인 중'}</small></div>)}</div><div className="market-spread"><span>10년-2년 장단기 금리차</span><b>{yields.DGS10&&yields.DGS2?(yields.DGS10.value-yields.DGS2.value>0?'+':'')+(yields.DGS10.value-yields.DGS2.value).toFixed(2)+'%p':'—'}</b></div></section>
+ <section className="panel market-panel"><div className="panel-head"><div><h3>시장 해석 · 상대강도</h3><p>시장 전체 대비 산업별 당일 성과 차이</p></div></div><div className="market-readthrough"><div><span>S&P 500</span><b className={'tone-'+tone(benchmark)}>{pct(benchmark)}</b></div><div><span>상승 산업</span><b>{up} / {sectorData.length}</b></div><div><span>최강 산업</span><b>{sectorData[0]?.name||'—'}</b><small>{pct(sectorData[0]?.avg)}</small></div><div><span>최약 산업</span><b>{sectorData.at(-1)?.name||'—'}</b><small>{pct(sectorData.at(-1)?.avg)}</small></div></div>
+ <div className="table-wrap"><table className="market-rank-table"><thead><tr><th>산업</th><th>산업 평균</th><th>S&P 대비</th><th>상태</th></tr></thead><tbody>{sectorData.map(g=><tr key={g.name}><td>{g.name}</td><td className={'tone-'+tone(g.avg)}>{pct(g.avg)}</td><td className={'tone-'+tone(g.avg!=null&&benchmark!=null?g.avg-benchmark:null)}>{g.avg!=null&&benchmark!=null?pct(g.avg-benchmark):'—'}</td><td><span className={'market-status tone-'+tone(g.avg)}>{g.avg==null?'미확보':g.avg>=1?'강세 ↑':g.avg<=-1?'약세 ↓':g.avg>0?'상승':g.avg<0?'하락':'중립'}</span></td></tr>)}</tbody></table></div></section>
+ <div className="market-footnote"><b>데이터·해석 기준</b><p>주가: Yahoo Finance 공개 차트 데이터(전일 종가 대비). 산업별 평균: 표시된 대표 종목들의 단순 평균이며 공식 업종지수와 다릅니다. 산업별 ETF는 참고용입니다. 국채 금리: FRED DGS2·DGS10·DGS30 최신 관측치로, 주가와 발표 시점이 다를 수 있습니다. 5거래일 수익률은 각 종목의 최근 5개 거래일 데이터가 충분할 때만 표시합니다. 투자 추천이 아닌 시장 모니터링 자료입니다.</p><div className="market-source-links"><a href="https://finance.yahoo.com/" target="_blank" rel="noreferrer">Yahoo Finance <ExternalLink size={11}/></a><a href="https://fred.stlouisfed.org/" target="_blank" rel="noreferrer">FRED <ExternalLink size={11}/></a><a href="https://home.treasury.gov/resource-center/data-chart-center/interest-rates" target="_blank" rel="noreferrer">U.S. Treasury <ExternalLink size={11}/></a></div></div>
+ </>;
+}
+계열 뒤에 누적</div><div><ShieldCheck size={16}/> 직접 ASP가 없으면 매출·수출을 ASP로 표시하지 않음</div></div></div>
  </>}
 
 function App(){
@@ -588,6 +662,7 @@ function App(){
   case'cycles':return <Cycles/>;
   case'insights':return <Insights/>;
   case'method':return <Method/>;
+  case'market':return <Market/>;
  }};
  return <div className="app-shell">
   <aside className={'sidebar '+(mobileOpen?'open':'')}>
