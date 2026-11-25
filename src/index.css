@@ -264,3 +264,9 @@ p strong{color:var(--em-key);font-weight:750}
 @media(max-width:760px){.score-control-panel{padding:13px}.score-control-grid{grid-template-columns:1fr;gap:9px}.score-control-grid>section{padding:11px}.score-control-heading b{font-size:14px}.score-control-heading small{font-size:10px}.score-weight-control>span{font-size:10px}}
 
 .score-control-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}.score-control-grid.compact>section{padding:10px 12px}.score-control-grid.compact .score-weight-control{margin:4px 0 8px}.score-control-note.bottom{margin-top:10px;padding-top:8px;border-top:1px solid #354d5d}@media(max-width:760px){.score-control-grid.compact{grid-template-columns:1fr}}
+
+/* Compact two-row navigation for switching dashboard sheets */
+.top-sheet-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 18px;max-width:720px;padding:0 0 10px 2px;margin-left:auto}
+.top-sheet-link{min-width:0;padding:7px 4px;border:0;border-bottom:1px solid #263744;background:transparent;color:#91a3b1;text-align:left;font-size:11px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-sheet-link:hover{color:#dce9ef;border-bottom-color:#668b9b}
+@media(max-width:760px){.top-sheet-nav{width:100%;max-width:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px;padding:0 0 8px;margin:0}.top-sheet-link{font-size:10px;padding:8px 2px}}
