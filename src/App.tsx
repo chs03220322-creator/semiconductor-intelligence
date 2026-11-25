@@ -277,287 +277,7 @@ function Demand(){return <>
  <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="글로벌 AI 토큰 사용량에서 GPU 연산 수요와 HBM·서버 DRAM·eSSD bit 수요까지 연결합니다. 공개 실적(actual), 기관 추정(estimate), 자체 계산 경로(model)를 분리하며, 입력이 없는 값은 임의로 채우지 않습니다."/>
  <div className="stats-grid"><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="J.P. Morgan AI Tracker 추정"/><Stat label="2026E 연말 토큰" value="400조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2027E 토큰" value="600조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2030E 토큰" value="2,000조/일" sub="자체 기준 시나리오 · forecast"/></div>
  <TrendPanel title="글로벌 AI 토큰 사용량 · 일평균 run-rate" series={[{name:"Median · 중앙값 기준",unit:"Trillion tokens/day · median scenario, not official forecast",data:tokenBase}]} note="J.P. Morgan AI Tracker의 반기별 차트 판독 근사치를 포함합니다. 2026년 말~2030년 전망은 공식 기관 전망이 아닌 자체 시나리오입니다. 토큰 집계 범위·중복·모델별 공개 수준이 통일되지 않아 전 세계 실측 총량으로 해석하면 안 됩니다." source={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)"]}/>
- <div className="panel"><h3>플랫폼 실측 토큰 성장 · OpenRouter 관측치</h3><p className="muted">글로벌 전체 시장 추정치와 분리한 플랫폼 관측 proxy입니다. OpenRouter 경유 요청만 포함하며, 직접 API·자체 호스팅·다른 라우터 트래픽은 포함하지 않습니다.</p><Table headers={["기간","OpenRouter 토큰량","일평균 환산","비교"]} rows={[[ "2025-10","約22조","0.71T/day","기준"],["2026-01","—","1.0T/day","2025-10 대비 약 1.4배"],["2026-07","—","8.0T/day","2025-10 대비 약 11배"],["2026-09","약 577조","19.2T/day","2026-10 대비 -"],["2026-10","790조","25.48T/day","+37% MoM"],["2026-11 (1~23일)","—","약 35T/day","제3자 tracker 잠정치"]]}/><Notice>OpenRouter 공식 10월 recap은 월간 790조 tokens, 전월 대비 +37%, 1월 대비 약 25배를 보고했습니다. 10월 일평균은 790조 ÷ 31일 = 약 25.5조 tokens/day로 환산했습니다. 11월 수치는 제3자 tracker 추정이며 공식 월간 발표와 구분합니다. OpenRouter는 글로벌 전체 사용량이 아닌 라우터 플랫폼 표본입니다.</Notice><Sources items={["OpenRouter · October monthly recap (2026-11-12)","06.ai · OpenRouter tokens and spend tracker (updated 2026-11-24)"]}/></div>ect, useMemo, useRef, useState } from 'react';
-import {
-  Activity, BarChart3, CalendarDays, ChevronRight, ExternalLink,
-  Gauge, Layers3, Menu, Server, ShieldCheck,
-  TrendingUp, Wallet, X, Info
-} from 'lucide-react';
-
-type Section = 'overview'|'pricing'|'demand'|'capex'|'companies'|'cycles'|'insights'|'market';
-type Period = '3Y'|'5Y'|'6Y';
-
-const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
-  {id:'overview',no:'01',label:'산업 사이클',sub:'시장 흐름과 업황 점수',icon:Activity},
-  {id:'pricing',no:'02',label:'제품별 가격',sub:'DRAM·NAND·DDR 가격',icon:Layers3},
-  {id:'demand',no:'03',label:'AI 수요 & 데이터센터',sub:'토큰·GPU·메모리 수요',icon:Server},
-  {id:'capex',no:'04',label:'빅테크 투자',sub:'주요 기업 설비투자',icon:Wallet},
-  {id:'companies',no:'05',label:'기업 실적',sub:'반도체 주요 기업',icon:BarChart3},
-  {id:'cycles',no:'06',label:'장기 사이클',sub:'과거 흐름과 전망',icon:TrendingUp},
-  {id:'insights',no:'07',label:'투자 시나리오',sub:'업황별 투자 관점',icon:Gauge},
-  {id:'market',no:'08',label:'글로벌 금융시장',sub:'미국 증시·산업별 강세 지도',icon:TrendingUp},
-];
-
-const sources=[
-  {name:'SIA · 2026년 3분기 글로벌 반도체 매출',date:'2026-11-03',url:'https://www.semiconductors.org/global-semiconductor-sales-increase-24-1-from-q2-2026-to-q3-2026/',desc:'3Q26 $517.7B, 9월 3개월 이동평균 $172.6B'},
-  {name:'SIA · 2026년 1분기 글로벌 반도체 매출',date:'2026-05-04',url:'https://www.semiconductors.org/global-semiconductor-sales-increase-25-from-q4-2025-to-q1-2026/',desc:'1Q26 $298.5B'},
-  {name:'SIA · 2026년 2분기 글로벌 반도체 매출',date:'2026-08-06',url:'https://www.semiconductors.org/global-semiconductor-sales-increase-35-1-from-q1-2026-to-q2-2026/',desc:'2Q26 $403.3B'},
-  {name:'SIA · 2025년 연간 글로벌 반도체 매출',date:'2026-02-06',url:'https://www.semiconductors.org/global-annual-semiconductor-sales-increase-25-6-to-791-7-billion-in-2025/',desc:'2020~2025 연간 매출 시계열 기준'},
-  {name:'Gartner · 2026년 반도체 시장 공개 전망',date:'2026-08-24',url:'https://www.gartner.com/en/newsroom/press-releases/2026-08-24-gartner-forecasts-worldwide-semiconductor-revenue-to-reach-1-trillion-dollars-in-2026',desc:'2025 estimate, 2026~2027 forecast; 보도자료 공개 수치 활용'},
-  {name:'산업부 · 2026년 10월 ICT 수출입 동향',date:'2026-11-16',url:'https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172408/view',desc:'DRAM 8Gb·NAND 128Gb 공개 기준가격'},
-  {name:'산업부 · 2026년 10월 수출입 동향',date:'2026-11-16',url:'https://www.motir.go.kr/kor/article/ATCL03465409b/171817/view',desc:'DDR5 16Gb 고정가격 10월 $50.0 공개치'},
-  {name:'산업부 · 2026년 9월 ICT 수출입 동향',date:'2026-10-14',url:'https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/172289/view',desc:'DRAM 16Gb·NAND 128Gb 기준가격'},
-  {name:'산업부 · 2025년 10월 ICT 수출입 동향',date:'2025-11-14',url:'https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/171187/view',desc:'2025년 DRAM 8Gb 및 NAND 128Gb 공개 가격 일부'},
-  {name:'IEA · Energy and AI',date:'2025-04-10',url:'https://www.iea.org/reports/energy-and-ai/executive-summary',desc:'2024 데이터센터 전력 actual 기준 시계열'},
-  {name:'IEA · Key Questions on Energy and AI',date:'2026-04-16',url:'https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary',desc:'2025 데이터센터 전력 485 TWh estimate, 2030 950 TWh forecast, HBM 부족 전망'},
-  {name:'Berkeley Lab · 2025 United States Data Center Energy Usage Report',date:'2025 공개',url:'https://escholarship.org/uc/item/33m6w3x0',desc:'가속기 출하·GPU/ASIC 구성·AI 서버 전력·훈련/추론 비중 및 전력수요 시나리오'},
-  {name:'Microsoft Research · AI Data Center Lifecycle Compass',date:'2026 공개',url:'https://www.microsoft.com/en-us/research/wp-content/uploads/2026/03/AI-DC-Lifecycle-Compass.pdf',desc:'AI workload 유형별 모델 크기·사용자 부하·메모리·연산·인프라 요구량 분석'},
-  {name:'McKinsey · The next big shifts in AI workloads and hyperscaler strategies',date:'2025 공개',url:'https://www.mckinsey.com/industries/technology-media-and-telecommunications/our-insights/the-next-big-shifts-in-ai-workloads-and-hyperscaler-strategies',desc:'훈련과 추론의 데이터센터 수요·전력·입지 차이 및 추론 비중 전망'},
-  {name:'Samsung Electronics · 3Q26 실적',date:'2026-10-29',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-third-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적 및 2027 수요 전망'},
-  {name:'Samsung Electronics · 2Q26 실적',date:'2026-07-30',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-second-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적'},
-  {name:'Samsung Electronics · 1Q26 실적',date:'2026-04-30',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-first-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적'},
-  {name:'Samsung Electronics · Facts & Figures',date:'상시 공개 페이지',url:'https://www.samsung.com/global/sustainability/digital-library/facts-figures/',desc:'연간 연결 재무 시계열'},
-  {name:'Samsung Electronics · Sustainability Report 2019',date:'2019-06-01',url:'https://www.samsung.com/global/sustainability/media/pdf/SustainabilityReport2019v2-en.pdf',desc:'2016~2018 연결 매출·영업이익 actual'},
-  {name:'SK hynix · FY2025 실적발표',date:'2026-01-29',url:'https://news.skhynix.com/en/sk-hynix-announces-fy25-financial-results/',desc:'2016~2025 연간 재무 추이 및 FY2025 actual'},
-  {name:'Micron · SEC filings',date:'FY2016~FY2025',url:'https://www.sec.gov/edgar/browse/?CIK=723125&owner=exclude',desc:'FY2016~FY2025 10-K 매출·영업이익 actual'},
-  {name:'SK hynix · 3Q26 실적',date:'2026-10-28',url:'https://news.skhynix.com/en/q3-2026-business-results/',desc:'HBM4·Server DDR5·장기공급계약 및 2030 공급 전망'},
-  {name:'SK hynix · 2Q26 실적',date:'2026-07-23',url:'https://news.skhynix.com/en/q2-2026-business-results/',desc:'분기 매출·영업이익'},
-  {name:'SK hynix · 1Q26 실적',date:'2026-04-23',url:'https://news.skhynix.com/en/q1-2026-business-results/',desc:'분기 매출·영업이익'},
-  {name:'SK hynix · FY2025 실적',date:'2026-01-28',url:'https://news.skhynix.com/en/sk-hynix-announces-fy25-financial-results/',desc:'연간 매출·영업이익'},
-  {name:'Micron · FY2026 Q4 및 연간 실적',date:'2026-09-30',url:'https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/',desc:'FY26 GAAP 분기·연간 실적, 순 CAPEX'},
-  {name:'S&P Global Market Intelligence / Visible Alpha · Micron Q4 2026 estimates',date:'2026-10-27',url:'https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/10/behind-the-earnings-call-micron-technology-inc-q4-2026',desc:'FY2027~FY2028 매출·매출총이익률·영업비용 컨센서스'},
-  {name:'Yahoo Finance · Micron analyst estimates',date:'2026-11-22',url:'https://finance.yahoo.com/quote/MU/analysis/',desc:'FY2027~FY2028 매출 컨센서스 평균·최저·최고; S&P Global Market Intelligence 집계'},
-  {name:'Micron · FY2026 Q2 실적',date:'2026-03-18',url:'https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Results-for-the-Second-Quarter-of-Fiscal-2026-03-18-2026/default.aspx',desc:'FY26 FQ1·FQ2 GAAP 분기 실적'},
-  {name:'Micron · FY2026 Q1 실적',date:'2025-12-17',url:'https://investors.micron.com/news/press-release/2025/Micron-Technology-Inc--Reports-Results-for-the-First-Quarter-of-Fiscal-2026-12-17-2025/default.aspx',desc:'FY26 FQ1 GAAP 실적'},
-  {name:'TSMC · 3Q26 실적',date:'2026-10-15',url:'https://investor.tsmc.com/english/quarterly-results/2026/q3',desc:'3Q26 매출·마진·4Q 가이던스'},
-  {name:'TSMC · 2025 Annual Report',date:'2026-04-17',url:'https://investor.tsmc.com/static/annualReports/2025/english/index.html',desc:'CY2023~CY2025 연간 actual 매출·마진'},
-  {name:'NVIDIA · FY2026 full-year results',date:'2026-02-25',url:'https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/default.aspx',desc:'FY2024~FY2026 annual actual revenue · US GAAP'},
-  {name:'NVIDIA · 1Q FY2027 results',date:'2026-05-20',url:'https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-First-Quarter-Fiscal-2027/',desc:'FY27 Q1 revenue $81.615B, Data Center $75.2B'},
-  {name:'NVIDIA · 2Q FY2027 results',date:'2026-08-26',url:'https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/default.aspx',desc:'FY27 Q2 revenue $96.221B, Data Center $89.0B'},
-  {name:'NVIDIA · 3Q FY2027 실적',date:'2026-11-17',url:'https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Third-Quarter-Fiscal-2027/',desc:'매출 $115.8B, 데이터센터 $107.6B, 4Q 가이던스'},
-  {name:'Alphabet · 3Q26 실적발표 콜',date:'2026-10-28',url:'https://abc.xyz/investor/events/event-details/2026/2026-Q3-Earnings-Call-2026-Ujou16CTw9/',desc:'Q3 CAPEX $51.4B, 9개월 누적 $132.0B, Cloud 성장'},
-  {name:'Alphabet · 3Q26 SEC 10-Q',date:'2026-10-29',url:'https://www.sec.gov/Archives/edgar/data/1652044/000165204426000084/goog-20260930.htm',desc:'PPE 구매액·CAPEX 9개월 누적 원문'},
-  {name:'Amazon · 3Q26 실적',date:'2026-10-29',url:'https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/',desc:'AWS 성장 및 PPE 구매액 3개월·9개월 누적'},
-  {name:'Meta · 3Q26 SEC 10-Q',date:'2026-10-22',url:'https://www.sec.gov/Archives/edgar/data/1326801/000162828026066773/meta-20260930.htm',desc:'CAPEX·PPE 구매액 및 9개월 누적'},
-  {name:'Microsoft · FY2027 Q1 실적발표 콜',date:'2026-10-28',url:'https://www.microsoft.com/en-us/investor/events/fy-2027/earnings-fy-2027-q1',desc:'Q1 CAPEX $45.2B, 현금 PPE $39.4B'},
-  {name:'Microsoft · FY2026 Annual Report',date:'2026-08-05',url:'https://www.microsoft.com/investor/reports/ar26/',desc:'FY24~FY26 additions to PPE 연간 actual'},
-  {name:'SK hynix · Yongin Y2 / Cheongju M17 투자',date:'2026-08-07',url:'https://news.skhynix.com/en/fab-facility-investment-2026/',desc:'신규 팹 투자 계획·장기 공급능력'}
-];
-
-const market=[
-  {year:'2020',value:440.4},{year:'2021',value:555.9},{year:'2022',value:574.1},
-  {year:'2023',value:526.8},{year:'2024',value:630.5},{year:'2025',value:791.7}
-];
-const marketForecast=[
-  {year:'2025',value:809.0,status:'Estimate'},{year:'2026',value:1555.2,status:'Forecast'},
-  {year:'2027',value:1939.9,status:'Forecast'}
-];
-const memoryForecast=[
-  {year:'2025',value:220.1,status:'Estimate'},{year:'2026',value:837.3,status:'Forecast'},
-  {year:'2027',value:1075.5,status:'Forecast'}
-];
-const globalQuarterly=[
-  {year:'1Q26',value:298.5,status:'Actual',note:'SIA 발표 2026-05-04'},
-  {year:'2Q26',value:403.3,status:'Actual',note:'SIA 발표 2026-08-06'},
-  {year:'3Q26',value:517.7,status:'Actual',note:'SIA 발표 2026-11-03'}
-];
-const samsungAnnual=[
- {year:'2016',revenue:201.867,op:29.241},{year:'2017',revenue:239.575,op:53.645},{year:'2018',revenue:243.771,op:58.887},{year:'2019',revenue:230.401,op:27.769},{year:'2020',revenue:236.807,op:35.994},{year:'2021',revenue:279.605,op:51.634},{year:'2022',revenue:302.231,op:43.377},{year:'2023',revenue:258.935,op:6.567},{year:'2024',revenue:300.871,op:32.726},{year:'2025',revenue:333.606,op:43.601}
-];
-const skAnnual=[
- {year:'2016',revenue:17.198,op:3.276},{year:'2017',revenue:30.109,op:13.721},{year:'2018',revenue:40.445,op:20.844},{year:'2019',revenue:26.991,op:2.719},{year:'2020',revenue:31.900,op:5.013},{year:'2021',revenue:42.998,op:12.410},{year:'2022',revenue:44.622,op:6.809},{year:'2023',revenue:32.766,op:-7.730},{year:'2024',revenue:66.193,op:23.467},{year:'2025',revenue:97.147,op:47.206}
-];
-const micronAnnual=[
- {year:'2016',revenue:12.399,op:0.168},{year:'2017',revenue:20.322,op:5.870},{year:'2018',revenue:30.391,op:14.990},{year:'2019',revenue:23.406,op:7.384},{year:'2020',revenue:21.435,op:3.000},{year:'2021',revenue:27.705,op:6.276},{year:'2022',revenue:30.758,op:9.703},{year:'2023',revenue:15.540,op:-5.745},{year:'2024',revenue:25.111,op:1.304},{year:'2025',revenue:37.378,op:9.770}
-];
-const samsungQuarterly=[
-  {period:'1Q26',revenue:133.9,op:57.2,margin:42.8},
-  {period:'2Q26',revenue:171.5,op:89.5,margin:52.2},
-  {period:'3Q26',revenue:195.3,op:107.4,margin:55.0}
-];
-const skQuarterly=[
-  {period:'1Q26',revenue:52.5763,op:37.6103,margin:71.5},
-  {period:'2Q26',revenue:79.3187,op:60.5426,margin:76.3},
-  {period:'3Q26',revenue:104.6155,op:83.3338,margin:79.7}
-];
-const micronQuarterly=[
-  {period:'FQ1-26',revenue:13.643,op:6.136,margin:45.0},
-  {period:'FQ2-26',revenue:23.860,op:16.135,margin:67.6},
-  {period:'FQ3-26',revenue:41.456,op:33.318,margin:80.4},
-  {period:'FQ4-26',revenue:54.229,op:43.751,margin:80.7}
-];
-const tsmcAnnual=[{year:'2023',value:69.30},{year:'2024',value:90.08},{year:'2025',value:122.42}];
-const nvidiaAnnual=[{year:'FY2024',value:60.922},{year:'FY2025',value:130.497},{year:'FY2026',value:215.938}];
-const nvidiaQuarterly=[{year:'1Q FY27',value:81.615},{year:'2Q FY27',value:96.221},{year:'3Q FY27',value:115.8}];
-const pricesDram16=[{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0}];
-const pricesDdr5_16=[{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0},{year:'Oct 26',value:50.0}];
-const pricesDram8=[{year:'Jul 26',value:24.0},{year:'Aug 26',value:25.0},{year:'Sep 26',value:26.0},{year:'Oct 26',value:27.5}];
-const pricesNand=[
-  {year:'Jun 26',value:28.8},{year:'Jul 26',value:30.1},{year:'Aug 26',value:30.5},
-  {year:'Sep 26',value:30.6},{year:'Oct 26',value:30.6}
-];
-const prices2025Dram8=[
-  {year:'Jul 25',value:3.9},{year:'Aug 25',value:5.7},{year:'Sep 25',value:6.3},{year:'Oct 25',value:7.0}
-];
-const prices2025Nand=[
-  {year:'Jul 25',value:3.4},{year:'Aug 25',value:3.4},{year:'Sep 25',value:3.8},{year:'Oct 25',value:4.4}
-];
-// Token forecast is a transparent scenario model, not an official global census. Anchor: JPMorgan AI Tracker estimated about 360T tokens/day in Jul-2026.
-const tokenHistory=[{year:'Jan 2024',value:1},{year:'Jul 2024',value:3},{year:'Jan 2025',value:15},{year:'Jul 2025',value:70},{year:'Jan 2026',value:200},{year:'Jul 2026',value:360}];
-const tokenBase=[...tokenHistory,{year:'2026E',value:400},{year:'2027E',value:600},{year:'2028E',value:900},{year:'2029E',value:1350},{year:'2030F',value:2000}];
-const supplierCapex=[
-  {company:'Samsung Electronics',period:'3Q26',quarter:'₩29.0T',ytd:'₩56.9T',definition:'전사 CAPEX; DS 3Q ₩27.2T, 1~3Q ₩52.8T'},
-  {company:'Micron',period:'FY2026 Q4',quarter:'$10.77B',ytd:'$27.37B',definition:'Net CAPEX; FY2026 누계'}
-];
-const FX_USDKRW=1344.23; // 2026-11-25 reference mid-market rate
-const memorySignals=[
-  {id:'server',name:'Server DDR5',baseWeight:25,score:93,direction:'상승 · 강한 수요',basis:'SK hynix 3Q26는 server DDR5 판매가 크게 늘었다고 공시했고, 삼성은 서버 수요가 전 응용처 가격을 끌어올렸다고 설명. 정부 공개 범용 DRAM 16Gb 기준가격은 Jun $40.0 → Sep $48.0, DRAM 8Gb는 Jul $24.0 → Oct $27.5(+5.8% MoM). 이 가격은 서버 전용 ASP가 아닌 범용 proxy.'},
-  {id:'pc',name:'PC DDR5',baseWeight:10,score:null,direction:'정량 미확보',basis:'PC 전용 DDR5 계약 ASP·출하량의 공개 시계열 미확보. 범용 DRAM 기준가격을 PC DDR5 가격으로 대체하지 않음.'},
-  {id:'ddr4',name:'DDR4',baseWeight:5,score:null,direction:'정량 미확보',basis:'DDR4 전용 고정거래가격·계약 ASP 시계열 미확보. DRAM 8Gb/16Gb 범용 지표를 DDR4 가격으로 간주하지 않음.'},
-  {id:'hbm',name:'HBM',baseWeight:25,score:98,direction:'초강세',basis:'SK hynix 3Q26 HBM4 출하 본격화, 4Q26 HBM4가 HBM3E를 출하량·매출에서 넘어 주력 제품이 될 전망, 2027~2028 생산능력의 50% 이상 장기계약 확보. IEA는 HBM 부족이 적어도 2027년 말까지 지속될 수 있다고 평가.'},
-  {id:'nand',name:'NAND',baseWeight:15,score:80,direction:'가격 보합',basis:'NAND 128Gb 정부 공개 기준가격은 Sep~Oct $30.6으로 보합. 가격 흐름과 기업의 NAND 사업·수요 관련 공식 코멘트만 참고하며 수출액은 점수 산정에서 제외.'},
-  {id:'inventory',name:'재고',baseWeight:10,score:null,direction:'재고일수 미확보',basis:'업체별 총 재고 잔액은 재무제표에 공개되나 DRAM/NAND 제품별·고객별 동일 기준 재고일수 시계열은 미확보. 점수에서 제외.'},
-  {id:'asp',name:'삼성·하이닉스 ASP',baseWeight:10,score:null,direction:'정성적 상승 신호 · 수치 미공개',basis:'삼성·SK의 제품별·회사별 ASP 증감률은 미공개. 분기 매출에는 가격·bit 출하·제품 믹스가 함께 반영되므로 ASP를 매출에서 역산하지 않음.'}
-];
-const scoreable=memorySignals.filter(x=>x.score!==null);
-const scoredBaseWeight=scoreable.reduce((s,x)=>s+x.baseWeight,0);
-const cycleScore=Math.round(scoreable.reduce((s,x)=>s+(x.score as number)*x.baseWeight,0)/scoredBaseWeight);
-
-function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
-function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
-function krwText(value:any){if(typeof value!=='string')return value;return value.replace(/\$([\d,]+(?:\.\d+)?)(\s*(?:B|bn|billion))?/gi,(_m,n,suffix)=>{const v=Number(n.replace(/,/g,''));return suffix?'₩'+(v*FX_USDKRW/1000).toFixed(1)+'조':'₩'+Math.round(v*FX_USDKRW).toLocaleString('ko-KR')+'원'}).replace(/USD\s*\/\s*chip/gi,'원/칩').replace(/USD\s*bn/gi,'조 원').replace(/USD/gi,'KRW')}function visibleUnit(value:string){return value.replace(/USD\s*\/\s*chip/gi,'원/칩').replace(/USD\s*bn/gi,'조 원').replace(/USD/gi,'KRW')}
-function Stat({label,value,sub}:{label:string;value:string;sub:string}){return <div className="stat"><span>{krwText(label)}</span><strong>{krwText(value)}</strong><small>{krwText(sub)}</small></div>}
-function Table({headers,rows}:{headers:string[];rows:any[][]}){return <div className="table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{visibleUnit(h)}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c===null?'미확보':krwText(c)}</td>)}</tr>)}</tbody></table></div>}
-function pointPeriodKey(point:any):{kind:string;period:string;year:number}|null{
- const raw=String(point?.year||point?.period||point?.month||'').trim();
- let m=raw.match(/^(\d)Q\s*FY(\d{2,4})$/i);
- if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^FQ(\d)[- ](\d{2,4})$/i);
- if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^(\d)Q(\d{2,4})$/i);
- if(m)return {kind:'quarter',period:'Q'+m[1],year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^FY(\d{2,4})$/i);
- if(m)return {kind:'annual',period:'annual',year:Number(m[1].length===2?'20'+m[1]:m[1])};
- m=raw.match(/^([A-Za-z]{3})\s+(\d{2,4})$/);
- if(m)return {kind:'month',period:m[1].toLowerCase(),year:Number(m[2].length===2?'20'+m[2]:m[2])};
- m=raw.match(/^(\d{4})(?:\s+(YTD))?$/i);
- if(m)return {kind:'year',period:m[2]?'YTD':'annual',year:Number(m[1])};
- m=raw.match(/^(\d{4})[EF](?:\*)?$/i);
- if(m)return {kind:'year',period:'annual',year:Number(m[1])};
- m=raw.match(/^FY(\d{2,4})[EF]$/i);
- if(m)return {kind:'annual',period:'annual',year:Number(m[1].length===2?'20'+m[1]:m[1])};
- return null;
-}
-function findPreviousPeriodPoint(data:any[],point:any){
- const key=pointPeriodKey(point);if(!key)return null;
- return data.find(candidate=>{const other=pointPeriodKey(candidate);return other&&other.kind===key.kind&&other.period===key.period&&other.year===key.year-1})||null;
-}
-function yoyChange(current:number|undefined,previous:number|undefined){
- return typeof current==='number'&&Number.isFinite(current)&&typeof previous==='number'&&Number.isFinite(previous)&&previous!==0?(current/previous-1)*100:null;
-}
-function priceChangeCell(data:{year:string;value:number}[],period:string,kind:'delta'|'rate'){
- const index=data.findIndex(point=>point.year===period);
- const current=data[index],previous=index>0?data[index-1]:null;
- if(!current||!previous||!Number.isFinite(current.value)||!Number.isFinite(previous.value)||previous.value===0)return <span className="price-change-na">—</span>;
- const delta=current.value-previous.value;
- const rate=delta/previous.value*100;
- const tone=delta>0?'up':delta<0?'down':'flat';
- const sign=delta>0?'+':delta<0?'−':'';
- const label=kind==='delta'?sign+'₩'+Math.round(Math.abs(delta)*FX_USDKRW).toLocaleString('ko-KR'):(rate>0?'+':'')+rate.toFixed(1)+'%';
- return <span className={'price-change '+tone}>{label}</span>;
-}
-
-function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];keyName:string;label:string;height?:number;comparisonData?:any[]}){
- const [selected,setSelected]=useState<number|null>(null);
- const isUsd=/USD/i.test(label);const perChip=/chip/i.test(label);
- const vals=data.map(d=>Number(d[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1));
- const min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
- const points=vals.map((v,i)=>[i/(Math.max(1,vals.length-1))*100,88-(v-min)/range*72]);
- const path=points.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');
- const chosen=selected===null?null:data[selected];
- const chosenPrevious=chosen?findPreviousPeriodPoint(comparisonData||data,chosen):null;
- const chosenYoy=chosen?yoyChange(Number(chosen[keyName]),chosenPrevious?Number(chosenPrevious[keyName]):undefined):null;
- const chosenMonthPrevious=chosen&&perChip&&selected!==null&&selected>0?data[selected-1]:null;
- const chosenMom=chosenMonthPrevious?yoyChange(Number(chosen[keyName]),Number(chosenMonthPrevious[keyName])):null;
- const fmt=(v:number)=>perChip?'₩'+Math.round(v).toLocaleString('ko-KR'):isUsd?'₩'+v.toFixed(1)+'조':Number.isInteger(v)?v.toLocaleString('ko-KR'):v.toLocaleString('ko-KR',{maximumFractionDigits:2});
- const unitValue=(v:number)=>{
-  if(/trillion tokens/i.test(label)) return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'조 개/일';
-  if(/TWh/i.test(label)) return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+' TWh/년';
-   if(/USD bn/i.test(label)) return isUsd?fmt(v):'$'+v.toLocaleString('en-US',{maximumFractionDigits:1})+'B';
-  if(perChip) return fmt(v)+' /개';
-  if(isUsd) return fmt(v);
-  const unit=label.split('·').slice(1).join('·').trim().split(/[·(]/)[0].trim();
-  return fmt(v)+(unit?' '+unit:'');
- };
- const visibleLabel=label.split('·').slice(0,1).join('').trim();
- return <div className="line-chart" style={{height}}>
-  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenMom===null?'var(--muted,#9aa9b7)':chosenMom>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{perChip?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · 전월 가격 ${unitValue(Number(chosenMonthPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`):'전월 대비: 월별 데이터에만 표시'}</small><small style={{display:'block',marginTop:3,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small></>:<span>그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다</span>}</div>
-  <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
-   <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
-    <path d={path} fill="none" stroke="#68c5d4" strokeWidth="2.1" vectorEffect="non-scaling-stroke"/>
-    {selected!==null&&<line x1="0" y1={points[selected][1]} x2="100" y2={points[selected][1]} stroke="#f0c779" strokeWidth="1.2" strokeDasharray="3 2" vectorEffect="non-scaling-stroke"/>}
-    {points.map((p,i)=><g key={i} onClick={()=>setSelected(i)} style={{cursor:'pointer'}}><circle cx={p[0]} cy={p[1]} r="4.2" fill="transparent"/><circle cx={p[0]} cy={p[1]} r={selected===i?2.5:1.7} fill={selected===i?'#f0c779':'#9cdae1'} stroke={selected===i?'#fff0c7':'#101a23'} strokeWidth=".7" vectorEffect="non-scaling-stroke"/></g>)}
-   </svg>
-  </div>
-  <div className="line-labels">{data.map((d,i)=><button type="button" className={selected===i?'chosen':''} key={i} onClick={()=>setSelected(i)}>{d.year||d.period||d.month}</button>)}</div>
-  <small>{visibleLabel} · {fmt(min)}–{fmt(max)}</small>
- </div>
-}
-function Sources({items}:{items:string[]}){return <div className="source-list">{items.map(name=>{const x=sources.find(v=>v.name===name);return <a href={x?.url||'#'} target="_blank" rel="noreferrer" key={name}><ExternalLink size={12}/>{name}</a>})}</div>}
-function Notice({children}:{children:any}){return <div className="notice"><Info size={16}/><span>{krwText(children)}</span></div>}
-function TrendPanel({title,series,quarterHeaders,quarterRows,note,source}:{title:string;series:{name:string;unit:string;data:{year:string;value:number}[];comparisonData?:{year:string;value:number}[]}[];quarterHeaders?:string[];quarterRows?:any[][];note?:string;source?:string[]}){
- return <div className="panel">
-  <div className="panel-head"><div><h3>{title} · 연도별/기간별 추이</h3><p className="muted">실적·추정·전망을 구분하고 단위가 다른 지표는 별도로 표시합니다</p></div><Pill tone="blue">공개자료</Pill></div>
-  {series.map(s=><div key={s.name}><p className="muted"><b>{s.name}</b> · {visibleUnit(s.unit)}</p><LineChart data={s.data} comparisonData={s.comparisonData} keyName="value" label={s.name+' · '+s.unit} height={185}/></div>)}
-  {quarterRows&&<><h3>최근 공개 분기·월별 데이터</h3><Table headers={quarterHeaders||['기간','값','상태']} rows={quarterRows}/></>}  {note&&<Notice>{note}</Notice>}
-  {source&&<Sources items={source}/>}
- </div>
-}
-
-function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void}){
- const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
- return <>
-  <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="사이클 판단에 직접 영향을 주는 가격·AI 수요·기업 실적·공급 신호만 요약합니다. 세부 재무와 출처는 각 메뉴에서 확인할 수 있습니다."/>
-  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 가용 공개지표 정성평가 <Pill tone="green">참고용 proxy</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>강한 호황·상승 국면 · 평가 가능 지표 {scoreable.length}/{memorySignals.length}</p><div className="score-foot"><span>HBM·서버 DRAM 강세</span><span>NAND 가격 보합</span><span>재고일수 미확보</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>가용 지표 기준</span></div></div><small>전체 업황의 확정 점수 아님</small></div></div>
-  <div className="stats-grid three">
-   <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
-   <Stat label="NAND 128Gb · 2026년 10월" value="$30.6" sub="전월 대비 보합 · 공개 기준가격"/>
-   <Stat label="SK하이닉스 영업이익 · 3Q26" value="₩83.33T" sub="K-IFRS actual · 전분기 대비 +38%"/>
-  </div>
-  <div className="panel"><div className="panel-head"><div><h3>사이클 판단에 필요한 핵심 신호</h3><p>중복되는 기업별 수치·세부 가중치 표는 이 화면에서 제외했습니다.</p></div><Pill tone="blue">핵심 3개 지표</Pill></div>
-   <Table headers={['핵심 신호','현재 판단','해석']} rows={[
-    ['HBM·서버 DRAM 수요','강세','삼성·SK하이닉스의 AI 메모리 및 서버 제품 판매 확대'],
-    ['범용 DRAM 가격','상승','정부 공개 기준가격 상승. 단, 서버 DDR5 계약 ASP와 동일한 수치가 아님'],
-    ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
-    ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
-   ]}/>
-   <Notice>{cycleScore}점은 현재 정량 점수를 확보한 Server DDR5·HBM·NAND 3개 지표의 가중 평균 참고값입니다. 전체 {memorySignals.length}개 지표 중 {memorySignals.length-scoreable.length}개가 미확보이므로 전체 업황 점수로 해석하거나 사이클 정점·하락 시점을 단정하지 않습니다.</Notice>
-  </div>
-  <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
-  <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
- </>;
-}
-function Pricing(){return <>
- <Title eyebrow="02 / PRODUCT PRICING" title="메모리 가격 & 수급" desc="정부가 공개한 범용 DRAM·NAND 기준가격과 DDR5 고정가격을 반영합니다. 제품별 전월 가격 증감액과 증감률을 함께 표시하며, 공개되지 않은 개별 계약 ASP는 추정하지 않습니다."/>
- <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DDR5 16Gb 고정가격 (별도 계열)',unit:'USD / chip',data:pricesDdr5_16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8,comparisonData:prices2025Dram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand,comparisonData:prices2025Nand}]} quarterHeaders={['월','DRAM 16Gb','증감액(원)','증감률','DDR5 16Gb','증감액(원)','증감률','DRAM 8Gb','증감액(원)','증감률','NAND 128Gb','증감액(원)','증감률','상태']} quarterRows={[
-  ['Jun 26','$40.0',priceChangeCell(pricesDram16,'Jun 26','delta'),priceChangeCell(pricesDram16,'Jun 26','rate'),'$40.0',priceChangeCell(pricesDdr5_16,'Jun 26','delta'),priceChangeCell(pricesDdr5_16,'Jun 26','rate'),'—',priceChangeCell(pricesDram8,'Jun 26','delta'),priceChangeCell(pricesDram8,'Jun 26','rate'),'$28.8',priceChangeCell(pricesNand,'Jun 26','delta'),priceChangeCell(pricesNand,'Jun 26','rate'),'Actual'],
-  ['Jul 26','$45.0',priceChangeCell(pricesDram16,'Jul 26','delta'),priceChangeCell(pricesDram16,'Jul 26','rate'),'$45.0',priceChangeCell(pricesDdr5_16,'Jul 26','delta'),priceChangeCell(pricesDdr5_16,'Jul 26','rate'),'$24.0',priceChangeCell(pricesDram8,'Jul 26','delta'),priceChangeCell(pricesDram8,'Jul 26','rate'),'$30.1',priceChangeCell(pricesNand,'Jul 26','delta'),priceChangeCell(pricesNand,'Jul 26','rate'),'Actual'],
-  ['Aug 26','$46.5',priceChangeCell(pricesDram16,'Aug 26','delta'),priceChangeCell(pricesDram16,'Aug 26','rate'),'$46.5',priceChangeCell(pricesDdr5_16,'Aug 26','delta'),priceChangeCell(pricesDdr5_16,'Aug 26','rate'),'$25.0',priceChangeCell(pricesDram8,'Aug 26','delta'),priceChangeCell(pricesDram8,'Aug 26','rate'),'$30.5',priceChangeCell(pricesNand,'Aug 26','delta'),priceChangeCell(pricesNand,'Aug 26','rate'),'Actual'],
-  ['Sep 26','$48.0',priceChangeCell(pricesDram16,'Sep 26','delta'),priceChangeCell(pricesDram16,'Sep 26','rate'),'$48.0',priceChangeCell(pricesDdr5_16,'Sep 26','delta'),priceChangeCell(pricesDdr5_16,'Sep 26','rate'),'$26.0',priceChangeCell(pricesDram8,'Sep 26','delta'),priceChangeCell(pricesDram8,'Sep 26','rate'),'$30.6',priceChangeCell(pricesNand,'Sep 26','delta'),priceChangeCell(pricesNand,'Sep 26','rate'),'Actual'],
-  ['Oct 26','—',priceChangeCell(pricesDram16,'Oct 26','delta'),priceChangeCell(pricesDram16,'Oct 26','rate'),'$50.0',priceChangeCell(pricesDdr5_16,'Oct 26','delta'),priceChangeCell(pricesDdr5_16,'Oct 26','rate'),'$27.5',priceChangeCell(pricesDram8,'Oct 26','delta'),priceChangeCell(pricesDram8,'Oct 26','rate'),'$30.6',priceChangeCell(pricesNand,'Oct 26','delta'),priceChangeCell(pricesNand,'Oct 26','rate'),'Actual']
- ]} note="DRAM 16Gb 범용 기준가격과 DDR5 16Gb 고정가격은 서로 다른 공개 계열이므로 분리했습니다. 증감액은 기준가격의 USD/chip 차이를 기준 환율 1,345원으로 환산한 원/chip입니다. DDR5 16Gb는 10월 $50.0까지 공개되어 있습니다. 어느 series도 Server DDR5 RDIMM·PC DDR5 모듈 ASP와 동일하지 않습니다." source={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향']}/>
- <div className="panel"><h3>2025년 공개 DRAM 8Gb·NAND 128Gb 기준가격</h3><p className="muted">2025년 7~10월 관측치 · USD/chip · 2026년 series와 연도·시장 환경을 구분</p><LineChart data={prices2025Dram8} keyName="value" label="DRAM 8Gb reference · USD/chip" height={180}/><LineChart data={prices2025Nand} keyName="value" label="NAND 128Gb reference · USD/chip" height={180}/><Table headers={['월','DRAM 8Gb','증감액(원)','증감률','NAND 128Gb','증감액(원)','증감률']} rows={prices2025Dram8.map(x=>[x.year,'$'+x.value.toFixed(2),priceChangeCell(prices2025Dram8,x.year,'delta'),priceChangeCell(prices2025Dram8,x.year,'rate'),'$'+(prices2025Nand.find(n=>n.year===x.year)?.value??0).toFixed(2),priceChangeCell(prices2025Nand,x.year,'delta'),priceChangeCell(prices2025Nand,x.year,'rate')])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
- <div className="panel"><h3>제품별 데이터 범위</h3><Table headers={['제품군','확인 가능한 항목','미확보 항목']} rows={[
-  ['Server DDR5','기업 IR의 서버 DDR5 수요·제품 믹스 코멘트, 범용 DRAM 8Gb·16Gb 기준가격','Server RDIMM 계약 ASP·제품별 출하 bit'],['PC DDR5','글로벌 시장·기업 실적의 간접 신호','PC 전용 DDR5 계약 ASP·출하량'],['DDR4','기업 코멘트 및 범용 DRAM 시장 지표 일부','DDR4 단독 고정가격·계약 ASP'],['HBM','삼성·SK hynix의 HBM4 출하·사업 코멘트','고객별 HBM3E/HBM4 계약가격·ASP'],['NAND','NAND 128Gb 기준가격·SSD 수출','Enterprise SSD 제품별 계약 ASP'],['삼성·SK ASP','분기 매출·이익 및 가격 방향 코멘트','회사별·제품별 ASP 증감률']
- ]}/></div>
- </>;
-}
-function Demand(){return <>
- <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="글로벌 AI 토큰 사용량에서 GPU 연산 수요와 HBM·서버 DRAM·eSSD bit 수요까지 연결합니다. 공개 실적(actual), 기관 추정(estimate), 자체 계산 경로(model)를 분리하며, 입력이 없는 값은 임의로 채우지 않습니다."/>
- <div className="stats-grid"><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="J.P. Morgan AI Tracker 추정"/><Stat label="2026E 연말 토큰" value="400조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2027E 토큰" value="600조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2030E 토큰" value="2,000조/일" sub="자체 기준 시나리오 · forecast"/></div>
- <TrendPanel title="글로벌 AI 토큰 사용량 · 일평균 run-rate" series={[{name:"Median · 중앙값 기준",unit:"Trillion tokens/day · median scenario, not official forecast",data:tokenBase}]} note="J.P. Morgan AI Tracker의 반기별 차트 판독 근사치를 포함합니다. 2026년 말~2030년 전망은 공식 기관 전망이 아닌 자체 시나리오입니다. 토큰 집계 범위·중복·모델별 공개 수준이 통일되지 않아 전 세계 실측 총량으로 해석하면 안 됩니다." source={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)"]}/>
  <div className="panel"><h3>플랫폼 실측 토큰 성장 · OpenRouter 관측치</h3><p className="muted">글로벌 전체 시장 추정치와 분리한 플랫폼 관측 proxy입니다. OpenRouter 경유 요청만 포함하며, 직접 API·자체 호스팅·다른 라우터 트래픽은 포함하지 않습니다.</p><Table headers={["기간","OpenRouter 토큰/일","전년 대비","데이터 성격"]} rows={[[ "2025-10","0.721조","—","월평균 관측"],["2025-11","0.885조","+23%","월평균 관측"],["2026-01","1.0조","—","월평균 관측"],["2026-04","3.2조","—","월평균 관측"],["2026-07","8.0조","약 21배 vs 2025-07","월평균 관측"],["2026-10","25조","약 35배 vs 2025-10","월평균 관측"],["2026-11 (1~23일)","35조","약 40배 vs 2025-11","월평균 잠정"] ]}/><Notice>2026-11-24 업데이트된 공개 집계에서 최근 7일 평균은 약 46조 tokens/day, 2025년 같은 기간 대비 약 50배로 제시됩니다. 월평균·최근 7일 평균·특정일 값은 서로 다른 통계이므로 혼합하지 않습니다. OpenRouter는 글로벌 AI 사용량의 일부를 보여주는 관측 표본입니다.</Notice><Sources items={["OpenRouter · Data and October 2026 recap","06.ai · OpenRouter tokens and spend tracker (updated 2026-11-24)"]}/></div>
- <div className="panel"><h3>Agentic AI 비중과 토큰 경제성 변화 · OpenRouter</h3><p className="muted">OpenRouter 플랫폼 내 API key 분류 기준이며, 글로벌 전체 AI 시장 점유율은 아니다.</p><div className="stats-grid"><Stat label="2026년 10월 Agentic 토큰 비중" value="76%" sub="OpenRouter routed tokens"/><Stat label="2025년 Agentic 비중" value="8%" sub="1년 전 비교"/><Stat label="Closed-weight 유효 토큰 단가" value="-57%" sub="2026년 1월 대비 10월"/><Stat label="Open-weight 유효 토큰 단가" value="-70%" sub="2026년 1월 대비 10월"/></div><Table headers={["관측 항목","2025년","2026년 10월","해석"]} rows={[["Agentic API key 토큰 비중","8%","76%","agentic 분류 key의 토큰 비중 급증"],["OpenRouter 월간 토큰량","—","790조 tokens","전월 대비 +37%, 1월 대비 약 25배"],["유효 토큰 단가","1월 기준","Closed -57% · Open -70%","단가 하락이 사용량·호출량 확대를 자극할 가능성"]]}/><Notice>Agentic 분류는 OpenRouter가 API key별 사용 패턴으로 분류한 값이다. 전체 AI 시장의 agent 비중이나 inference workload 비중으로 일반화하지 않는다. 단가 하락이 사용량 증가를 자극할 수 있지만, 실제 반도체 수요는 모델 효율·캐시·하드웨어 utilization을 함께 봐야 한다.</Notice><Sources items={["OpenRouter · October monthly recap (2026-11-12)"]}/></div>
  <div className="panel"><h3>토큰 성장의 질: Input·Output·Reasoning·Agent</h3><p className="muted">단순 토큰 합계뿐 아니라 어떤 유형의 토큰이 증가하는지 구분해야 GPU 연산과 메모리 대역폭·용량 수요를 추정할 수 있습니다.</p><Table headers={["구분","핵심 관측 변수","연산·메모리 영향","데이터 확보 상태"]} rows={[
  ["Input / Prefill","입력 tokens/day, 평균 context, cache hit ratio","대량 prompt prefill, 순간 연산량·KV cache 생성","사업자별 공개치 일부"],
  ["Output / Decode","출력 tokens/day, tokens/sec, 동시 세션","지속적 decode 처리량, HBM bandwidth","플랫폼별 공개 범위 상이"],
@@ -572,7 +292,14 @@ function Demand(){return <>
   ["Reasoning·Agent","추론 단계 수·tool call·재시도·장문 context","요청당 토큰·연산량 증가, 긴 context 유지","KV cache 및 HBM/DRAM 용량·대역폭 증가"],
   ["멀티모달","이미지 해상도·영상 길이·음성 frame·동시 처리량","모달리티별 전처리·연산·저장","HBM·DRAM 및 데이터 저장용 NAND"]
  ]}/><Notice>Training은 대규모 병렬 연산과 통신, inference는 서비스 요청의 지속 처리와 메모리 대역폭·용량이 중요합니다. Microsoft Research는 추론 workload를 latency-sensitive·memory-bound와 throughput-oriented 유형으로 구분합니다.</Notice><Sources items={["Microsoft Research · AI Data Center Lifecycle Compass","McKinsey · The next big shifts in AI workloads and hyperscaler strategies"]}/></div>
- <div className="panel"><h3>글로벌 토큰 수요: 공개 추정 범위와 해석</h3><p className="muted">전 세계 토큰은 공식 계량 통계가 아니라 공개 사업자 수치와 모델링을 결합한 추정치입니다. 단일 숫자보다 disclosed floor와 modeled total을 함께 봅니다.</p><Table headers={["기준일","공개/추정 지표","토큰/일","해석"]} rows={[[ "2026-07-15","Global disclosed floor","약 300.1조","공개된 사용량을 합산한 하한; 중복 제외"],["2026-07-15","Global estimated total","약 360.1조","하한 + 추정 미공개 영역"],["2026-07-15","High estimate","약 476.6조","추정 범위 상단; 실측치 아님"],["2026-11","Global revised scenario","약 668~837조","중국 6월 공식 발표 500조+/일 반영한 제3자 재산정; 모델 시나리오"]]}/><Notice>J.P. Morgan AI Tracker와 Tokens Per Day의 2026년 7월 수치는 당시 추정치다. 2026년 11월 PriceCompute가 중국 국가데이터국의 6월 500조+/일 발표를 반영해 글로벌 inference를 668~837조/day로 재산정했지만, 기존 추정 모델의 입력값을 수정한 시나리오이지 새로운 글로벌 실측 총량은 아니다. 기준일과 추정 범위를 분리해 읽어야 한다.</Notice><Sources items={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)","Tokens Per Day · Estimates and methodology (2026-07-16)"]}/></div>
+ <div className="panel"><h3>글로벌 토큰 수요: 공개 추정 범위와 해석</h3><p className="muted">전 세계 토큰은 공식 계량 통계가 아니라 공개 사업자 수치와 모델링을 결합한 추정치입니다. 단일 숫자보다 disclosed floor와 modeled total을 함께 봅니다.</p><Table headers={["기준일","공개/추정 지표","토큰/일","해석"]} rows={[[ "2026-07-15","Global disclosed floor","약 300.1조","공개된 사용량을 합산한 하한; 중복 제외"],["2026-07-15","Global estimated total","약 360.1조","하한 + 추정 미공개 영역"],["2026-07-15","High estimate","약 476.6조","추정 범위 상단; 실측치 아님"]]}/><Notice>J.P. Morgan AI Tracker는 2026년 7월 약 360조 tokens/day를 제시합니다. Tokens Per Day는 같은 시점의 disclosed floor 약 300조, 중앙 추정 약 360조, 상단 약 477조를 제시합니다. 서로 다른 산식·포함 범위의 추정치이므로 하나의 정밀한 실측값으로 취급하지 않습니다.</Notice><Sources items={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)","Tokens Per Day · Estimates and methodology (2026-07-16)"]}/></div>
+ <div className="panel"><h3>토큰 수요를 실제 workload로 분해</h3><p className="muted">토큰 총량을 입력·출력·reasoning·agent 반복 호출·멀티모달로 분해해야 GPU와 메모리 수요를 더 정확히 추정할 수 있습니다.</p><Table headers={["수요 항목","추적 지표","반도체 수요로 연결되는 요인","데이터 상태"]} rows={[
+ ["Input / Prefill","입력 토큰/일, 평균 prompt 길이, cache hit ratio","대량 prompt 처리량, prefill batch, KV cache 생성","사업자별 공개치 제한적; 별도 추정 필요"],
+ ["Output / Decode","출력 토큰/일, tokens/sec, 동시 세션","decode 처리량과 HBM bandwidth 병목","총량과 분리된 글로벌 공개 집계 부족"],
+ ["Reasoning","요청당 reasoning token, thinking step, 재시도","요청당 연산량 및 출력·내부 토큰 증가","모델별 공개·비공개 혼재"],
+ ["Agent / Tool use","task당 tool call, 반복 횟수, context 재전송","입력 토큰 누적·장문 context·KV cache 동시성 증가","연구 사례 중심; 전체 시장 비중 미확보"],
+ ["Multimodal","이미지 patch, video frame, audio token 환산","텍스트 토큰 외 vision/audio encoder 연산·메모리","모델별 토큰화 규칙 상이"]
+ ]}/><Notice>2026년 4월 Microsoft Research 등의 agentic coding 연구는 분석한 SWE-bench 작업에서 agent task가 일반 code reasoning/chat보다 최대 1,000배 많은 토큰을 소비할 수 있고, 입력 토큰이 비용을 크게 좌우하며 동일 작업의 실행 간 토큰 사용량 편차도 매우 컸다고 보고했습니다. 이는 특정 코딩 벤치마크 결과이지 전체 AI 트래픽의 평균 배수가 아닙니다.</Notice><Sources items={["Microsoft Research · How Do AI Agents Spend Your Money? (April 2026)"]}/></div>
  <div className="panel"><h3>AI 토큰 → 유효 연산량 변환 모델</h3><p className="muted">서비스 사용량을 실제 가속기 compute demand로 변환하는 계산 계층입니다.</p><Table headers={["단계","계산 변수","계산 개념","현재 데이터 상태"]} rows={[
   ["1. 요청량","일일 요청 수 × 요청당 입력·출력 토큰","입력 토큰과 출력 토큰을 분리해 합산","공개 범위·집계 정의가 통일되지 않음"],
   ["2. workload 가중","Training / inference / reasoning / agent 비중","workload별 토큰 및 연산량 가중","공개 통계 미확보·시나리오 입력 필요"],
@@ -629,6 +356,12 @@ function Demand(){return <>
   ["가속기 실효 가동률","초기 설치·소프트웨어 최적화 지연","단계적 램프업","높은 utilization·빠른 workload 투입"]
  ]}/><Notice>시나리오별 결과는 아직 글로벌 통합 입력 데이터가 부족한 변수에 대해 임의의 수치를 넣지 않고, 가정값·근거·신뢰도·갱신일을 먼저 기록하도록 설계합니다. 데이터가 확보되면 3·6·12·24개월의 토큰 수요, accelerator 설치량, HBM/DRAM/NAND bit 수요를 계산합니다.</Notice></div>
  <div className="panel"><h3>연도별 수요 전망 한눈에 보기 · 기존 공개 경로</h3><Table headers={["연도","AI 토큰/일 Median","구분"]} rows={[["2025","—","실측 글로벌 통합치 미확보"],["2026E 연말","400조","자체 시나리오"],["2027","600조","모델 경로"],["2028","900조","모델 경로"],["2029","1,350조","모델 경로"],["2030","2,000조","모델 경로"]]}/><Notice>2026년 말 이후 연도별 토큰 수치는 공식 기관 전망이 아닌 자체 기준 시나리오입니다. 글로벌 토큰 집계 범위와 모델별 공개 수준이 통일되지 않아 실측 총량과 구분합니다.</Notice></div>
+ <div className="panel"><h3>메모리 수요 계산식과 입력값 검증</h3><p className="muted">토큰 성장률을 메모리 bit 성장률로 바로 치환하지 않습니다. workload와 플랫폼 구성을 거쳐 제품별 수요를 산출합니다.</p><Table headers={["산출 대상","기본 계산식","필수 입력값","현재 한계"]} rows={[
+ ["GPU compute","Σ(tokens by workload × FLOPs/token) ÷ effective FLOPs/GPU","모델·정밀도·input/output·batch·utilization","모델별 FLOPs/token 및 실효 utilization 미공개"],
+ ["HBM bit demand","신규 accelerator × HBM GB/GPU × GPU/node × 8","세대별 출하 믹스·GPU당 HBM·ASIC 비중","ASIC별 HBM 탑재량·출하 믹스 부족"],
+ ["Server DDR5 bit demand","AI server shipments × DRAM GB/server × 8","서버 출하량·CPU socket·DIMM 용량","시장 평균 서버당 DRAM 공개치 부족"],
+ ["eSSD NAND bit demand","AI server/storage shipments × SSD TB/system × 8","TLC/QLC 비중·SSD 용량·offload 비율","KV cache SSD 채택률과 용량 미공개"]
+ ]}/><div className="formula-box"><b>제품별 bit 수요 (decimal 기준)</b><code>EB = systems × capacity(GB) × 8 ÷ 10⁹</code><code>Incremental demand = new deployments + capacity upgrades + replacements − retired capacity</code><small>실제 산출 시 GB/GiB, TB/TiB, EB/EiB를 통일하고 GPU당 HBM과 서버당 DDR5를 별도 집계합니다.</small></div><Notice>현재 확인 가능한 공개 사양은 reference 구성으로 입력하고, 글로벌 shipment mix·평균 탑재량·KV cache offload 비중은 데이터가 확보되기 전까지 숫자를 임의 생성하지 않습니다.</Notice></div>
  <div className="panel"><h3>AI 수요 → 반도체 수요 전달 경로</h3><div className="bridge">{[["AI 학습·추론량","토큰·영상·reasoning·agent 사용량"],["가속기 설치량","GPU·ASIC 출하 및 서버 랙 증설"],["메모리 탑재량","HBM 용량·대역폭, DDR5, eSSD"],["메모리 bit 수요","출하량 × 시스템당 탑재 용량"]].map((x,i)=><div className="bridge-item" key={i}><span>0{i+1}</span><b>{x[0]}</b><small>{x[1]}</small>{i<3&&<ChevronRight/>}</div>)}</div><Notice>토큰·CAPEX·GPU 출하·메모리 탑재량은 서로 다른 관측 축입니다. 이들을 하나의 지표로 합치지 말고 단계별로 연결해야 중복 계산과 과대 추정을 피할 수 있습니다.</Notice></div>
  <div className="panel"><h3>데이터 품질·예측 검증 체크리스트</h3><Table headers={["검증 항목","규칙"]} rows={[
   ["실적/추정/전망","Actual·Estimate·Forecast·Model을 모든 시계열에 표시"],
