@@ -163,7 +163,6 @@ const dramPriceScore=ddr5Momentum.score*0.40+dram16Momentum.score*0.35+dram8Mome
 const priceMomentumScore=Math.round(dramPriceScore*0.80+nandMomentum.score*0.20);
 // 수요가 가격보다 선행한다는 점을 반영하되, 가격이 확인되지 않은 수요만으로 과대평가하지 않도록 60:40
 const weightedCycleScore=(demandWeight:number)=>Math.round(aiDemandScore*(demandWeight/100)+priceMomentumScore*(1-demandWeight/100));
-const cycleScore=weightedCycleScore(60);
 
 function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
 function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
@@ -292,7 +291,7 @@ function Overview({period,setPeriod,demandWeight}:{period:Period;setPeriod:(p:Pe
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
   <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI 메모리 수요 성장과 실제 공개 메모리 가격 모멘텀을 분리 평가한 참고 지수입니다. 공급·재고·기업별 ASP는 공개 데이터가 부족해 별도 확정 점수에 넣지 않습니다."/>
-  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> AI 메모리 수요·가격 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 모멘텀 {priceMomentumScore}점 · 가중치 {demandWeight}:{priceWeight}</p><div className="score-foot"><span>AI 수요 성장 강세</span><span>DRAM 가격 상승</span><span>NAND 상승 둔화</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>수요·가격 지수</span></div></div><small>전체 업황·정점 예측 점수 아님</small></div></div>
+  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> AI 메모리 수요·가격 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 모멘텀 {priceMomentumScore}점 · AI 수요 {demandWeight}% · 가격 {priceWeight}%</p><div className="score-foot"><span>AI 수요 성장 강세</span><span>DRAM 가격 상승</span><span>NAND 상승 둔화</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>수요·가격 지수</span></div></div><small>전체 업황·정점 예측 점수 아님</small></div></div>
   <div className="stats-grid three">
    <Stat label="DDR5 16Gb · 2026년 10월" value="$50.0" sub="전월 대비 +4.2% · 공개 고정가격"/>
    <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
@@ -305,7 +304,7 @@ function Overview({period,setPeriod,demandWeight}:{period:Period;setPeriod:(p:Pe
     ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
     ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
    ]}/>
-   <Notice>기존 92점은 Server DDR5(93)·HBM(98)·NAND(80)만 가중 평균한 값으로 산술은 맞지만, AI 서버 출하·wafer·bit 수요 성장과 월별 가격 모멘텀을 직접 계산하지 않은 제한적 점수였습니다. 새 지수는 AI 수요 60%(DRAM wafer CAGR 35%, NAND wafer CAGR 15%, Server DRAM bit CAGR 30%, AI 서버 출하 성장 20%)와 가격 40%(DRAM 80%, NAND 20%)로 재산정합니다. 현재는 수요 ${aiDemandScore}점, 가격 ${priceMomentumScore}점, 종합 ${cycleScore}점입니다. 공급·재고·회사별 ASP는 비교 가능한 공개 시계열이 없어 제외했으므로 전체 업황 확정 점수로 보지 않습니다.</Notice>
+   <Notice>기존 92점은 Server DDR5·HBM·NAND의 제한된 지표를 가중 평균한 점수였습니다. 현재 종합지수는 AI 수요 {demandWeight}%(DRAM wafer CAGR 35%, NAND wafer CAGR 15%, Server DRAM bit CAGR 30%, AI 서버 출하 성장 20%)와 가격 {priceWeight}%(DRAM 80%, NAND 20%)로 계산합니다. 현재는 수요 {aiDemandScore}점, 가격 {priceMomentumScore}점, 종합 {liveCycleScore}점입니다. 슬라이더 조절은 이 가중치만 변경하며 각 세부 지표의 원점수는 바꾸지 않습니다. 공급·재고·회사별 ASP는 비교 가능한 공개 시계열이 없어 제외했으므로 전체 업황 확정 점수로 보지 않습니다.</Notice>
   </div>
   <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
