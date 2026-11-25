@@ -883,6 +883,7 @@ function Market(){
 
 function App(){
  const [active,setActive]=useState<Section>(()=>{const tab=new URLSearchParams(window.location.search).get('tab');return menu.some(m=>m.id===tab)?tab as Section:'overview'});
+ useEffect(()=>{window.scrollTo({top:0,left:0,behavior:'auto'});},[active]);
  const [period,setPeriod]=useState<Period>('3Y');
  const [scoreConfig,setScoreConfig]=useState<ScoreConfig>(DEFAULT_SCORE_CONFIG);
  const updateScoreConfig=(key:keyof ScoreConfig,value:number)=>setScoreConfig(prev=>({...prev,[key]:value}));
