@@ -121,5 +121,29 @@
       "Review low/base/high scenario assumptions and forecast caveats"
     ],
     "expected": "Token history remains Jan-2024 through Jul-2026; disclosed floor, modeled median and high estimate are distinguished; workload types and memory conversion logic are visible; HBM product specifications and host DRAM reference configurations are sourced and labeled; no data-centre power-demand charts or power KPIs are present."
+  },
+  {
+    "name": "Verify AI token observations and semiconductor memory conversion",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": [
+      "OpenRouter observed tokens separated from global estimates",
+      "input/output/reasoning/agent workload split",
+      "HBM4 Rubin official system specification",
+      "HGX B200/H200/H100 host DRAM reference",
+      "HBM DDR5 eSSD demand formulas",
+      "power demand charts excluded"
+    ],
+    "description": "Checks that AI demand is token-centric, observed platform usage is not mislabeled as global demand, and public semiconductor memory configurations are separated from modeled market averages.",
+    "steps": [
+      "Open AI Demand and Data Centers",
+      "Review OpenRouter monthly token observations and latest 7-day average caveat",
+      "Review input/output/reasoning/agent token workload table",
+      "Review HBM generation specifications and HGX Rubin NVL8 system-level HBM4 capacity",
+      "Review NVIDIA HGX host DRAM reference configurations",
+      "Review HBM, DDR5 and eSSD bit-demand formulas",
+      "Confirm no electricity-demand charts or PUE metrics are shown"
+    ],
+    "expected": "OpenRouter usage is labeled as a platform sample, not global usage; monthly averages and 7-day averages are not mixed; agentic coding benchmark findings are scoped to SWE-bench; HGX Rubin NVL8 shows 2 TB HBM4 and 130 TB/s system bandwidth; HGX B200/H200/H100 system DRAM reference is minimum 1.5 TB; HBM, DDR5 and eSSD calculations are separate; no data-center electricity demand charts are present."
   }
 ]
