@@ -385,7 +385,7 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
   <div className="stats-grid three">
    <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub="AI 서버 출하 · Server DRAM bit · Enterprise SSD bit"/>
    <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub={`DRAM ${scoreConfig.dramShare}% · NAND ${100-scoreConfig.dramShare}%`}/>
-   <Stat label="수요·가격 종합" value={liveCycleScore+" / 100"} sub={`AI 수요 ${demandWeight}% · 가격 ${priceWeight}%`}/>
+   <Stat label="산업 사이클 종합" value={liveCycleScore+" / 100"} sub={`수요 ${demandWeight}% · 가격 ${Math.round(nonDemandWeight*0.7)}% · 실적 ${Math.round(nonDemandWeight*0.3)}% (실적 점수 ${financialScore})`}/>
   </div>
   <Table headers={["평가 항목","원자료 성장률","환산 점수","반영 방식"]} rows={[
     ["AI 서버 출하 증가율 · 2026 전망",aiServerShipmentGrowth.toFixed(0)+"%",scores.demandItems[0].score.toFixed(0),"수요 동일 가중"],
