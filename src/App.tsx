@@ -377,7 +377,7 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
   </div>
   <div className="panel"><div className="panel-head"><div><h3>사이클 판단 핵심 신호</h3><p>공개된 수요 전망·가격·분기 실적만 점수화하고 비공개 항목은 분리 표시</p></div><Pill tone="blue">5개 축 · 공개자료 기반</Pill></div>
    <Table headers={['핵심 신호','현재 점수/상태','계산 기준']} rows={[
-    ['AI·메모리 수요',aiDemandScore+'점','AI 서버 출하 +31%, Server DRAM bit CAGR, Enterprise SSD bit CAGR 공개 전망'],
+    ['AI·메모리 수요',aiDemandScore+'점',<>AI 서버 출하 <span className="tone-up">+31%</span>, Server DRAM bit CAGR, Enterprise SSD bit CAGR 공개 전망</>],
     ['메모리 가격',priceMomentumScore+'점','DDR5·DRAM 8Gb·NAND 128Gb 공개 가격 모멘텀; DRAM 16Gb 유사계열 중복 제외'],
     ['공급 전망',scores.supplyScore+'점','TrendForce 공개 전망 방향성: DRAM 공급 타이트·NAND 공급 완화/과잉 위험'],
     ['기업 전체 재고',inventoryScore+'점','삼성·SK하이닉스·Micron 공시 재고 증감률과 매출 증감률의 차이'],
@@ -406,9 +406,9 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
    <Stat label="통합 가격 점수" value={scores.priceScore+" / 100"} sub={`DRAM ${scoreConfig.dramShare}% · NAND ${100-scoreConfig.dramShare}%`}/>
   </div>
   <Table headers={['가격 지표','관측구간 월평균','최근 월','개별 점수','점수 반영 비중']} rows={[
-   ['DDR5 16Gb',ddr5.avgMonthly.toFixed(1)+'%',ddr5.latestMonthly.toFixed(1)+'%',ddr5.score.toFixed(0),'DRAM 내 60%'],
-   ['DRAM 8Gb',dram8.avgMonthly.toFixed(1)+'%',dram8.latestMonthly.toFixed(1)+'%',dram8.score.toFixed(0),'DRAM 내 40%'],
-   ['NAND 128Gb',nand.avgMonthly.toFixed(1)+'%',nand.latestMonthly.toFixed(1)+'%',String(Math.round(nand.score)),`통합 내 ${100-scoreConfig.dramShare}%`]
+   ['DDR5 16Gb',<span className={'tone-'+(ddr5.avgMonthly>0?'up':ddr5.avgMonthly<0?'down':'flat')}>{ddr5.avgMonthly.toFixed(1)}%</span>,<span className={'tone-'+(ddr5.latestMonthly>0?'up':ddr5.latestMonthly<0?'down':'flat')}>{ddr5.latestMonthly.toFixed(1)}%</span>,ddr5.score.toFixed(0),'DRAM 내 60%'],
+   ['DRAM 8Gb',<span className={'tone-'+(dram8.avgMonthly>0?'up':dram8.avgMonthly<0?'down':'flat')}>{dram8.avgMonthly.toFixed(1)}%</span>,<span className={'tone-'+(dram8.latestMonthly>0?'up':dram8.latestMonthly<0?'down':'flat')}>{dram8.latestMonthly.toFixed(1)}%</span>,dram8.score.toFixed(0),'DRAM 내 40%'],
+   ['NAND 128Gb',<span className={'tone-'+(nand.avgMonthly>0?'up':nand.avgMonthly<0?'down':'flat')}>{nand.avgMonthly.toFixed(1)}%</span>,<span className={'tone-'+(nand.latestMonthly>0?'up':nand.latestMonthly<0?'down':'flat')}>{nand.latestMonthly.toFixed(1)}%</span>,String(Math.round(nand.score)),`통합 내 ${100-scoreConfig.dramShare}%`]
   ]}/>
   <Notice>기존 DRAM 16Gb 참고선은 DDR5 16Gb와 2026년 6~9월 값이 완전히 같아 중복 표시를 제거했습니다. 점수는 DDR5 16Gb와 DRAM 8Gb만으로 DRAM 점수를 계산하며, NAND는 별도 가중치로 반영합니다.</Notice>
  </div>
@@ -478,7 +478,7 @@ function Demand(){
    <Stat label="AI 서버 출하 전망" value={"+"+aiServerShipmentGrowth+"%"} sub="2026년 공개 전망"/>
    <Stat label="Server DRAM bit CAGR" value={serverDramBitCagr.toFixed(1)+"%"} sub="2026~2028년 공개 전망"/>
   </div>
-  <Table headers={["평가 항목","원자료 성장률","환산 점수","반영 방식"]} rows={demandItems.map(item=>[item.name,item.growth.toFixed(1)+"%",item.score.toFixed(0),"수요 점수 동일 가중"])}/>
+  <Table headers={["평가 항목","원자료 성장률","환산 점수","반영 방식"]} rows={demandItems.map(item=>[item.name,<span className={'tone-'+(item.growth>0?'up':item.growth<0?'down':'flat')}>{item.growth.toFixed(1)}%</span>,item.score.toFixed(0),"수요 점수 동일 가중"])}/>
   <Notice>성장 점수는 중립 50점 + 성장률×0.65로 0~100점에 환산합니다. 세 지표는 공개 기관 전망치이며 실제 출하 실적이 아닙니다. Enterprise SSD는 전체 NAND 수요의 부분집합이므로 DRAM bit 수요와 물량을 합산하지 않고 성장 신호로만 사용합니다. 이 점수는 산업 비교용 proxy이며 통계적으로 검증된 예측모형은 아닙니다.</Notice>
   <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)"]}/>
  </div>
