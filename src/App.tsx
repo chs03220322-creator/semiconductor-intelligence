@@ -63,7 +63,12 @@ const sources=[
   {name:'Microsoft · FY2027 Q1 실적발표 콜',date:'2026-10-28',url:'https://www.microsoft.com/en-us/investor/events/fy-2027/earnings-fy-2027-q1',desc:'Q1 CAPEX $45.2B, 현금 PPE $39.4B'},
   {name:'Microsoft · FY2026 Annual Report',date:'2026-08-05',url:'https://www.microsoft.com/investor/reports/ar26/',desc:'FY24~FY26 additions to PPE 연간 actual'},
   {name:'SK hynix · Yongin Y2 / Cheongju M17 투자',date:'2026-08-07',url:'https://news.skhynix.com/en/fab-facility-investment-2026/',desc:'신규 팹 투자 계획·장기 공급능력'},
-  {name:'미래에셋증권 · 반도체 NAND 수요 전망 (2026-04-13), 표 4',date:'2026-04-13',url:'https://securities.miraeasset.com/bbs/download/2143836.pdf?attachmentId=2143836',desc:'2020~2028년 글로벌 Total NAND 및 Enterprise SSD bit 수요 전망 · 표 4'}
+  {name:'미래에셋증권 · 반도체 NAND 수요 전망 (2026-04-13), 표 4',date:'2026-04-13',url:'https://securities.miraeasset.com/bbs/download/2143836.pdf?attachmentId=2143836',desc:'2020~2028년 글로벌 Total NAND 및 Enterprise SSD bit 수요 전망 · 표 4'},
+  {name:'SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)',date:'2026-02-10',url:'https://f.irbank.net/pdf/20260210/140120260209551618.pdf',desc:'AI 서버 DRAM/NAND wafer 수요 및 서버당 DRAM 탑재량 전망'},
+  {name:'SUMCO · 4Q-2025 Results, p.13 (2026-02-10)',date:'2026-02-10',url:'https://f.irbank.net/pdf/20260210/140120260209551618.pdf',desc:'AI 서버 DRAM wafer 수요·서버당 DRAM 탑재량 전망'},
+  {name:'SUMCO · 4Q-2025 Results, p.14 (2026-02-10)',date:'2026-02-10',url:'https://f.irbank.net/pdf/20260210/140120260209551618.pdf',desc:'AI 서버 NAND wafer 수요 전망'},
+  {name:'미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5',date:'2026-10-06',url:'https://securities.miraeasset.com/bbs/download/2147584.pdf?attachmentId=2147584',desc:'2026~2028년 글로벌 DRAM 및 Server DRAM bit 수요 전망'},
+  {name:'TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)',date:'2026-08-03',url:'https://www.trendforce.com/presscenter/news/20260803-13161.html',desc:'2026년 AI 서버 출하량 약 31% 증가 전망 · 공개 보도자료'}
 ];
 
 const market=[
@@ -142,7 +147,7 @@ const priceMomentum=(values:number[])=>{
 const aiDramWaferCagr=growthPct(180+90,800+700,5);
 const aiNandWaferCagr=growthPct(20+72,29+197,5);
 const serverDramBitCagr=growthPct(164,269,2);
-const aiServerShipmentGrowth=30;
+const aiServerShipmentGrowth=31;
 const aiDemandScore=Math.round(
  growthScore(aiDramWaferCagr)*0.35+
  growthScore(aiNandWaferCagr)*0.15+
@@ -324,7 +329,7 @@ function Demand(){return <>
   <Stat label="2029년 AI 서버 DRAM wafer 수요" value="월 150만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 5.6배"/>
   <Stat label="2029년 AI 서버 NAND wafer 수요" value="월 22.7만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 2.5배"/>
   <Stat label="2027년 Server DRAM 수요" value="216bn Gb" sub="미래에셋증권 · 2026.10.06"/>
-  <Stat label="2027년 AI 서버 출하 증가율" value="약 +30%" sub="TrendForce · 2026.11.16 전망"/>
+  <Stat label="2026년 AI 서버 출하 증가율" value="약 +31%" sub="TrendForce 공개 보도자료 · 2026.08.03 전망"/>
  </div>
  <div className="panel">
   <div className="panel-head"><div><h3>AI 수요·메모리 가격 정량 평가</h3><p>수요 전망과 실제 가격 흐름을 분리하고, 중복 집계는 피했습니다.</p></div><Pill tone="blue">산식 공개</Pill></div>
@@ -337,7 +342,7 @@ function Demand(){return <>
    ["AI 서버 DRAM wafer 수요 CAGR · 2024~2029",aiDramWaferCagr.toFixed(1)+"%",growthScore(aiDramWaferCagr).toFixed(0), "35%"],
    ["AI 서버 NAND wafer 수요 CAGR · 2024~2029",aiNandWaferCagr.toFixed(1)+"%",growthScore(aiNandWaferCagr).toFixed(0), "15%"],
    ["Server DRAM bit 수요 CAGR · 2026~2028",serverDramBitCagr.toFixed(1)+"%",growthScore(serverDramBitCagr).toFixed(0), "30%"],
-   ["AI 서버 출하 증가율 · 2027 전망",aiServerShipmentGrowth.toFixed(0)+"%",growthScore(aiServerShipmentGrowth).toFixed(0), "20%"]
+   ["AI 서버 출하 증가율 · 2026 전망",aiServerShipmentGrowth.toFixed(0)+"%",growthScore(aiServerShipmentGrowth).toFixed(0), "20%"]
   ]}/>
   <Table headers={["가격 지표","전체 구간 월평균","최근 월","가격 점수"]} rows={[
    ["DDR5 16Gb",ddr5Momentum.avgMonthly.toFixed(1)+"%",ddr5Momentum.latestMonthly.toFixed(1)+"%",ddr5Momentum.score.toFixed(0)],
@@ -346,7 +351,7 @@ function Demand(){return <>
    ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0)]
   ]}/>
   <Notice>성장 점수는 0~100 범위에서 50점(중립) + CAGR×1.1로 환산합니다. 가격 점수는 평균 월간 상승률 60%와 최신 월 상승률 40%를 반영하고, 50점 + 월간 모멘텀×5.5로 환산합니다. 종합 점수는 수요 60%·가격 40%입니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
-  <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2027년 AI 서버 출하 전망 (2026-11-16)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
+  <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
  </div>
  <div className="panel"><h3>AI 서버용 DRAM wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server DRAM wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:180},{year:"2025",value:360},{year:"2026",value:500},{year:"2027",value:620},{year:"2028",value:720},{year:"2029",value:800}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:90},{year:"2025",value:180},{year:"2026",value:280},{year:"2027",value:420},{year:"2028",value:570},{year:"2029",value:700}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.13 (2026-02-10)"]}/></div>
  <div className="panel"><h3>AI 서버용 NAND wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server NAND wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:20},{year:"2025",value:25},{year:"2026",value:29},{year:"2027",value:30},{year:"2028",value:29},{year:"2029",value:29}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:72},{year:"2025",value:98},{year:"2026",value:128},{year:"2027",value:155},{year:"2028",value:176},{year:"2029",value:197}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.14 (2026-02-10)"]}/></div>
