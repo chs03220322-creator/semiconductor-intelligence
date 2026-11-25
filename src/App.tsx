@@ -129,18 +129,35 @@ const supplierCapex=[
   {company:'Micron',period:'FY2026 Q4',quarter:'$10.77B',ytd:'$27.37B',definition:'Net CAPEX; FY2026 누계'}
 ];
 const FX_USDKRW=1344.23; // 2026-11-25 reference mid-market rate
-const memorySignals=[
-  {id:'server',name:'Server DDR5',baseWeight:25,score:93,direction:'상승 · 강한 수요',basis:'SK hynix 3Q26는 server DDR5 판매가 크게 늘었다고 공시했고, 삼성은 서버 수요가 전 응용처 가격을 끌어올렸다고 설명. 정부 공개 범용 DRAM 16Gb 기준가격은 Jun $40.0 → Sep $48.0, DRAM 8Gb는 Jul $24.0 → Oct $27.5(+5.8% MoM). 이 가격은 서버 전용 ASP가 아닌 범용 proxy.'},
-  {id:'pc',name:'PC DDR5',baseWeight:10,score:null,direction:'정량 미확보',basis:'PC 전용 DDR5 계약 ASP·출하량의 공개 시계열 미확보. 범용 DRAM 기준가격을 PC DDR5 가격으로 대체하지 않음.'},
-  {id:'ddr4',name:'DDR4',baseWeight:5,score:null,direction:'정량 미확보',basis:'DDR4 전용 고정거래가격·계약 ASP 시계열 미확보. DRAM 8Gb/16Gb 범용 지표를 DDR4 가격으로 간주하지 않음.'},
-  {id:'hbm',name:'HBM',baseWeight:25,score:98,direction:'초강세',basis:'SK hynix 3Q26 HBM4 출하 본격화, 4Q26 HBM4가 HBM3E를 출하량·매출에서 넘어 주력 제품이 될 전망, 2027~2028 생산능력의 50% 이상 장기계약 확보. IEA는 HBM 부족이 적어도 2027년 말까지 지속될 수 있다고 평가.'},
-  {id:'nand',name:'NAND',baseWeight:15,score:80,direction:'가격 보합',basis:'NAND 128Gb 정부 공개 기준가격은 Sep~Oct $30.6으로 보합. 가격 흐름과 기업의 NAND 사업·수요 관련 공식 코멘트만 참고하며 수출액은 점수 산정에서 제외.'},
-  {id:'inventory',name:'재고',baseWeight:10,score:null,direction:'재고일수 미확보',basis:'업체별 총 재고 잔액은 재무제표에 공개되나 DRAM/NAND 제품별·고객별 동일 기준 재고일수 시계열은 미확보. 점수에서 제외.'},
-  {id:'asp',name:'삼성·하이닉스 ASP',baseWeight:10,score:null,direction:'정성적 상승 신호 · 수치 미공개',basis:'삼성·SK의 제품별·회사별 ASP 증감률은 미공개. 분기 매출에는 가격·bit 출하·제품 믹스가 함께 반영되므로 ASP를 매출에서 역산하지 않음.'}
-];
-const scoreable=memorySignals.filter(x=>x.score!==null);
-const scoredBaseWeight=scoreable.reduce((s,x)=>s+x.baseWeight,0);
-const cycleScore=Math.round(scoreable.reduce((s,x)=>s+(x.score as number)*x.baseWeight,0)/scoredBaseWeight);
+// AI 메모리 사이클 점수: 공개 전망의 성장률과 실제 공개가격의 모멘텀을 분리해 계산
+const clampScore=(v:number)=>Math.max(0,Math.min(100,v));
+const growthPct=(start:number,end:number,years:number)=>(Math.pow(end/start,1/years)-1)*100;
+const growthScore=(cagr:number)=>clampScore(50+cagr*1.1);
+const priceMomentum=(values:number[])=>{
+ const avgMonthly=(Math.pow(values[values.length-1]/values[0],1/(values.length-1))-1)*100;
+ const latestMonthly=(values[values.length-1]/values[values.length-2]-1)*100;
+ return {avgMonthly,latestMonthly,score:clampScore(50+(avgMonthly*0.6+latestMonthly*0.4)*5.5)};
+};
+// AI 수요 축: wafer 투입량(학습+추론), Server DRAM bit, AI 서버 출하 전망
+const aiDramWaferCagr=growthPct(180+90,800+700,5);
+const aiNandWaferCagr=growthPct(20+72,29+197,5);
+const serverDramBitCagr=growthPct(164,269,2);
+const aiServerShipmentGrowth=30;
+const aiDemandScore=Math.round(
+ growthScore(aiDramWaferCagr)*0.35+
+ growthScore(aiNandWaferCagr)*0.15+
+ growthScore(serverDramBitCagr)*0.30+
+ growthScore(aiServerShipmentGrowth)*0.20
+);
+// 가격 축: DRAM 계열 80%, NAND 20%. 평균 월간 상승률 60% + 최신 월 상승률 40%
+const ddr5Momentum=priceMomentum([40,45,46.5,48,50]);
+const dram16Momentum=priceMomentum([40,45,46.5,48]);
+const dram8Momentum=priceMomentum([24,25,26,27.5]);
+const nandMomentum=priceMomentum([28.8,30.1,30.5,30.6,30.6]);
+const dramPriceScore=ddr5Momentum.score*0.40+dram16Momentum.score*0.35+dram8Momentum.score*0.25;
+const priceMomentumScore=Math.round(dramPriceScore*0.80+nandMomentum.score*0.20);
+// 수요가 가격보다 선행한다는 점을 반영하되, 가격이 확인되지 않은 수요만으로 과대평가하지 않도록 60:40
+const cycleScore=Math.round(aiDemandScore*0.60+priceMomentumScore*0.40);
 
 function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
 function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
@@ -266,12 +283,12 @@ function TrendPanel({title,series,quarterHeaders,quarterRows,note,source}:{title
 function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void}){
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
-  <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="사이클 판단에 직접 영향을 주는 가격·AI 수요·기업 실적·공급 신호만 요약합니다. 세부 재무와 출처는 각 메뉴에서 확인할 수 있습니다."/>
-  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 가용 공개지표 정성평가 <Pill tone="green">참고용 proxy</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>강한 호황·상승 국면 · 평가 가능 지표 {scoreable.length}/{memorySignals.length}</p><div className="score-foot"><span>HBM·서버 DRAM 강세</span><span>NAND 가격 보합</span><span>재고일수 미확보</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>가용 지표 기준</span></div></div><small>전체 업황의 확정 점수 아님</small></div></div>
+  <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI 메모리 수요 성장과 실제 공개 메모리 가격 모멘텀을 분리 평가한 참고 지수입니다. 공급·재고·기업별 ASP는 공개 데이터가 부족해 별도 확정 점수에 넣지 않습니다."/>
+  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> AI 메모리 수요·가격 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 모멘텀 {priceMomentumScore}점 · 평가 축 2/2</p><div className="score-foot"><span>AI 수요 성장 강세</span><span>DRAM 가격 상승</span><span>NAND 상승 둔화</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>수요·가격 지수</span></div></div><small>전체 업황·정점 예측 점수 아님</small></div></div>
   <div className="stats-grid three">
+   <Stat label="DDR5 16Gb · 2026년 10월" value="$50.0" sub="전월 대비 +4.2% · 공개 고정가격"/>
    <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
-   <Stat label="NAND 128Gb · 2026년 10월" value="$30.6" sub="전월 대비 보합 · 공개 기준가격"/>
-   <Stat label="SK하이닉스 영업이익 · 3Q26" value="₩83.33T" sub="K-IFRS actual · 전분기 대비 +38%"/>
+   <Stat label="NAND 128Gb · 2026년 10월" value="$30.6" sub="전월 대비 0.0% · 공개 기준가격"/>
   </div>
   <div className="panel"><div className="panel-head"><div><h3>사이클 판단에 필요한 핵심 신호</h3><p>중복되는 기업별 수치·세부 가중치 표는 이 화면에서 제외했습니다.</p></div><Pill tone="blue">핵심 3개 지표</Pill></div>
    <Table headers={['핵심 신호','현재 판단','해석']} rows={[
@@ -280,7 +297,7 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
     ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
     ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
    ]}/>
-   <Notice>{cycleScore}점은 현재 정량 점수를 확보한 Server DDR5·HBM·NAND 3개 지표의 가중 평균 참고값입니다. 전체 {memorySignals.length}개 지표 중 {memorySignals.length-scoreable.length}개가 미확보이므로 전체 업황 점수로 해석하거나 사이클 정점·하락 시점을 단정하지 않습니다.</Notice>
+   <Notice>기존 92점은 Server DDR5(93)·HBM(98)·NAND(80)만 가중 평균한 값으로 산술은 맞지만, AI 서버 출하·wafer·bit 수요 성장과 월별 가격 모멘텀을 직접 계산하지 않은 제한적 점수였습니다. 새 지수는 AI 수요 60%(DRAM wafer CAGR 35%, NAND wafer CAGR 15%, Server DRAM bit CAGR 30%, AI 서버 출하 성장 20%)와 가격 40%(DRAM 80%, NAND 20%)로 재산정합니다. 현재는 수요 ${aiDemandScore}점, 가격 ${priceMomentumScore}점, 종합 ${cycleScore}점입니다. 공급·재고·회사별 ASP는 비교 가능한 공개 시계열이 없어 제외했으므로 전체 업황 확정 점수로 보지 않습니다.</Notice>
   </div>
   <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
@@ -302,12 +319,34 @@ function Pricing(){return <>
  </>;
 }
 function Demand(){return <>
- <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="AI 토큰·서버·메모리의 실제 수요 지표와 기관 전망만 간결하게 정리합니다. 자체 수요 예측과 계산식은 제외하고, 발표기관·기준일·전망치를 구분합니다."/>
+ <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="기관이 공개한 AI 서버·메모리 수요 전망과 가격 추세를 분리해 평가합니다. Actual·Estimate·Forecast를 구분하고 미확보 수치는 점수에 넣지 않습니다."/>
  <div className="stats-grid">
   <Stat label="2029년 AI 서버 DRAM wafer 수요" value="월 150만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 5.6배"/>
   <Stat label="2029년 AI 서버 NAND wafer 수요" value="월 22.7만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 2.5배"/>
   <Stat label="2027년 Server DRAM 수요" value="216bn Gb" sub="미래에셋증권 · 2026.10.06"/>
   <Stat label="2027년 AI 서버 출하 증가율" value="약 +30%" sub="TrendForce · 2026.11.16 전망"/>
+ </div>
+ <div className="panel">
+  <div className="panel-head"><div><h3>AI 수요·메모리 가격 정량 평가</h3><p>수요 전망과 실제 가격 흐름을 분리하고, 중복 집계는 피했습니다.</p></div><Pill tone="blue">산식 공개</Pill></div>
+  <div className="stats-grid three">
+   <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub="DRAM·NAND wafer, Server DRAM bit, AI 서버 출하"/>
+   <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub="DRAM 가격 80% · NAND 가격 20%"/>
+   <Stat label="수요·가격 종합" value={cycleScore+" / 100"} sub="AI 수요 60% · 가격 40%"/>
+  </div>
+  <Table headers={["평가 항목","원자료 성장률","환산 점수","가중치"]} rows={[
+   ["AI 서버 DRAM wafer 수요 CAGR · 2024~2029",aiDramWaferCagr.toFixed(1)+"%",growthScore(aiDramWaferCagr).toFixed(0), "35%"],
+   ["AI 서버 NAND wafer 수요 CAGR · 2024~2029",aiNandWaferCagr.toFixed(1)+"%",growthScore(aiNandWaferCagr).toFixed(0), "15%"],
+   ["Server DRAM bit 수요 CAGR · 2026~2028",serverDramBitCagr.toFixed(1)+"%",growthScore(serverDramBitCagr).toFixed(0), "30%"],
+   ["AI 서버 출하 증가율 · 2027 전망",aiServerShipmentGrowth.toFixed(0)+"%",growthScore(aiServerShipmentGrowth).toFixed(0), "20%"]
+  ]}/>
+  <Table headers={["가격 지표","전체 구간 월평균","최근 월","가격 점수"]} rows={[
+   ["DDR5 16Gb",ddr5Momentum.avgMonthly.toFixed(1)+"%",ddr5Momentum.latestMonthly.toFixed(1)+"%",ddr5Momentum.score.toFixed(0)],
+   ["DRAM 16Gb",dram16Momentum.avgMonthly.toFixed(1)+"%",dram16Momentum.latestMonthly.toFixed(1)+"%",dram16Momentum.score.toFixed(0)],
+   ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0)],
+   ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0)]
+  ]}/>
+  <Notice>성장 점수는 0~100 범위에서 50점(중립) + CAGR×1.1로 환산합니다. 가격 점수는 평균 월간 상승률 60%와 최신 월 상승률 40%를 반영하고, 50점 + 월간 모멘텀×5.5로 환산합니다. 종합 점수는 수요 60%·가격 40%입니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
+  <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2027년 AI 서버 출하 전망 (2026-11-16)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
  </div>
  <div className="panel"><h3>AI 서버용 DRAM wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server DRAM wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:180},{year:"2025",value:360},{year:"2026",value:500},{year:"2027",value:620},{year:"2028",value:720},{year:"2029",value:800}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:90},{year:"2025",value:180},{year:"2026",value:280},{year:"2027",value:420},{year:"2028",value:570},{year:"2029",value:700}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.13 (2026-02-10)"]}/></div>
  <div className="panel"><h3>AI 서버용 NAND wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server NAND wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:20},{year:"2025",value:25},{year:"2026",value:29},{year:"2027",value:30},{year:"2028",value:29},{year:"2029",value:29}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:72},{year:"2025",value:98},{year:"2026",value:128},{year:"2027",value:155},{year:"2028",value:176},{year:"2029",value:197}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.14 (2026-02-10)"]}/></div>
