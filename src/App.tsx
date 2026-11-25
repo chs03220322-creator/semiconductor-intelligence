@@ -263,8 +263,9 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
  const chosen=selected===null?null:data[selected];
  const chosenPrevious=chosen?findPreviousPeriodPoint(comparisonData||data,chosen):null;
  const chosenYoy=chosen?yoyChange(Number(chosen[keyName]),chosenPrevious?Number(chosenPrevious[keyName]):undefined):null;
- const chosenMonthPrevious=chosen&&perChip&&selected!==null&&selected>0?data[selected-1]:null;
- const chosenMom=chosenMonthPrevious?yoyChange(Number(chosen[keyName]),Number(chosenMonthPrevious[keyName])):null;
+ const isScore=/score|점수/i.test(label);
+ const chosenMonthPrevious=chosen&&(perChip||isScore)&&selected!==null&&selected>0?data[selected-1]:null;
+ const chosenMom=chosenMonthPrevious?(isScore?Number(chosen[keyName])-Number(chosenMonthPrevious[keyName]):yoyChange(Number(chosen[keyName]),Number(chosenMonthPrevious[keyName]))):null;
  const fmt=(v:number)=>perChip?'₩'+Math.round(v).toLocaleString('ko-KR'):isUsd?'₩'+v.toFixed(1)+'조':Number.isInteger(v)?v.toLocaleString('ko-KR'):v.toLocaleString('ko-KR',{maximumFractionDigits:2});
  const unitValue=(v:number)=>{
   if(/trillion tokens/i.test(label)) return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'조 개/일';
@@ -277,7 +278,7 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
  };
  const visibleLabel=label.split('·').slice(0,1).join('').trim();
  return <div className="line-chart" style={{height}}>
-  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenMom===null?'var(--muted,#9aa9b7)':chosenMom>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{perChip?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · 전월 가격 ${unitValue(Number(chosenMonthPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`):'전월 대비: 월별 데이터에만 표시'}</small><small style={{display:'block',marginTop:3,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small></>:<span>그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다</span>}</div>
+  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenMom===null?'var(--muted,#9aa9b7)':chosenMom>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{perChip?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · 전월 가격 ${unitValue(Number(chosenMonthPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`):isScore?(chosenMom===null?'전월 점수 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(0)}점`):'전월 대비: 월별 데이터에만 표시'}</small><small style={{display:'block',marginTop:3,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small></>:<span>그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다</span>}</div>
   <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
     <path d={path} fill="none" stroke="#68c5d4" strokeWidth="2.1" vectorEffect="non-scaling-stroke"/>
@@ -341,7 +342,7 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
   <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 메모리 산업 사이클 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 {priceMomentumScore}점 · 공급 {scores.supplyScore}점 · 재고 {inventoryScore}점 · 실적 {financialScore}점</p><div className="score-foot"><span>수요 {demandWeight}%</span><span>가격 {scores.priceWeight.toFixed(0)}%</span><span>공급 {scores.supplyWeight.toFixed(0)}%</span><span>재고 {scores.inventoryWeight.toFixed(0)}%</span><span>실적 {scores.financialWeight.toFixed(0)}%</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>산업 사이클 지수</span></div></div><small>수급·정점 예측 확정 점수 아님</small></div></div>
   <div className="panel" style={{marginTop:14}}>
    <div className="panel-head"><div><h3>2026년 월별 반도체 사이클 종합점수</h3><p>그래프의 각 월 타점을 누르면 해당 월 점수를 확인할 수 있습니다</p></div><Pill tone="blue">월별 추이</Pill></div>
-   <LineChart data={monthlyCycleScoreSeries(scoreConfig)} keyName="value" label="Monthly semiconductor cycle score · 2026" height={190}/>
+   <LineChart data={monthlyCycleScoreSeries(scoreConfig)} keyName="value" label="산업 사이클 종합점수 · 점수" height={190}/>
    <Notice>현재 확보된 월별 가격 데이터가 공통으로 존재하는 2026년 8~10월만 표시합니다. 각 월 점수는 해당 월까지의 DRAM·NAND 가격 흐름으로 가격 점수를 재산출하고, AI 수요·공급·기업 재고·실적 점수는 최신 공개값을 고정해 계산한 참고용 추이입니다. 따라서 과거 당시의 전체 산업점수 실측치가 아니며, 월별 실적·수요 데이터가 추가되면 해당 축도 과거 시점 기준으로 재산출해야 합니다.</Notice>
   </div>
   <ScoreControls config={scoreConfig} onChange={onScoreConfigChange}/>
