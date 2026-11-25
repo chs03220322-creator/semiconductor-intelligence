@@ -342,7 +342,6 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
     ['제품별 재고일수·수율·가동률','점수 제외 · 미확보','고객사별 재고와 제조사 제품별 재고일수·실제 수율·가동률은 비교 가능한 공개 시계열 없음']
    ]}/>
    <Notice>종합점수 = AI 수요 {demandWeight}% + 나머지 비중을 가격 40%·공급 25%·재고 20%·기업 실적 15%로 자동 배분합니다. 가격 내부는 DRAM {scoreConfig.dramShare}%·NAND {100-scoreConfig.dramShare}%, 가격 모멘텀은 관측구간 평균 {scoreConfig.avgMomentumShare}%·최근 월 {100-scoreConfig.avgMomentumShare}%로 계산합니다. 가격 점수에서 상관성이 높은 DRAM 16Gb 계열은 DDR5와의 중복을 피하기 위해 제외하고 별도 참고지표로만 표시합니다. 공급 점수는 TrendForce 공개 전망의 방향성 점수(DRAM 64, NAND 38)를 제품 비중으로 합산한 정성적 proxy이며 실제 bit 공급량 추정치가 아닙니다. 수요는 AI 서버 출하·Server DRAM bit·Enterprise SSD bit 공개 전망을 동일 가중 평균합니다. 기업 전체 재고는 삼성(3Q26 ₩2.411T vs 2Q26 ₩2.618T), SK하이닉스(₩19.356T vs ₩17.986T), Micron(FY26 Q4 $10.372B vs Q3 $8.567B)의 공시 수치를 사용해 매출 증감률 대비 재고 증감률을 반영합니다. 제품별 재고·고객 재고·재고일수·수율·가동률은 공개 비교 데이터가 부족해 점수에서 제외합니다.</Notice>
-   <Sources items={['TrendForce · 2026년 7월 30일 메모리 수급 전망','Samsung Electronics · 3Q26 실적','SK hynix · 3Q26 실적','Micron · FY2026 Q4 및 연간 실적']}/>
   </div>
   <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div style={{display:'grid',gap:4,minWidth:150}}><input aria-label="산업사이클 그래프 표시 기간" type="range" min="3" max="6" step="1" value={Number(period[0])} onChange={e=>setPeriod((e.target.value+'Y') as Period)} style={{width:'100%',accentColor:'var(--accent,#68c5d4)'}}/><div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'var(--muted,#888)'}}><span>3년</span><b>최근 {period[0]}년</b><span>6년</span></div></div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
@@ -617,14 +616,13 @@ function Cycles(){return <>
  ]} note="SIA 2025 actual $791.7B와 Gartner 2025 estimate $809.0B는 서로 다른 출처·시점의 수치입니다. 같은 연도라도 하나로 덮어쓰지 않고 구분해 유지합니다. SIA 2026 Q1~Q3 분기 actual의 단순 합은 $1,219.5B이나 Q2 비교기준 개정 여부를 확인할 때까지 잠정 합산으로만 취급합니다." source={['SIA · 2025년 연간 글로벌 반도체 매출','SIA · 2026년 3분기 글로벌 반도체 매출','Gartner · 2026년 반도체 시장 공개 전망']}/>
  <TrendPanel title="메모리 반도체 시장 매출 전망" series={[{name:'Memory market revenue',unit:'USD bn · estimate/forecast',data:memoryForecast}]} quarterHeaders={['연도','시장 규모','상태']} quarterRows={memoryForecast.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status])} note="연간 시장 규모는 ASP가 아니라 시장 매출 추정·전망치입니다. 2026년 분기 메모리 시장 매출 actual은 동일한 시계열로 확보되지 않아 미확보입니다." source={['Gartner · 2026년 반도체 시장 공개 전망']}/>
  <div className="panel"><div className="panel-head"><div><h3>공급 측 공개 전망</h3><p>회사 내부 생산계획이 아닌 공개 시장조사기관의 산업 전망</p></div><Pill tone="blue">공개 전망</Pill></div>
-  <div className="panel-head" style={{marginTop:14}}><div><h3>공급 측 공개 전망</h3><p>회사 내부 생산계획이 아닌 공개 시장조사기관의 산업 전망</p></div></div>
   <Table headers={['시장','공개 전망','사이클 해석']} rows={[
    ['DRAM','2026년 수급 부족 추정, 2027년에도 공급 증가가 수요를 따라가지 못할 가능성','단기 공급 제약 신호'],
    ['Server DRAM + HBM','TrendForce 2027년 bit 공급 약 27% 증가 전망','증설·공정전환이 중기 공급을 늘리는 요인'],
    ['NAND','2027년 공급 여건 완화 및 수급 균형 개선 가능성','DRAM과 다른 방향으로 움직일 위험'],
    ['공급업체 CAPEX','삼성 3Q26 ₩29.0T · Micron FY26 Q4 $10.77B (정의 상이)','투자 의지는 확인하되 생산량·bit 공급으로 직접 환산하지 않음']
   ]}/>
-
+  <Sources items={['TrendForce · 2026년 7월 30일 메모리 수급 전망','Samsung Electronics · 3Q26 실적','SK hynix · 3Q26 실적','Micron · FY2026 Q4 및 연간 실적']}/>
  </div>
  </>}
 
