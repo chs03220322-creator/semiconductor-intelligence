@@ -224,12 +224,15 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
 }
 function MultiLineChart({series,label,height=220}:{series:{name:string;unit:string;data:{year:string;value:number}[]}[];label:string;height?:number}){
  const [selected,setSelected]=useState<{series:number;point:number}|null>(null);
+ const [activeSeriesIndex,setActiveSeriesIndex]=useState(0);
  const all=series.flatMap(s=>s.data.map(d=>d.value));
  const min=Math.min(0,...all),max=Math.max(...all),range=max-min||1;
  const top=10,bottom=76;
  const x=(i:number,n:number)=>n<=1?50:8+i*84/(n-1);
  const y=(v:number)=>top+(max-v)/range*(bottom-top);
  const colors=['#68c5d4','#e6a85c','#9b8bea','#62bd8b'];
+ const chosenSeriesIndex=selected?.series??activeSeriesIndex;
+ const chosenSeries=series[chosenSeriesIndex];
  const active=selected?series[selected.series].data[selected.point]:null;
  const activeSeries=selected?series[selected.series]:null;
  const previous=selected&&selected.point>0?series[selected.series].data[selected.point-1]:null;
@@ -237,15 +240,16 @@ function MultiLineChart({series,label,height=220}:{series:{name:string;unit:stri
  const deltaPct=active&&previous&&previous.value!==0?(active.value/previous.value-1)*100:null;
  const signed=(v:number)=>v>0?'+':'';
  const fmt=(v:number)=>v.toLocaleString('ko-KR',{maximumFractionDigits:2});
+ const selectPoint=(si:number,pi:number)=>{setActiveSeriesIndex(si);setSelected({series:si,point:pi})};
  return <div className="line-chart" style={{height:height+76}}>
-  <div className="chart-value-callout" aria-live="polite">{selected&&active&&activeSeries?<><b>{activeSeries.name} · {active.year}</b><strong>{fmt(active.value)} {activeSeries.unit}</strong><small style={{display:'block',marginTop:5,color:deltaPct===null?'var(--muted,#9aa9b7)':deltaPct>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{previous?(`이전 타점(${previous.year}) 대비 ${signed(deltaPct as number)}${(deltaPct as number).toFixed(1)}% · ${signed(delta as number)}${fmt(Math.abs(delta as number))} ${activeSeries.unit}`):'첫 번째 타점 · 이전 시점 비교 없음'}</small>{previous&&<small style={{display:'block',marginTop:3,color:'var(--muted,#9aa9b7)'}}>이전 값 {fmt(previous.value)} {activeSeries.unit}</small>}</>:<span>그래프의 타점을 누르면 해당 시점의 값과 직전 타점 대비 증감률이 표시됩니다</span>}</div>
+  <div className="chart-value-callout" aria-live="polite">{selected&&active&&activeSeries?<><b>{activeSeries.name} · {active.year}</b><strong>{fmt(active.value)} {activeSeries.unit}</strong><small style={{display:'block',marginTop:5,color:deltaPct===null?'var(--muted,#9aa9b7)':deltaPct>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{previous?(`직전 타점(${previous.year}) 대비 ${signed(deltaPct as number)}${(deltaPct as number).toFixed(1)}% · ${signed(delta as number)}${fmt(Math.abs(delta as number))} ${activeSeries.unit}`):'첫 번째 타점 · 이전 시점 비교 없음'}</small>{previous&&<small style={{display:'block',marginTop:3,color:'var(--muted,#9aa9b7)'}}>이전 값 {fmt(previous.value)} {activeSeries.unit}</small>}</>:<span>아래 연도 버튼 또는 그래프의 점을 선택하면 직전 시점 대비 증감률이 표시됩니다</span>}</div>
   <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
-    {series.map((s,si)=>{const pts=s.data.map((d,i)=>[x(i,s.data.length),y(d.value)] as [number,number]);const path=pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.4" vectorEffect="non-scaling-stroke"/>{pts.map((p,pi)=><g key={pi} onClick={()=>setSelected({series:si,point:pi})} style={{cursor:'pointer'}}><circle cx={p[0]} cy={p[1]} r="4.4" fill="transparent"/><circle cx={p[0]} cy={p[1]} r={selected?.series===si&&selected.point===pi?2.8:1.8} fill={colors[si%colors.length]} stroke="#101a23" strokeWidth=".7" vectorEffect="non-scaling-stroke"/></g>)}</g>})}
+    {series.map((s,si)=>{const pts=s.data.map((d,i)=>[x(i,s.data.length),y(d.value)] as [number,number]);const path=pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.4" vectorEffect="non-scaling-stroke"/>{pts.map((p,pi)=><g key={pi} onClick={()=>selectPoint(si,pi)} style={{cursor:'pointer'}}><circle cx={p[0]} cy={p[1]} r="5" fill="transparent" pointerEvents="all"/><circle cx={p[0]} cy={p[1]} r={selected?.series===si&&selected.point===pi?2.8:1.8} fill={colors[si%colors.length]} stroke="#101a23" strokeWidth=".7" vectorEffect="non-scaling-stroke" pointerEvents="none"/></g>)}</g>})}
    </svg>
   </div>
-  <div className="line-labels">{(series[0]?.data||[]).map(d=><span key={d.year}>{d.year}</span>)}</div>
-  <div className="legend-row">{series.map((s,i)=><span key={s.name}><i style={{background:colors[i%colors.length]}}/>{s.name}</span>)}</div>
+  <div className="line-labels">{(chosenSeries?.data||[]).map((d,pi)=><button type="button" key={d.year} className={selected?.series===chosenSeriesIndex&&selected.point===pi?'chosen':''} onClick={()=>selectPoint(chosenSeriesIndex,pi)} aria-label={`${chosenSeries?.name} ${d.year} 선택`}>{d.year}</button>)}</div>
+  <div className="legend-row">{series.map((s,i)=><button type="button" key={s.name} onClick={()=>{setActiveSeriesIndex(i);setSelected(null)}} aria-pressed={chosenSeriesIndex===i} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 7px',border:'1px solid '+(chosenSeriesIndex===i?'#66899a':'transparent'),borderRadius:5,background:chosenSeriesIndex===i?'#1b2b36':'transparent',color:'inherit',font:'inherit',cursor:'pointer'}}><i style={{background:colors[i%colors.length]}}/>{s.name}</button>)}</div>
  </div>
 }
 function Sources({items}:{items:string[]}){return <div className="source-list">{items.map(name=>{const x=sources.find(v=>v.name===name);return <a href={x?.url||'#'} target="_blank" rel="noreferrer" key={name}><ExternalLink size={12}/>{name}</a>})}</div>}
