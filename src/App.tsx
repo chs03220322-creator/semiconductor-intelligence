@@ -68,7 +68,11 @@ const sources=[
   {name:'SUMCO · 4Q-2025 Results, p.14 (2026-02-10)',date:'2026-02-10',url:'https://f.irbank.net/pdf/20260210/140120260209551618.pdf',desc:'AI 서버 NAND wafer 수요 전망'},
   {name:'미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5',date:'2026-10-06',url:'https://securities.miraeasset.com/bbs/download/2147584.pdf?attachmentId=2147584',desc:'2026~2028년 글로벌 DRAM 및 Server DRAM bit 수요 전망'},
   {name:'TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)',date:'2026-08-03',url:'https://www.trendforce.com/presscenter/news/20260803-13161.html',desc:'2026년 AI 서버 출하량 약 31% 증가 전망 · 공개 보도자료'},
-  {name:'TrendForce · 2026년 7월 30일 메모리 수급 전망',date:'2026-07-30',url:'https://www.trendforce.com/presscenter/news/20260730-13158.html',desc:'DRAM·NAND 공급 증가 및 2027년 제품별 수급 방향 공개 전망'}
+  {name:'TrendForce · 2026년 7월 30일 메모리 수급 전망',date:'2026-07-30',url:'https://www.trendforce.com/presscenter/news/20260730-13158.html',desc:'DRAM·NAND 공급 증가 및 2027년 제품별 수급 방향 공개 전망'},
+  {name:'TrendForce · DRAM Price Trends',date:'2026-11-25',url:'https://www.trendforce.com/price/dram/dram_contract',desc:'DDR4·DDR5 spot 및 계약가격, 서버·PC 모듈·모바일 DRAM 가격 항목'},
+  {name:'TrendForce · NAND Flash Price Trends',date:'2026-11-25',url:'https://www.trendforce.com/price/flash/flash_contract',desc:'NAND chip 계약·현물, wafer spot, PC SSD·eMMC/UFS 계약가격 항목'},
+  {name:'TrendForce · NAND Flash Wafer Contract Price',date:'2026-10-30',url:'https://www.trendforce.com/research/download/RP261030YB',desc:'TLC·QLC NAND wafer 계약가격 월별 리포트'},
+  {name:'TrendForce · DRAMeXchange Membership Plans',date:'상시 안내',url:'https://www.trendforce.com/membership/DRAMeXchange',desc:'DRAM/NAND 최근 5년 일별 spot·월별 contract Excel 데이터 제공 안내'}
 ];
 
 const market=[
@@ -147,7 +151,7 @@ const priceMomentum=(values:number[],cfg:ScoreConfig)=>{
 // 공개 기관 전망: AI 서버 출하 +31%, Server DRAM bit 164→269, Enterprise SSD bit 3,927.2→7,491.2 (십억 Gb).
 // Enterprise SSD는 NAND 전체의 부분집합이며 DRAM 수요와 합산하지 않고 별도 성장 신호로만 사용한다.
 const aiServerShipmentGrowth=31,serverDramBitCagr=growthPct(164,269,2),enterpriseSsdBitCagr=growthPct(3927.2,7491.2,2);
-const ddr5MomentumBase=[40,45,46.5,48,50],dram16MomentumBase=[40,45,46.5,48],dram8MomentumBase=[24,25,26,27.5],nandMomentumBase=[28.8,30.1,30.5,30.6,30.6];
+const ddr5MomentumBase=[40,45,46.5,48,50],dram8MomentumBase=[24,25,26,27.5],nandMomentumBase=[28.8,30.1,30.5,30.6,30.6];
 function financialMomentum(rows:{revenue:number;op:number;margin:number}[],inventoryValues:number[]){
  const current=rows[rows.length-1],previous=rows[rows.length-2];
  if(!current||!previous||!previous.revenue||inventoryValues.length<2||!inventoryValues[0])return {revenueGrowth:0,marginDelta:0,inventoryGrowth:0,inventoryScore:NEUTRAL_SCORE,score:NEUTRAL_SCORE};
@@ -165,7 +169,7 @@ function calculateCycleScores(cfg:ScoreConfig){
   {name:'Enterprise SSD bit 수요 CAGR',growth:enterpriseSsdBitCagr,score:growthScore(enterpriseSsdBitCagr)}
  ];
  const demandScore=Math.round(demandItems.reduce((sum,item)=>sum+item.score,0)/demandItems.length);
- const ddr5=priceMomentum(ddr5MomentumBase,cfg),dram16=priceMomentum(dram16MomentumBase,cfg),dram8=priceMomentum(dram8MomentumBase,cfg),nand=priceMomentum(nandMomentumBase,cfg);
+ const ddr5=priceMomentum(ddr5MomentumBase,cfg),dram8=priceMomentum(dram8MomentumBase,cfg),nand=priceMomentum(nandMomentumBase,cfg);
  // DDR5와 DRAM 8Gb만 가격 점수에 사용해 유사한 DDR5/DRAM16 중복 집계를 제거한다.
  const dramScore=Math.round(ddr5.score*PRICE_WEIGHTS[0]/100+dram8.score*PRICE_WEIGHTS[1]/100);
  const priceScore=Math.round(dramScore*cfg.dramShare/100+nand.score*(100-cfg.dramShare)/100);
@@ -355,44 +359,66 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
 }
 function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
  const scores=calculateCycleScores(scoreConfig);
- const {ddr5,dram16,dram8,nand}=scores;
+ const {ddr5,dram8,nand}=scores;
+ const monthlyPeriods=Array.from(new Set([...pricesDdr5_16,...pricesDram8,...pricesNand].map(x=>x.year))).sort((x,y)=>new Date(x.replace(' ',' 1, ')).getTime()-new Date(y.replace(' ',' 1, ')).getTime());
+ const valueAt=(data:{year:string;value:number}[],period:string)=>{const item=data.find(x=>x.year===period);return item?'$'+item.value.toFixed(1):'—';};
  return <>
- <Title eyebrow="02 / PRODUCT PRICING" title="메모리 가격 & 수급" desc="정부가 공개한 범용 DRAM·NAND 기준가격과 DDR5 고정가격을 반영합니다. 제품별 전월 가격 증감액과 증감률을 함께 표시하며, 공개되지 않은 개별 계약 ASP는 추정하지 않습니다."/>
+ <Title eyebrow="02 / PRODUCT PRICING" title="메모리 제품별 가격" desc="제품·세대·거래 형태가 다른 가격을 구분하고, 실제 공개된 월별 기준가격만 표시합니다. 현물가·계약가·모듈 ASP는 서로 대체하지 않습니다."/>
  <div className="panel">
-  <div className="panel-head"><div><h3>공개 메모리 가격 모멘텀 · 산업 사이클 반영 항목</h3><p>산업 사이클 시트와 동일한 가중치 설정을 사용합니다.</p></div><Pill tone="blue">점수 연동</Pill></div>
+  <div className="panel-head"><div><h3>산업 사이클 가격 점수</h3><p>산업 사이클 시트의 가중치 조절과 실시간 연동</p></div><Pill tone="blue">점수 연동</Pill></div>
   <div className="stats-grid three">
    <Stat label="DRAM 가격 점수" value={scores.dramScore+" / 100"} sub="DDR5 16Gb 60% · DRAM 8Gb 40%"/>
-   <Stat label="NAND 가격 점수" value={Math.round(nand.score)+" / 100"} sub="NAND 128Gb 공개 기준가격"/>
+   <Stat label="NAND 가격 점수" value={Math.round(nand.score)+" / 100"} sub="NAND 128Gb 기준가격"/>
    <Stat label="통합 가격 점수" value={scores.priceScore+" / 100"} sub={`DRAM ${scoreConfig.dramShare}% · NAND ${100-scoreConfig.dramShare}%`}/>
   </div>
-  <Table headers={["가격 지표","관측구간 월평균","최근 월","개별 점수","DRAM 내부 비중"]} rows={[
-   ["DDR5 16Gb",ddr5.avgMonthly.toFixed(1)+"%",ddr5.latestMonthly.toFixed(1)+"%",ddr5.score.toFixed(0),"60%"],
-   ["DRAM 16Gb · 참고",dram16.avgMonthly.toFixed(1)+"%",dram16.latestMonthly.toFixed(1)+"%",dram16.score.toFixed(0),"점수 중복 방지로 제외"],
-   ["DRAM 8Gb",dram8.avgMonthly.toFixed(1)+"%",dram8.latestMonthly.toFixed(1)+"%",dram8.score.toFixed(0),"40%"],
-   ["NAND 128Gb",nand.avgMonthly.toFixed(1)+"%",nand.latestMonthly.toFixed(1)+"%",String(Math.round(nand.score)),"DRAM/NAND 통합 가중치 적용"]
+  <Table headers={['가격 지표','관측구간 월평균','최근 월','개별 점수','점수 반영 비중']} rows={[
+   ['DDR5 16Gb',ddr5.avgMonthly.toFixed(1)+'%',ddr5.latestMonthly.toFixed(1)+'%',ddr5.score.toFixed(0),'DRAM 내 60%'],
+   ['DRAM 8Gb',dram8.avgMonthly.toFixed(1)+'%',dram8.latestMonthly.toFixed(1)+'%',dram8.score.toFixed(0),'DRAM 내 40%'],
+   ['NAND 128Gb',nand.avgMonthly.toFixed(1)+'%',nand.latestMonthly.toFixed(1)+'%',String(Math.round(nand.score)),`통합 내 ${100-scoreConfig.dramShare}%`]
   ]}/>
-  <Notice>가격 모멘텀은 관측구간 월평균과 최근 월 변화율을 사용합니다. DRAM 내부는 DDR5 16Gb와 DRAM 8Gb를 60:40으로 계산하며, 유사 흐름의 DRAM 16Gb는 중복 집계를 피하기 위해 참고만 합니다. 통합 가격 점수는 산업 사이클 시트의 DRAM/NAND 가중치 슬라이더와 동일하게 계산됩니다. 정부 공개 기준가격은 Server RDIMM·PC DDR5 계약 ASP가 아닙니다.</Notice>
+  <Notice>기존 DRAM 16Gb 참고선은 DDR5 16Gb와 2026년 6~9월 값이 완전히 같아 중복 표시를 제거했습니다. 점수는 DDR5 16Gb와 DRAM 8Gb만으로 DRAM 점수를 계산하며, NAND는 별도 가중치로 반영합니다.</Notice>
  </div>
  <div className="panel">
-  <div className="panel-head"><div><h3>DRAM 제품별 가격 통합 추이</h3><p className="muted">동일한 월 축에서 3개 가격 계열 비교 · USD/chip</p></div><Pill tone="blue">3개 제품 통합</Pill></div>
-  <MultiLineChart label="DRAM 16Gb, DDR5 16Gb and DRAM 8Gb monthly prices" height={210} zeroBaseline={false} series={[
-   {name:'DRAM 16Gb 범용',unit:'USD/chip',data:pricesDram16},
+  <div className="panel-head"><div><h3>2026년 월별 공개 기준가격</h3><p className="muted">USD / chip · 각 제품의 전월 대비 변화율</p></div><Pill tone="blue">월별 데이터</Pill></div>
+  <MultiLineChart label="DDR5 16Gb and DRAM 8Gb monthly reference prices" height={205} zeroBaseline={false} series={[
    {name:'DDR5 16Gb',unit:'USD/chip',data:pricesDdr5_16},
-   {name:'DRAM 8Gb 범용',unit:'USD/chip',data:pricesDram8}
+   {name:'DRAM 8Gb',unit:'USD/chip',data:pricesDram8}
   ]}/>
-  <Notice>각 선은 정부 공개 가격의 서로 다른 제품 계열입니다. 발표되지 않은 월은 선을 연결하지 않고 공백으로 표시합니다. DRAM 16Gb는 가격 점수에서 DDR5와의 중복을 피하기 위해 참고용으로만 사용합니다.</Notice>
+  <MultiLineChart label="NAND 128Gb monthly reference price" height={175} zeroBaseline={false} series={[
+   {name:'NAND 128Gb',unit:'USD/chip',data:pricesNand}
+  ]}/>
+  <Table headers={['월','DDR5 16Gb','MoM','DRAM 8Gb','MoM','NAND 128Gb','MoM']} rows={monthlyPeriods.map(period=>[
+   period,valueAt(pricesDdr5_16,period),priceChangeCell(pricesDdr5_16,period,'rate'),
+   valueAt(pricesDram8,period),priceChangeCell(pricesDram8,period,'rate'),
+   valueAt(pricesNand,period),priceChangeCell(pricesNand,period,'rate')
+  ])}/>
+  <Notice>현재 화면에 입력된 정부 공개 월별 기준가격은 2026년 6~10월입니다. DRAM 8Gb의 6월 값과 DRAM 16Gb의 10월 값은 공개 시계열에 없어 공란으로 둡니다. 11월 월간 기준가격은 아직 확인 가능한 발표치가 없어 임의 추정하지 않았습니다. MoM은 직전 공개 월이 존재할 때만 표시합니다.</Notice>
+  <Sources items={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향']}/>
  </div>
- <TrendPanel title="2026년 정부 공개 NAND 고정가격" series={[{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand,comparisonData:prices2025Nand}]} quarterHeaders={['월','DRAM 16Gb','증감액(원)','증감률','DDR5 16Gb','증감액(원)','증감률','DRAM 8Gb','증감액(원)','증감률','NAND 128Gb','증감액(원)','증감률','상태']} quarterRows={[
-  ['Jun 26','$40.0',priceChangeCell(pricesDram16,'Jun 26','delta'),priceChangeCell(pricesDram16,'Jun 26','rate'),'$40.0',priceChangeCell(pricesDdr5_16,'Jun 26','delta'),priceChangeCell(pricesDdr5_16,'Jun 26','rate'),'—',priceChangeCell(pricesDram8,'Jun 26','delta'),priceChangeCell(pricesDram8,'Jun 26','rate'),'$28.8',priceChangeCell(pricesNand,'Jun 26','delta'),priceChangeCell(pricesNand,'Jun 26','rate'),'Actual'],
-  ['Jul 26','$45.0',priceChangeCell(pricesDram16,'Jul 26','delta'),priceChangeCell(pricesDram16,'Jul 26','rate'),'$45.0',priceChangeCell(pricesDdr5_16,'Jul 26','delta'),priceChangeCell(pricesDdr5_16,'Jul 26','rate'),'$24.0',priceChangeCell(pricesDram8,'Jul 26','delta'),priceChangeCell(pricesDram8,'Jul 26','rate'),'$30.1',priceChangeCell(pricesNand,'Jul 26','delta'),priceChangeCell(pricesNand,'Jul 26','rate'),'Actual'],
-  ['Aug 26','$46.5',priceChangeCell(pricesDram16,'Aug 26','delta'),priceChangeCell(pricesDram16,'Aug 26','rate'),'$46.5',priceChangeCell(pricesDdr5_16,'Aug 26','delta'),priceChangeCell(pricesDdr5_16,'Aug 26','rate'),'$25.0',priceChangeCell(pricesDram8,'Aug 26','delta'),priceChangeCell(pricesDram8,'Aug 26','rate'),'$30.5',priceChangeCell(pricesNand,'Aug 26','delta'),priceChangeCell(pricesNand,'Aug 26','rate'),'Actual'],
-  ['Sep 26','$48.0',priceChangeCell(pricesDram16,'Sep 26','delta'),priceChangeCell(pricesDram16,'Sep 26','rate'),'$48.0',priceChangeCell(pricesDdr5_16,'Sep 26','delta'),priceChangeCell(pricesDdr5_16,'Sep 26','rate'),'$26.0',priceChangeCell(pricesDram8,'Sep 26','delta'),priceChangeCell(pricesDram8,'Sep 26','rate'),'$30.6',priceChangeCell(pricesNand,'Sep 26','delta'),priceChangeCell(pricesNand,'Sep 26','rate'),'Actual'],
-  ['Oct 26','—',priceChangeCell(pricesDram16,'Oct 26','delta'),priceChangeCell(pricesDram16,'Oct 26','rate'),'$50.0',priceChangeCell(pricesDdr5_16,'Oct 26','delta'),priceChangeCell(pricesDdr5_16,'Oct 26','rate'),'$27.5',priceChangeCell(pricesDram8,'Oct 26','delta'),priceChangeCell(pricesDram8,'Oct 26','rate'),'$30.6',priceChangeCell(pricesNand,'Oct 26','delta'),priceChangeCell(pricesNand,'Oct 26','rate'),'Actual']
- ]} note="DRAM 16Gb 범용 기준가격과 DDR5 16Gb 고정가격은 서로 다른 공개 계열이므로 분리했습니다. 증감액은 기준가격의 USD/chip 차이를 기준 환율 1,345원으로 환산한 원/chip입니다. DDR5 16Gb는 10월 $50.0까지 공개되어 있습니다. 어느 series도 Server DDR5 RDIMM·PC DDR5 모듈 ASP와 동일하지 않습니다." source={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향']}/>
- <div className="panel"><h3>2025년 공개 DRAM 8Gb·NAND 128Gb 기준가격</h3><p className="muted">2025년 7~10월 관측치 · USD/chip · 2026년 series와 연도·시장 환경을 구분</p><LineChart data={prices2025Dram8} keyName="value" label="DRAM 8Gb reference · USD/chip" height={180}/><LineChart data={prices2025Nand} keyName="value" label="NAND 128Gb reference · USD/chip" height={180}/><Table headers={['월','DRAM 8Gb','증감액(원)','증감률','NAND 128Gb','증감액(원)','증감률']} rows={prices2025Dram8.map(x=>[x.year,'$'+x.value.toFixed(2),priceChangeCell(prices2025Dram8,x.year,'delta'),priceChangeCell(prices2025Dram8,x.year,'rate'),'$'+(prices2025Nand.find(n=>n.year===x.year)?.value??0).toFixed(2),priceChangeCell(prices2025Nand,x.year,'delta'),priceChangeCell(prices2025Nand,x.year,'rate')])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
- <div className="panel"><h3>제품별 데이터 범위</h3><Table headers={['제품군','확인 가능한 항목','미확보 항목']} rows={[
-  ['Server DDR5','기업 IR의 서버 DDR5 수요·제품 믹스 코멘트, 범용 DRAM 8Gb·16Gb 기준가격','Server RDIMM 계약 ASP·제품별 출하 bit'],['PC DDR5','글로벌 시장·기업 실적의 간접 신호','PC 전용 DDR5 계약 ASP·출하량'],['DDR4','기업 코멘트 및 범용 DRAM 시장 지표 일부','DDR4 단독 고정가격·계약 ASP'],['HBM','삼성·SK hynix의 HBM4 출하·사업 코멘트','고객별 HBM3E/HBM4 계약가격·ASP'],['NAND','NAND 128Gb 기준가격·SSD 수출','Enterprise SSD 제품별 계약 ASP'],['삼성·SK ASP','분기 매출·이익 및 가격 방향 코멘트','회사별·제품별 ASP 증감률']
- ]}/></div>
+ <div className="panel">
+  <div className="panel-head"><div><h3>2025년 월별 공개 기준가격</h3><p className="muted">USD / chip · 2026년과 별도 비교</p></div></div>
+  <Table headers={['월','DRAM 8Gb','MoM','NAND 128Gb','MoM']} rows={prices2025Dram8.map(x=>[
+   x.year,'$'+x.value.toFixed(1),priceChangeCell(prices2025Dram8,x.year,'rate'),
+   valueAt(prices2025Nand,x.year),priceChangeCell(prices2025Nand,x.year,'rate')
+  ])}/>
+  <Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/>
+ </div>
+ <div className="panel">
+  <div className="panel-head"><div><h3>추가 가능한 월별 가격 데이터 · 누락 점검</h3><p className="muted">가격 공개 빈도와 실제 계약가격 공개 여부를 구분했습니다.</p></div></div>
+  <Table headers={['제품군','월별 가격 데이터','공개 접근성·주기','시트 반영 원칙']} rows={[
+   ['DDR4 8Gb / 16Gb','있음','TrendForce 계약가격 월별 · spot 일별','추가 가치 높음. DDR5와 분리'],
+   ['DDR5 8Gb / 16Gb','있음','TrendForce 계약가격 월별 · spot 일별','현재 16Gb 정부 기준가격과 계약·현물가를 분리'],
+   ['Server DDR5 RDIMM','있음','서버 모듈 계약가격 월별 공개 항목 존재','32GB/64GB 등 용량별로 별도 시계열'],
+   ['PC DDR5 UDIMM / SO-DIMM','있음','모듈 계약가격 월별 공개 항목 존재','Server RDIMM과 합산 금지'],
+   ['LPDDR4X / LPDDR5X','일부 있음','모바일 DRAM 계약가격은 분기 단위 공개가 일반적','월별 보간 금지, 분기 데이터로 별도 표시'],
+   ['GDDR5 / GDDR6','일부 있음','현물 시세 주간·일별 공개','계약 ASP와 구분해 현물 추이로 관리'],
+   ['NAND TLC 512Gb / 1Tb, QLC 1Tb','있음','웨이퍼 계약가격 월별 · wafer spot 주간 공개','현재 NAND 128Gb와 별도 시리즈로 추가 가능'],
+   ['Enterprise SSD','일부 있음','OEM 계약가격 분기 단위 및 제품별 리포트','1TB/2TB 등 제품·용량별로 구분'],
+   ['HBM2E / HBM3E / HBM4','신뢰 가능한 공개 월별 표준가격 없음','고객·세대·용량·스택별 장기계약 중심, 공개자료는 분기 ASP/가격전망 위주','월별 숫자를 만들지 않고 분기 실적·가격 전망만 표시']
+  ]}/>
+  <Notice>TrendForce는 DRAM·NAND 현물가와 계약가를 제공하며, 회원 서비스에서 최근 5년의 일별 현물·월별 계약가격 Excel 및 기간별 차트를 제공한다고 안내합니다. 따라서 DDR4/DDR5, 서버·PC 모듈, NAND 웨이퍼 계약가는 데이터 확보 후 월별 시계열을 추가할 수 있습니다. HBM은 동일한 기준의 공개 월별 거래가격이 확인되지 않아 빈칸 유지가 정확합니다.</Notice>
+  <Sources items={['TrendForce · DRAM Price Trends','TrendForce · NAND Flash Price Trends','TrendForce · NAND Flash Wafer Contract Price','TrendForce · DRAMeXchange Membership Plans']}/>
+ </div>
  </>;
 }
 function Demand(){
