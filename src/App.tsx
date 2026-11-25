@@ -635,7 +635,7 @@ function Market(){
    }
    setQuotes(merged);
    setYields(latestYields);
-   if(latestYieldHistory.length)setYieldHistory(latestYieldHistory);
+   setYieldHistory(latestYieldHistory);
    if(Object.keys(merged).length<8||allErrors.length>0){
     setError('일부 시세를 불러오지 못했습니다. 잠시 후 다시 시도합니다.');
    }
