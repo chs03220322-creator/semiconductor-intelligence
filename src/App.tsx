@@ -685,23 +685,9 @@ function Companies(){return <>
  ]} note="TSMC 연간은 CY, NVIDIA 연간은 FY(1월 말 종료)입니다. TSMC 2026 YTD는 1~3Q 합계, NVIDIA FY27 YTD는 Q1~Q3 합계 $293.636B입니다. GAAP 기준 actual이며 TSMC는 TIFRS 연결 기준, NVIDIA는 US GAAP 기준입니다. 통화·회계기간이 다른 기업의 수치를 합산해 순위를 만들지 않습니다." source={['TSMC · 2025 Annual Report','TSMC · 3Q26 실적','NVIDIA · FY2026 full-year results','NVIDIA · 1Q FY2027 results','NVIDIA · 2Q FY2027 results','NVIDIA · 3Q FY2027 실적']}/>
  </>}
 function Cycles(){ 
- const annualYears=Array.from(new Set([...market.map(x=>x.year),...marketForecast.map(x=>x.year),...memoryForecast.map(x=>x.year)])).sort();
  const globalActual=market.map(x=>({year:x.year,value:x.value}));
  const globalOutlook=marketForecast.map(x=>({year:x.year,value:x.value}));
  const memoryOutlook=memoryForecast.map(x=>({year:x.year,value:x.value}));
- const findValue=(rows:{year:string;value:number}[],year:string)=>rows.find(x=>x.year===year)?.value;
- const money=(value:number|undefined)=>value===undefined?'—':'$'+value.toFixed(1)+'B';
- const summaryRows=[
-  ...annualYears.map(year=>[
-   year,
-   money(findValue(globalActual,year)),
-   '—',
-   money(findValue(globalOutlook,year)),
-   money(findValue(memoryOutlook,year)),
-   findValue(globalActual,year)!==undefined?'SIA annual actual':findValue(globalOutlook,year)!==undefined?'Gartner estimate / forecast':'—'
-  ]),
-  ...globalQuarterly.map(item=>[item.year,'—',money(item.value),'—','—','SIA quarterly actual'])
- ];
  return <>
  <Title eyebrow="06 / LONG-TERM HISTORY" title="장기 반도체 사이클" desc="글로벌 반도체 전체 시장과 메모리 시장의 연간 매출 규모를 하나의 축에서 비교합니다. 실적·추정·전망은 출처별로 구분합니다."/>
  <div className="panel">
@@ -906,7 +892,7 @@ function App(){
   </aside>
   {mobileOpen&&<div className="scrim" onClick={()=>setMobileOpen(false)}/>}
   <main className="main">
-   <header className="topbar"><div className="topbar-main"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></div><nav className="top-sheet-nav" aria-label="대시보드 시트 이동">{menu.filter(item=>item.id!==active).map(item=><button type="button" key={item.id} className="top-sheet-link" onClick={()=>setActive(item.id)}>{Number(item.no)}. {Number(item.no)}. {item.label}</button>)}</nav></header>
+   <header className="topbar"><div className="topbar-main"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></div><nav className="top-sheet-nav" aria-label="대시보드 시트 이동">{menu.filter(item=>item.id!==active).map(item=><button type="button" key={item.id} className="top-sheet-link" onClick={()=>setActive(item.id)}>{Number(item.no)}. {item.label}</button>)}</nav></header>
    <div className="content">{render()}<footer><div><b>SI · Semiconductor Intelligence</b><span>공개자료 기반 반도체 산업 분석 대시보드</span></div><span>실적 / 추정 / 전망 / 미확보 · v1.1</span></footer></div>
   </main> </div>;
 }
