@@ -407,10 +407,10 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
   <Table headers={['제품군','월별 가격 데이터','공개 접근성·주기','시트 반영 원칙']} rows={[
    ['DDR4 8Gb / 16Gb','있음','TrendForce 계약가격 월별 · spot 일별','추가 가치 높음. DDR5와 분리'],
    ['DDR5 8Gb / 16Gb','있음','TrendForce 계약가격 월별 · spot 일별','현재 16Gb 정부 기준가격과 계약·현물가를 분리'],
-   ['Server DDR5 RDIMM','있음','서버 모듈 계약가격 월별 공개 항목 존재','32GB/64GB 등 용량별로 별도 시계열'],
-   ['PC DDR5 UDIMM / SO-DIMM','있음','모듈 계약가격 월별 공개 항목 존재','Server RDIMM과 합산 금지'],
+   ['Server DDR5 RDIMM','현물 시세 있음 · 계약 ASP는 제한적','RDIMM 모듈 현물 주간 · 개별 장기계약은 비공개','주간 현물 시계열로 분리, 계약 ASP처럼 표시 금지'],
+   ['PC DDR5 UDIMM / SO-DIMM','일부 있음','모듈 현물 주간 · 일부 SO-DIMM 계약 항목 월별','UDIMM/SO-DIMM 규격별로 분리'],
    ['LPDDR4X / LPDDR5X','일부 있음','모바일 DRAM 계약가격은 분기 단위 공개가 일반적','월별 보간 금지, 분기 데이터로 별도 표시'],
-   ['GDDR5 / GDDR6','일부 있음','현물 시세 주간·일별 공개','계약 ASP와 구분해 현물 추이로 관리'],
+   ['GDDR5 / GDDR6','현물 시세 있음','현물 시세 주간 공개','GDDR5와 GDDR6를 별도 시계열로 관리'],
    ['NAND TLC 512Gb / 1Tb, QLC 1Tb','있음','웨이퍼 계약가격 월별 · wafer spot 주간 공개','현재 NAND 128Gb와 별도 시리즈로 추가 가능'],
    ['Enterprise SSD','일부 있음','OEM 계약가격 분기 단위 및 제품별 리포트','1TB/2TB 등 제품·용량별로 구분'],
    ['HBM2E / HBM3E / HBM4','신뢰 가능한 공개 월별 표준가격 없음','고객·세대·용량·스택별 장기계약 중심, 공개자료는 분기 ASP/가격전망 위주','월별 숫자를 만들지 않고 분기 실적·가격 전망만 표시']
