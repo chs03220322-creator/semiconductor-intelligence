@@ -5,7 +5,7 @@ import {
   TrendingUp, Wallet, X, Info
 } from 'lucide-react';
 
-type Section = 'overview'|'pricing'|'demand'|'capex'|'companies'|'cycles'|'insights'|'market';
+type Section = 'overview'|'pricing'|'demand'|'capex'|'companies'|'cycles'|'market';
 type Period = '3Y'|'4Y'|'5Y'|'6Y';
 
 const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
@@ -15,8 +15,7 @@ const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
   {id:'capex',no:'04',label:'빅테크 투자',sub:'주요 기업 설비투자',icon:Wallet},
   {id:'companies',no:'05',label:'기업 실적',sub:'반도체 주요 기업',icon:BarChart3},
   {id:'cycles',no:'06',label:'장기 사이클',sub:'과거 흐름과 전망',icon:TrendingUp},
-  {id:'insights',no:'07',label:'투자 시나리오',sub:'업황별 투자 관점',icon:Gauge},
-  {id:'market',no:'08',label:'글로벌 금융시장',sub:'미국 증시·산업별 강세 지도',icon:TrendingUp},
+  {id:'market',no:'07',label:'글로벌 금융시장',sub:'미국 증시·산업별 강세 지도',icon:TrendingUp},
 ];
 
 const sources=[
