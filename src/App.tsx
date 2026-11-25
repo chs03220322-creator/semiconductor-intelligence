@@ -190,7 +190,20 @@ function calculateCycleScores(cfg:ScoreConfig){
  const latestDramMonthly=ddr5.latestMonthly*PRICE_WEIGHTS[0]/100+dram8.latestMonthly*PRICE_WEIGHTS[1]/100;
  const cycleSignal=latestDramMonthly<0&&avgDramMonthly>0?'DRAM 가격 하락 전환 주의':latestDramMonthly<avgDramMonthly-1.5?'가격 상승 모멘텀 둔화':supplyScore<48?'공급 증가·수급 완화 주의':inventoryScore<42?'기업 재고 부담 확대':financialScore<45?'기업 실적 모멘텀 약화':'상승 흐름 유지';
  return {demandScore,priceScore,supplyScore,financialScore,inventoryScore,totalScore,priceWeight,supplyWeight,inventoryWeight,financialWeight,ddr5,dram8,nand,dramScore,demandItems,companyItems,avgDramMonthly,latestDramMonthly,cycleSignal};
-}function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
+}function monthlyCycleScoreSeries(cfg:ScoreConfig){
+ const current=calculateCycleScores(cfg);
+ const periods=['Jun 26','Jul 26','Aug 26','Sep 26','Oct 26'];
+ return [2,3,4].map(monthIndex=>{
+  const ddr5=priceMomentum(ddr5MomentumBase.slice(0,monthIndex+1),cfg);
+  const dram8=priceMomentum(dram8MomentumBase.slice(0,monthIndex),cfg);
+  const nand=priceMomentum(nandMomentumBase.slice(0,monthIndex+1),cfg);
+  const dramScore=Math.round(ddr5.score*PRICE_WEIGHTS[0]/100+dram8.score*PRICE_WEIGHTS[1]/100);
+  const priceScore=Math.round(dramScore*cfg.dramShare/100+nand.score*(100-cfg.dramShare)/100);
+  const total=Math.round((current.demandScore*cfg.demandWeight+priceScore*current.priceWeight+current.supplyScore*current.supplyWeight+current.inventoryScore*current.inventoryWeight+current.financialScore*current.financialWeight)/100);
+  return {year:periods[monthIndex],value:total};
+ });
+}
+function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
  return <label className="score-weight-control"><span>{label}<b>{value}%</b></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>;
 }
 function ScoreControls({config,onChange}:{config:ScoreConfig;onChange:(key:keyof ScoreConfig,value:number)=>void}){
@@ -326,6 +339,11 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
  return <>
   <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI·메모리 수요 전망, 공개 메모리 가격, 메모리 3사 실적과 공시 재고를 반영한 공개자료 기반 참고 지수입니다. 비공개 생산 데이터는 점수에서 제외합니다."/>
   <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 메모리 산업 사이클 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 {priceMomentumScore}점 · 공급 {scores.supplyScore}점 · 재고 {inventoryScore}점 · 실적 {financialScore}점</p><div className="score-foot"><span>수요 {demandWeight}%</span><span>가격 {scores.priceWeight.toFixed(0)}%</span><span>공급 {scores.supplyWeight.toFixed(0)}%</span><span>재고 {scores.inventoryWeight.toFixed(0)}%</span><span>실적 {scores.financialWeight.toFixed(0)}%</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>산업 사이클 지수</span></div></div><small>수급·정점 예측 확정 점수 아님</small></div></div>
+  <div className="panel" style={{marginTop:14}}>
+   <div className="panel-head"><div><h3>2026년 월별 반도체 사이클 종합점수</h3><p>그래프의 각 월 타점을 누르면 해당 월 점수를 확인할 수 있습니다</p></div><Pill tone="blue">월별 추이</Pill></div>
+   <LineChart data={monthlyCycleScoreSeries(scoreConfig)} keyName="value" label="Monthly semiconductor cycle score · 2026" height={190}/>
+   <Notice>현재 확보된 월별 가격 데이터가 공통으로 존재하는 2026년 8~10월만 표시합니다. 각 월 점수는 해당 월까지의 DRAM·NAND 가격 흐름으로 가격 점수를 재산출하고, AI 수요·공급·기업 재고·실적 점수는 최신 공개값을 고정해 계산한 참고용 추이입니다. 따라서 과거 당시의 전체 산업점수 실측치가 아니며, 월별 실적·수요 데이터가 추가되면 해당 축도 과거 시점 기준으로 재산출해야 합니다.</Notice>
+  </div>
   <ScoreControls config={scoreConfig} onChange={onScoreConfigChange}/>
   <div className="panel" style={{marginTop:14}}>
    <div className="panel-head"><div><h3>사이클 전환 조기경보</h3><p>DRAM 가격의 최근 월간 상승률과 관측 구간 평균을 비교한 공개 데이터 기반 신호</p></div><Pill tone={scores.cycleSignal.includes('주의')?'amber':scores.cycleSignal.includes('둔화')?'blue':'green'}>{scores.cycleSignal}</Pill></div>
