@@ -623,13 +623,33 @@ function Companies(){return <>
   ['NVIDIA','1Q FY27','$81.615B','Data Center $75.2B','Actual'],['NVIDIA','2Q FY27','$96.221B','Data Center $89.0B','Actual'],['NVIDIA','3Q FY27','$115.8B','Data Center $107.6B','Actual']
  ]} note="TSMC 연간은 CY, NVIDIA 연간은 FY(1월 말 종료)입니다. TSMC 2026 YTD는 1~3Q 합계, NVIDIA FY27 YTD는 Q1~Q3 합계 $293.636B입니다. GAAP 기준 actual이며 TSMC는 TIFRS 연결 기준, NVIDIA는 US GAAP 기준입니다. 통화·회계기간이 다른 기업의 수치를 합산해 순위를 만들지 않습니다." source={['TSMC · 2025 Annual Report','TSMC · 3Q26 실적','NVIDIA · FY2026 full-year results','NVIDIA · 1Q FY2027 results','NVIDIA · 2Q FY2027 results','NVIDIA · 3Q FY2027 실적']}/>
  </>}
-function Cycles(){return <>
- <Title eyebrow="06 / LONG-TERM HISTORY" title="장기 반도체 사이클" desc="글로벌 반도체 시장과 메모리 시장의 연간 매출 추이를 실제·추정·전망으로 구분해 장기 사이클을 봅니다."/>
- <TrendPanel title="글로벌 반도체 시장 매출" series={[{name:'SIA annual actual',unit:'USD bn',data:market},{name:'Gartner estimate / forecast',unit:'USD bn',data:marketForecast}]} quarterHeaders={['기간','매출','상태','자료 기준']} quarterRows={[
-  ...market.map(x=>[x.year,'$'+x.value.toFixed(1)+'B','Actual','SIA']),
-  ...globalQuarterly.map(x=>[x.year,'$'+x.value.toFixed(1)+'B','Actual','SIA quarterly release'])
- ]} note="SIA 2025 actual $791.7B와 Gartner 2025 estimate $809.0B는 서로 다른 출처·시점의 수치입니다. 같은 연도라도 하나로 덮어쓰지 않고 구분해 유지합니다. SIA 2026 Q1~Q3 분기 actual의 단순 합은 $1,219.5B이나 Q2 비교기준 개정 여부를 확인할 때까지 잠정 합산으로만 취급합니다." source={['SIA · 2025년 연간 글로벌 반도체 매출','SIA · 2026년 3분기 글로벌 반도체 매출','Gartner · 2026년 반도체 시장 공개 전망']}/>
- <TrendPanel title="메모리 반도체 시장 매출 전망" series={[{name:'Memory market revenue',unit:'USD bn · estimate/forecast',data:memoryForecast}]} quarterHeaders={['연도','시장 규모','상태']} quarterRows={memoryForecast.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status])} note="연간 시장 규모는 ASP가 아니라 시장 매출 추정·전망치입니다. 2026년 분기 메모리 시장 매출 actual은 동일한 시계열로 확보되지 않아 미확보입니다." source={['Gartner · 2026년 반도체 시장 공개 전망']}/>
+function Cycles(){ 
+ const annualYears=Array.from(new Set([...market.map(x=>x.year),...marketForecast.map(x=>x.year),...memoryForecast.map(x=>x.year)])).sort();
+ const globalActual=market.map(x=>({year:x.year,value:x.value}));
+ const globalOutlook=marketForecast.map(x=>({year:x.year,value:x.value}));
+ const memoryOutlook=memoryForecast.map(x=>({year:x.year,value:x.value}));
+ const findValue=(rows:{year:string;value:number}[],year:string)=>rows.find(x=>x.year===year)?.value;
+ const money=(value:number|undefined)=>value===undefined?'—':'$'+value.toFixed(1)+'B';
+ const summaryRows=annualYears.map(year=>[
+  year,
+  money(findValue(globalActual,year)),
+  money(findValue(globalOutlook,year)),
+  money(findValue(memoryOutlook,year)),
+  findValue(globalActual,year)!==undefined?'SIA actual':findValue(globalOutlook,year)!==undefined?'Gartner forecast':'—'
+ ]);
+ return <>
+ <Title eyebrow="06 / LONG-TERM HISTORY" title="장기 반도체 사이클" desc="글로벌 반도체 전체 시장과 메모리 시장의 연간 매출 규모를 하나의 축에서 비교합니다. 실적·추정·전망은 출처별로 구분합니다."/>
+ <div className="panel">
+  <div className="panel-head"><div><h3>글로벌 반도체·메모리 시장 매출 통합 추이</h3><p className="muted">USD bn · 연간 기준 · 3개 꺾은선 비교</p></div><Pill tone="blue">통합 그래프</Pill></div>
+  <MultiLineChart label="Global semiconductor and memory market annual revenue, USD billions" height={245} series={[
+   {name:'글로벌 반도체 · SIA actual',unit:'USD bn',data:globalActual},
+   {name:'글로벌 반도체 · Gartner estimate/forecast',unit:'USD bn',data:globalOutlook},
+   {name:'메모리 반도체 · Gartner estimate/forecast',unit:'USD bn',data:memoryOutlook}
+  ]}/>
+  <Table headers={['연도','글로벌 반도체 SIA actual','글로벌 반도체 Gartner 추정·전망','메모리 반도체 Gartner 추정·전망','구분']} rows={summaryRows}/>
+  <Notice>2025년 글로벌 반도체 매출은 SIA actual $791.7B와 Gartner estimate $809.0B가 서로 다른 출처·시점의 수치입니다. 두 값을 하나로 합치지 않고 별도 선·열로 표시합니다. 메모리 시장은 Gartner 추정·전망 계열이며, 전체 반도체 시장과 중복 합산하지 않습니다. 2026~2027년은 전망치로 실제 실적이 아닙니다.</Notice>
+  <Sources items={['SIA · 2025년 연간 글로벌 반도체 매출','Gartner · 2026년 반도체 시장 공개 전망']}/>
+ </div>
  <div className="panel"><div className="panel-head"><div><h3>공급 측 공개 전망</h3><p>회사 내부 생산계획이 아닌 공개 시장조사기관의 산업 전망</p></div><Pill tone="blue">공개 전망</Pill></div>
   <Table headers={['시장','공개 전망','사이클 해석']} rows={[
    ['DRAM','2026년 수급 부족 추정, 2027년에도 공급 증가가 수요를 따라가지 못할 가능성','단기 공급 제약 신호'],
@@ -639,8 +659,8 @@ function Cycles(){return <>
   ]}/>
   <Sources items={['TrendForce · 2026년 7월 30일 메모리 수급 전망','Samsung Electronics · 3Q26 실적','SK hynix · 3Q26 실적','Micron · FY2026 Q4 및 연간 실적']}/>
  </div>
- </>}
-
+ </>;
+}
 function Insights(){return <>
  <Title eyebrow="01 / INVESTMENT FRAMEWORK" title="업황별 투자 시나리오 & 인사이트" desc="산업 사이클 점수와 공개 실적·가격·투자 신호를 바탕으로 상승·기준·하락 시나리오와 핵심 리스크를 점검합니다. 주가 목표·유료 컨센서스는 사용하지 않습니다."/>
  <div className="grid-3"><div className="scenario bull"><Pill tone="green">BULL CASE</Pill><h3>AI 인프라 투자 지속</h3><p>HBM4 양산 확대, Server DDR5 수요, QLC/eSSD 수요가 공급 증가를 흡수. 삼성은 2027 AI 수요가 업계 공급을 크게 웃돌 것으로 전망.</p><strong>확인 변수: HBM4 출하·서버 DDR5·CAPEX</strong></div><div className="scenario base"><Pill tone="blue">BASE CASE</Pill><h3>성장률 정상화</h3><p>AI 서버 수요는 견조하지만 메모리 가격 부담으로 PC·모바일의 구매량과 교체 수요가 둔화. NAND 기준가격은 최근 보합.</p><strong>확인 변수: NAND 가격·PC OEM 수요·제품 믹스</strong></div><div className="scenario bear"><Pill tone="amber">BEAR CASE</Pill><h3>CAPEX ROI·공급 조정</h3><p>하이퍼스케일러 투자가 매출·현금흐름으로 충분히 회수되지 않거나, 신규 팹·공정전환 공급이 수요를 앞서면 가격과 ASP가 하락할 수 있음.</p><strong>확인 변수: FCF·재고·CAPEX 가이던스</strong></div></div>
