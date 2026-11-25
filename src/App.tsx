@@ -135,36 +135,32 @@ const supplierCapex=[
 ];
 const FX_USDKRW=1344.23; // 2026-11-25 reference mid-market rate
 // AI 메모리 사이클 점수: 공개 전망의 성장률과 실제 공개가격의 모멘텀을 분리해 계산
-type ScoreConfig={demandWeight:number;demandDramWafer:number;demandNandWafer:number;demandServerBit:number;demandShipment:number;priceDdr5:number;priceDram16:number;priceDram8:number;dramShare:number;avgMomentumShare:number;growthSensitivity:number;priceSensitivity:number;neutralScore:number};
-const DEFAULT_SCORE_CONFIG:ScoreConfig={demandWeight:60,demandDramWafer:35,demandNandWafer:15,demandServerBit:30,demandShipment:20,priceDdr5:40,priceDram16:35,priceDram8:25,dramShare:80,avgMomentumShare:60,growthSensitivity:1.1,priceSensitivity:5.5,neutralScore:50};
+type ScoreConfig={demandWeight:number;dramShare:number;avgMomentumShare:number};
+const DEFAULT_SCORE_CONFIG:ScoreConfig={demandWeight:60,dramShare:80,avgMomentumShare:60};
+const DEMAND_WEIGHTS=[35,15,30,20],PRICE_WEIGHTS=[40,35,25],GROWTH_SENSITIVITY=1.1,PRICE_SENSITIVITY=5.5,NEUTRAL_SCORE=50;
 const clampScore=(v:number)=>Math.max(0,Math.min(100,v));
 const growthPct=(start:number,end:number,years:number)=>(Math.pow(end/start,1/years)-1)*100;
-const growthScore=(cagr:number,cfg:ScoreConfig)=>clampScore(cfg.neutralScore+cagr*cfg.growthSensitivity);
-const priceMomentum=(values:number[],cfg:ScoreConfig)=>{const avgMonthly=(Math.pow(values[values.length-1]/values[0],1/(values.length-1))-1)*100;const latestMonthly=(values[values.length-1]/values[values.length-2]-1)*100;return {avgMonthly,latestMonthly,score:clampScore(cfg.neutralScore+(avgMonthly*cfg.avgMomentumShare/100+latestMonthly*(100-cfg.avgMomentumShare)/100)*cfg.priceSensitivity)}};
+const growthScore=(cagr:number)=>clampScore(NEUTRAL_SCORE+cagr*GROWTH_SENSITIVITY);
+const priceMomentum=(values:number[],cfg:ScoreConfig)=>{const avgMonthly=(Math.pow(values[values.length-1]/values[0],1/(values.length-1))-1)*100;const latestMonthly=(values[values.length-1]/values[values.length-2]-1)*100;return {avgMonthly,latestMonthly,score:clampScore(NEUTRAL_SCORE+(avgMonthly*cfg.avgMomentumShare/100+latestMonthly*(100-cfg.avgMomentumShare)/100)*PRICE_SENSITIVITY)}};
 const aiDramWaferCagr=growthPct(270,1500,5),aiNandWaferCagr=growthPct(92,226,5),serverDramBitCagr=growthPct(164,269,2),aiServerShipmentGrowth=31;
 const ddr5MomentumBase=[40,45,46.5,48,50],dram16MomentumBase=[40,45,46.5,48],dram8MomentumBase=[24,25,26,27.5],nandMomentumBase=[28.8,30.1,30.5,30.6,30.6];
 function calculateCycleScores(cfg:ScoreConfig){
- const growthItems=[growthScore(aiDramWaferCagr,cfg),growthScore(aiNandWaferCagr,cfg),growthScore(serverDramBitCagr,cfg),growthScore(aiServerShipmentGrowth,cfg)];
- const demandScore=Math.round(growthItems[0]*cfg.demandDramWafer/100+growthItems[1]*cfg.demandNandWafer/100+growthItems[2]*cfg.demandServerBit/100+growthItems[3]*cfg.demandShipment/100);
+ const growthItems=[growthScore(aiDramWaferCagr),growthScore(aiNandWaferCagr),growthScore(serverDramBitCagr),growthScore(aiServerShipmentGrowth)];
+ const demandScore=Math.round(growthItems.reduce((sum,v,i)=>sum+v*DEMAND_WEIGHTS[i]/100,0));
  const ddr5=priceMomentum(ddr5MomentumBase,cfg),dram16=priceMomentum(dram16MomentumBase,cfg),dram8=priceMomentum(dram8MomentumBase,cfg),nand=priceMomentum(nandMomentumBase,cfg);
- const dramScore=ddr5.score*cfg.priceDdr5/100+dram16.score*cfg.priceDram16/100+dram8.score*cfg.priceDram8/100;
+ const dramScore=ddr5.score*PRICE_WEIGHTS[0]/100+dram16.score*PRICE_WEIGHTS[1]/100+dram8.score*PRICE_WEIGHTS[2]/100;
  const priceScore=Math.round(dramScore*cfg.dramShare/100+nand.score*(100-cfg.dramShare)/100);
  return {demandScore,priceScore,totalScore:Math.round(demandScore*cfg.demandWeight/100+priceScore*(100-cfg.demandWeight)/100),ddr5,dram16,dram8,nand,dramScore,growthItems};
 }
-function rebalanceScoreWeights(cfg:ScoreConfig,key:keyof ScoreConfig,value:number,keys:(keyof ScoreConfig)[]):ScoreConfig{
- const next={...cfg,[key]:value} as ScoreConfig,peers=keys.filter(k=>k!==key),remaining=100-value,oldTotal=peers.reduce((sum,k)=>sum+cfg[k],0);let assigned=0;
- peers.forEach((k,i)=>{const v=i===peers.length-1?remaining-assigned:Math.round(remaining*(oldTotal>0?cfg[k]/oldTotal:1/peers.length));(next as any)[k]=v;assigned+=v});return next;
-}
-function WeightControl({label,value,min=0,max=100,step=1,suffix="%",onChange}:{label:string;value:number;min?:number;max?:number;step?:number;suffix?:string;onChange:(v:number)=>void}){
- return <label className="score-weight-control"><span>{label}<b>{Number.isInteger(value)?value:value.toFixed(1)}{suffix}</b></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>;
+function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
+ return <label className="score-weight-control"><span>{label}<b>{value}%</b></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>;
 }
 function ScoreControls({config,onChange}:{config:ScoreConfig;onChange:(key:keyof ScoreConfig,value:number)=>void}){
- const adjust=(key:keyof ScoreConfig)=>(v:number)=>onChange(key,v);
- return <div className="score-control-panel"><div className="score-control-heading"><div><b>산업 사이클 점수 로직 조절</b><small>슬라이더를 움직이면 종합점수와 세부 점수가 즉시 재계산됩니다. 각 가중치 묶음은 합계 100%로 자동 보정됩니다.</small></div><Pill tone="green">실시간 반영</Pill></div><div className="score-control-grid">
- <section><h3>① 최종 점수 비중</h3><WeightControl label="AI 수요 비중 (가격은 자동 반대값)" value={config.demandWeight} step={5} onChange={adjust("demandWeight")}/><div className="score-control-note">AI 수요 {config.demandWeight}% · 가격 {100-config.demandWeight}%</div></section>
- <section><h3>② AI 수요 세부 가중치</h3><WeightControl label="AI 서버 DRAM wafer CAGR" value={config.demandDramWafer} onChange={adjust("demandDramWafer")}/><WeightControl label="AI 서버 NAND wafer CAGR" value={config.demandNandWafer} onChange={adjust("demandNandWafer")}/><WeightControl label="Server DRAM bit 수요 CAGR" value={config.demandServerBit} onChange={adjust("demandServerBit")}/><WeightControl label="AI 서버 출하 증가율" value={config.demandShipment} onChange={adjust("demandShipment")}/><div className="score-control-note">합계 100% · 조절 시 나머지 항목 자동 재분배</div></section>
- <section><h3>③ 가격 지표 세부 가중치</h3><WeightControl label="DDR5 16Gb 가격" value={config.priceDdr5} onChange={adjust("priceDdr5")}/><WeightControl label="DRAM 16Gb 가격" value={config.priceDram16} onChange={adjust("priceDram16")}/><WeightControl label="DRAM 8Gb 가격" value={config.priceDram8} onChange={adjust("priceDram8")}/><div className="score-control-note">DRAM 지표 합계 100%</div><WeightControl label="DRAM 비중 (NAND 자동 반대값)" value={config.dramShare} step={5} onChange={adjust("dramShare")}/><WeightControl label="전체 기간 평균 모멘텀 (최근 월 자동 반대값)" value={config.avgMomentumShare} step={5} onChange={adjust("avgMomentumShare")}/></section>
- <section><h3>④ 점수 환산 민감도</h3><WeightControl label="성장률 민감도 (CAGR × 계수)" value={config.growthSensitivity} min={0} max={3} step={0.1} suffix="×" onChange={adjust("growthSensitivity")}/><WeightControl label="가격 민감도 (월간 모멘텀 × 계수)" value={config.priceSensitivity} min={0} max={10} step={0.5} suffix="×" onChange={adjust("priceSensitivity")}/><WeightControl label="중립 기준점" value={config.neutralScore} min={30} max={70} step={1} suffix="점" onChange={adjust("neutralScore")}/><div className="score-control-note">환산 점수는 0~100점 범위로 제한</div></section></div></div>;
+ return <div className="score-control-panel"><div className="score-control-heading"><div><b>점수 조절</b><small>핵심 비중 3가지만 조절합니다. 변경 즉시 종합점수에 반영됩니다.</small></div><Pill tone="green">실시간 반영</Pill></div><div className="score-control-grid compact">
+ <section><WeightControl label="AI 수요 비중 · 가격은 자동 반대" value={config.demandWeight} onChange={v=>onChange("demandWeight",v)}/><div className="score-control-note">AI 수요 {config.demandWeight}% / 가격 {100-config.demandWeight}%</div></section>
+ <section><WeightControl label="DRAM 가격 비중 · NAND는 자동 반대" value={config.dramShare} onChange={v=>onChange("dramShare",v)}/><div className="score-control-note">DRAM {config.dramShare}% / NAND {100-config.dramShare}%</div></section>
+ <section><WeightControl label="장기 평균 가격 흐름 · 최근 월은 자동 반대" value={config.avgMomentumShare} onChange={v=>onChange("avgMomentumShare",v)}/><div className="score-control-note">장기 평균 {config.avgMomentumShare}% / 최근 월 {100-config.avgMomentumShare}%</div></section>
+ </div><div className="score-control-note bottom">세부 지표 가중치와 점수 환산계수는 일관성을 위해 기본값으로 고정했습니다.</div></div>;
 }
 function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
 function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
@@ -293,8 +289,9 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
   <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI 메모리 수요 성장과 실제 공개 메모리 가격 모멘텀을 분리 평가한 참고 지수입니다. 공급·재고·기업별 ASP는 공개 데이터가 부족해 별도 확정 점수에 넣지 않습니다."/>
-  <ScoreControls config={scoreConfig} onChange={onScoreConfigChange}/>
   <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> AI 메모리 수요·가격 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 모멘텀 {priceMomentumScore}점 · AI 수요 {demandWeight}% · 가격 {priceWeight}%</p><div className="score-foot"><span>AI 수요 성장 강세</span><span>DRAM 가격 상승</span><span>NAND 상승 둔화</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>수요·가격 지수</span></div></div><small>전체 업황·정점 예측 점수 아님</small></div></div>
+  <ScoreControls config={scoreConfig} onChange={onScoreConfigChange}/>
+
   <div className="stats-grid three">
    <Stat label="DDR5 16Gb · 2026년 10월" value="$50.0" sub="전월 대비 +4.2% · 공개 고정가격"/>
    <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
@@ -307,7 +304,7 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
     ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
     ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
    ]}/>
-   <Notice>기존 92점은 Server DDR5·HBM·NAND의 제한된 지표를 가중 평균한 점수였습니다. 현재 종합지수는 AI 수요 {demandWeight}%(DRAM wafer {scoreConfig.demandDramWafer}%, NAND wafer {scoreConfig.demandNandWafer}%, Server DRAM bit {scoreConfig.demandServerBit}%, AI 서버 출하 {scoreConfig.demandShipment}%)와 가격 {priceWeight}%(DRAM {scoreConfig.dramShare}%, NAND {100-scoreConfig.dramShare}%)로 계산합니다. 현재는 수요 {aiDemandScore}점, 가격 {priceMomentumScore}점, 종합 {liveCycleScore}점입니다. 각 세부 지표 가중치와 환산 민감도도 이 페이지에서 조절할 수 있습니다. 공급·재고·회사별 ASP는 비교 가능한 공개 시계열이 없어 제외했으므로 전체 업황 확정 점수로 보지 않습니다.</Notice>
+   <Notice>기존 92점은 Server DDR5·HBM·NAND의 제한된 지표를 가중 평균한 점수였습니다. 현재 종합지수는 AI 수요 {demandWeight}%(DRAM wafer 35%, NAND wafer 15%, Server DRAM bit 30%, AI 서버 출하 20%)와 가격 {priceWeight}%(DRAM {scoreConfig.dramShare}%, NAND {100-scoreConfig.dramShare}%)로 계산합니다. 현재는 수요 {aiDemandScore}점, 가격 {priceMomentumScore}점, 종합 {liveCycleScore}점입니다. 각 세부 지표 가중치와 환산 민감도도 이 페이지에서 조절할 수 있습니다. 공급·재고·회사별 ASP는 비교 가능한 공개 시계열이 없어 제외했으므로 전체 업황 확정 점수로 보지 않습니다.</Notice>
   </div>
   <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
@@ -348,18 +345,18 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
    <Stat label="수요·가격 종합" value={liveCycleScore+" / 100"} sub={`AI 수요 ${demandWeight}% · 가격 ${priceWeight}%`}/>
   </div>
   <Table headers={["평가 항목","원자료 성장률","환산 점수","가중치"]} rows={[
-   ["AI 서버 DRAM wafer 수요 CAGR · 2024~2029",aiDramWaferCagr.toFixed(1)+"%",growthScore(aiDramWaferCagr,scoreConfig).toFixed(0), scoreConfig.demandDramWafer+"%"],
-   ["AI 서버 NAND wafer 수요 CAGR · 2024~2029",aiNandWaferCagr.toFixed(1)+"%",growthScore(aiNandWaferCagr,scoreConfig).toFixed(0), scoreConfig.demandNandWafer+"%"],
-   ["Server DRAM bit 수요 CAGR · 2026~2028",serverDramBitCagr.toFixed(1)+"%",growthScore(serverDramBitCagr,scoreConfig).toFixed(0), scoreConfig.demandServerBit+"%"],
-   ["AI 서버 출하 증가율 · 2026 전망",aiServerShipmentGrowth.toFixed(0)+"%",growthScore(aiServerShipmentGrowth,scoreConfig).toFixed(0), scoreConfig.demandShipment+"%"]
+   ["AI 서버 DRAM wafer 수요 CAGR · 2024~2029",aiDramWaferCagr.toFixed(1)+"%",growthScore(aiDramWaferCagr).toFixed(0), "35%"],
+   ["AI 서버 NAND wafer 수요 CAGR · 2024~2029",aiNandWaferCagr.toFixed(1)+"%",growthScore(aiNandWaferCagr).toFixed(0), "15%"],
+   ["Server DRAM bit 수요 CAGR · 2026~2028",serverDramBitCagr.toFixed(1)+"%",growthScore(serverDramBitCagr).toFixed(0), "30%"],
+   ["AI 서버 출하 증가율 · 2026 전망",aiServerShipmentGrowth.toFixed(0)+"%",growthScore(aiServerShipmentGrowth).toFixed(0), "20%"]
   ]}/>
   <Table headers={["가격 지표","전체 구간 월평균","최근 월","가격 점수","DRAM 내 가중치"]} rows={[
-   ["DDR5 16Gb",ddr5Momentum.avgMonthly.toFixed(1)+"%",ddr5Momentum.latestMonthly.toFixed(1)+"%",ddr5Momentum.score.toFixed(0),scoreConfig.priceDdr5+"%"],
-   ["DRAM 16Gb",dram16Momentum.avgMonthly.toFixed(1)+"%",dram16Momentum.latestMonthly.toFixed(1)+"%",dram16Momentum.score.toFixed(0),scoreConfig.priceDram16+"%"],
-   ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0),scoreConfig.priceDram8+"%"],
+   ["DDR5 16Gb",ddr5Momentum.avgMonthly.toFixed(1)+"%",ddr5Momentum.latestMonthly.toFixed(1)+"%",ddr5Momentum.score.toFixed(0),"40%"],
+   ["DRAM 16Gb",dram16Momentum.avgMonthly.toFixed(1)+"%",dram16Momentum.latestMonthly.toFixed(1)+"%",dram16Momentum.score.toFixed(0),"35%"],
+   ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0),"25%"],
    ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0),"-"]
   ]}/>
-  <Notice>성장 점수는 0~100 범위에서 중립 기준 {scoreConfig.neutralScore}점 + CAGR×{scoreConfig.growthSensitivity.toFixed(1)}로 환산합니다. 가격 점수는 평균 월간 상승률 {scoreConfig.avgMomentumShare}%와 최신 월 상승률 {100-scoreConfig.avgMomentumShare}%를 반영하고, 중립 기준 {scoreConfig.neutralScore}점 + 월간 모멘텀×{scoreConfig.priceSensitivity.toFixed(1)}로 환산합니다. 종합 점수는 사용자가 조절하는 AI 수요 {demandWeight}%·가격 {priceWeight}%를 적용합니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
+  <Notice>성장 점수는 0~100 범위에서 중립 50점 + CAGR×1.1로 환산합니다. 가격 점수는 장기 평균 월간 상승률 {scoreConfig.avgMomentumShare}%와 최신 월 상승률 {100-scoreConfig.avgMomentumShare}%를 반영하고, 중립 50점 + 월간 모멘텀×5.5로 환산합니다. 종합 점수는 사용자가 조절하는 AI 수요 {demandWeight}%·가격 {priceWeight}%를 적용합니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
   <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
  </div>
  <div className="panel"><h3>AI 서버용 DRAM wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server DRAM wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:180},{year:"2025",value:360},{year:"2026",value:500},{year:"2027",value:620},{year:"2028",value:720},{year:"2029",value:800}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:90},{year:"2025",value:180},{year:"2026",value:280},{year:"2027",value:420},{year:"2028",value:570},{year:"2029",value:700}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.13 (2026-02-10)"]}/></div>
@@ -743,12 +740,7 @@ function App(){
  const [active,setActive]=useState<Section>(()=>{const tab=new URLSearchParams(window.location.search).get('tab');return menu.some(m=>m.id===tab)?tab as Section:'overview'});
  const [period,setPeriod]=useState<Period>('3Y');
  const [scoreConfig,setScoreConfig]=useState<ScoreConfig>(DEFAULT_SCORE_CONFIG);
- const updateScoreConfig=(key:keyof ScoreConfig,value:number)=>{
-  const demandKeys:(keyof ScoreConfig)[]=["demandDramWafer","demandNandWafer","demandServerBit","demandShipment"],priceKeys:(keyof ScoreConfig)[]=["priceDdr5","priceDram16","priceDram8"];
-  if(demandKeys.includes(key))setScoreConfig(prev=>rebalanceScoreWeights(prev,key,value,demandKeys));
-  else if(priceKeys.includes(key))setScoreConfig(prev=>rebalanceScoreWeights(prev,key,value,priceKeys));
-  else setScoreConfig(prev=>({...prev,[key]:value}));
- };
+ const updateScoreConfig=(key:keyof ScoreConfig,value:number)=>setScoreConfig(prev=>({...prev,[key]:value}));
  const [mobileOpen,setMobileOpen]=useState(false);
  const current=menu.find(m=>m.id===active)!;
  const render=()=>{switch(active){
