@@ -189,3 +189,55 @@ p strong{color:var(--em-key);font-weight:750}
 .weight-adjuster-result{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid #304452;color:#aebdca;font-size:11px}
 .weight-adjuster-result b{color:#75e0ae;font:700 13px 'DM Mono'}
 @media(max-width:560px){.weight-adjuster{padding:12px}.weight-adjuster-head{align-items:flex-start}.weight-adjuster-head b{font-size:12px}.weight-adjuster-head small{font-size:10px}.weight-adjuster-head>strong{font-size:14px}.weight-adjuster-range{font-size:9px}.weight-adjuster-result{font-size:10px}}
+
+
+/* High-visibility, touch-friendly AI score slider */
+.weight-adjuster{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ position:relative;z-index:2;width:100%;margin:0 0 18px!important;
+ padding:18px!important;border:1px solid #477083!important;border-radius:10px!important;
+ background:linear-gradient(135deg,#172d3b,#101e2a)!important;
+ box-shadow:0 8px 24px #0003;
+}
+.weight-adjuster-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin-bottom:12px!important}
+.weight-adjuster-head b{font-size:15px!important;color:#f3f7fa!important}
+.weight-adjuster-head small{display:block!important;margin-top:4px!important;font-size:12px!important;line-height:1.5!important;color:#b3c4d0!important}
+.weight-adjuster-head>strong{flex-shrink:0;color:#ffe09a!important;font:700 20px 'DM Mono'!important;white-space:nowrap}
+.weight-adjuster input[type=range]{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ width:100%!important;height:38px!important;margin:7px 0 4px!important;padding:0!important;
+ appearance:none!important;-webkit-appearance:none!important;background:transparent!important;
+ accent-color:#73d7e6!important;cursor:ew-resize!important;touch-action:pan-y!important;
+}
+.weight-adjuster input[type=range]::-webkit-slider-runnable-track{
+ height:9px!important;border:1px solid #557486!important;border-radius:99px!important;
+ background:linear-gradient(90deg,#e1b36f 0%,#73d7e6 100%)!important;
+}
+.weight-adjuster input[type=range]::-moz-range-track{
+ height:9px!important;border:1px solid #557486!important;border-radius:99px!important;
+ background:linear-gradient(90deg,#e1b36f 0%,#73d7e6 100%)!important;
+}
+.weight-adjuster input[type=range]::-webkit-slider-thumb{
+ -webkit-appearance:none!important;appearance:none!important;width:25px!important;height:25px!important;
+ margin-top:-9px!important;border:3px solid #f3fbff!important;border-radius:50%!important;
+ background:#36b9ca!important;box-shadow:0 0 0 4px #36b9ca35,0 2px 8px #0008!important;
+}
+.weight-adjuster input[type=range]::-moz-range-thumb{
+ width:20px!important;height:20px!important;border:3px solid #f3fbff!important;border-radius:50%!important;
+ background:#36b9ca!important;box-shadow:0 0 0 4px #36b9ca35,0 2px 8px #0008!important;
+}
+.weight-adjuster input[type=range]:focus-visible{outline:2px solid #9be8f1!important;outline-offset:5px!important}
+.weight-adjuster-range{display:flex!important;justify-content:space-between!important;gap:8px!important;color:#b3c4d0!important;font-size:11px!important}
+.weight-adjuster-result{display:flex!important;flex-wrap:wrap!important;justify-content:space-between!important;gap:8px!important;margin-top:13px!important;padding-top:12px!important;border-top:1px solid #3b5261!important;color:#d0dce5!important;font-size:12px!important}
+.weight-adjuster-result b{color:#8ce6b9!important;font:700 16px 'DM Mono'!important}
+@media(max-width:560px){
+ .weight-adjuster{padding:14px!important;margin-bottom:14px!important}
+ .weight-adjuster-head{align-items:flex-start!important}
+ .weight-adjuster-head b{font-size:14px!important}
+ .weight-adjuster-head small{font-size:11px!important}
+ .weight-adjuster-head>strong{font-size:17px!important}
+ .weight-adjuster input[type=range]{height:42px!important;margin:8px 0!important}
+ .weight-adjuster-range{font-size:9px!important}
+ .weight-adjuster-result{font-size:10px!important}
+ .weight-adjuster-result b{font-size:14px!important}
+}
