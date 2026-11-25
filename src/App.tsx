@@ -204,12 +204,20 @@ function calculateCycleScores(cfg:ScoreConfig){
   const dramScore=Math.round(ddr5.score*PRICE_WEIGHTS[0]/100+dram8.score*PRICE_WEIGHTS[1]/100);
   const priceScore=Math.round(dramScore*cfg.dramShare/100+nand.score*(100-cfg.dramShare)/100);
   const total=Math.round((current.demandScore*cfg.demandWeight+priceScore*current.priceWeight+current.supplyScore*current.supplyWeight+current.inventoryScore*current.inventoryWeight+current.financialScore*current.financialWeight)/100);
-  return {year:period,value:total};
+  return {year:period,value:total,ddr5Score:ddr5.score,dram8Score:dram8.score,nandScore:nand.score,dramScore,priceScore};
  });
  return monthly.slice(1).map((point,index)=>{
   const previous=monthly[index];
   const scoreDelta=point.value-previous.value;
-  return {...point,scoreDelta,momPct:previous.value?(scoreDelta/previous.value)*100:null};
+  const drivers=[
+   {name:'DDR5 16Gb',delta:point.ddr5Score-previous.ddr5Score},
+   {name:'DRAM 8Gb',delta:point.dram8Score-previous.dram8Score},
+   {name:'NAND 128Gb',delta:point.nandScore-previous.nandScore}
+  ].filter(item=>item.delta!==0).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  const reason=scoreDelta===0
+   ? (drivers.length?`제품별 가격 점수 변화는 있었지만 종합점수 반올림 결과는 동일합니다. 주요 변화: ${drivers.map(x=>`${x.name} ${x.delta>0?'+':''}${x.delta}점`).join(', ')}`:'가격 모멘텀 변화가 작아 종합점수는 유지됐습니다.')
+   : `종합점수 ${scoreDelta>0?'상승':'하락'}의 직접 요인은 메모리 가격 모멘텀 변화입니다. ${drivers.length?drivers.map(x=>`${x.name} ${x.delta>0?'+':''}${x.delta}점`).join(' · '):'제품별 가격 점수 차이는 미미합니다.'}. AI 수요·공급·재고·실적 점수는 최신값으로 고정되어 이번 월간 변화에는 기여하지 않습니다.`;
+  return {...point,scoreDelta,momPct:previous.value?(scoreDelta/previous.value)*100:null,reason};
  });
 }
 function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
@@ -287,7 +295,7 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
  };
  const visibleLabel=label.split('·').slice(0,1).join('').trim();
  return <div className="line-chart" style={{height}}>
-  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenMom===null?'var(--muted,#9aa9b7)':chosenMom>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{perChip?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · 전월 가격 ${unitValue(Number(chosenMonthPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`):isScore?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · ${Number(chosen.scoreDelta)>=0?'+':''}${Number(chosen.scoreDelta)}점`):'전월 대비: 월별 데이터에만 표시'}</small>{!isScore&&<small style={{display:'block',marginTop:3,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small>}</>:<span>{isScore?'그래프의 점을 누르면 월별 점수와 전월 대비 증감률이 표시됩니다':'그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다'}</span>}</div>
+  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenMom===null?'var(--muted,#9aa9b7)':chosenMom>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{perChip?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · 전월 가격 ${unitValue(Number(chosenMonthPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`):isScore?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · ${Number(chosen.scoreDelta)>=0?'+':''}${Number(chosen.scoreDelta)}점`):'전월 대비: 월별 데이터에만 표시'}</small>{!isScore&&<small style={{display:'block',marginTop:3,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small>}{isScore&&chosen.reason&&<small style={{display:'block',marginTop:7,color:'var(--text,#e7edf2)',fontWeight:500,lineHeight:1.5}}>변화 이유 · {chosen.reason}</small>}</>:<span>{isScore?'그래프의 점을 누르면 월별 점수와 전월 대비 증감률이 표시됩니다':'그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다'}</span>}</div>
   <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
     <path d={path} fill="none" stroke="#68c5d4" strokeWidth="2.1" vectorEffect="non-scaling-stroke"/>
@@ -296,7 +304,7 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
    </svg>
   </div>
   <div className="line-labels">{data.map((d,i)=><button type="button" className={selected===i?'chosen':''} key={i} onClick={()=>setSelected(i)}>{d.year||d.period||d.month}</button>)}</div>
-  <small>{visibleLabel} · {fmt(min)}–{fmt(max)}</small>
+  {!isScore&&<small>{visibleLabel} · {fmt(min)}–{fmt(max)}</small>}
  </div>
 }
 function MultiLineChart({series,label,height=220,zeroBaseline=true}:{series:{name:string;unit:string;data:{year:string;value:number}[]}[];label:string;height?:number;zeroBaseline?:boolean}){
@@ -352,7 +360,6 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
   <div className="panel" style={{marginTop:14}}>
    <div className="panel-head"><div><h3>최근 월별 반도체 사이클 종합점수</h3><p>최근 6개월 점수와 전월 대비 증감률 · 타점을 누르면 월별 상세값을 확인할 수 있습니다</p></div><Pill tone="blue">월별 추이</Pill></div>
    <LineChart data={monthlyCycleScoreSeries(scoreConfig)} keyName="value" label="산업 사이클 종합점수 · 점수" height={190}/>
-   <Notice>최근 6개월(2026년 5~10월)을 표시합니다. DDR5 16Gb·DRAM 8Gb·NAND 128Gb 월별 공개 계약가격을 반영하며, 3~4월 가격은 5월 점수의 전월 비교 및 가격 모멘텀 계산을 위한 기준값으로만 사용합니다. 각 월의 가격 점수는 해당 월까지의 가격 흐름으로 재산출하고, AI 수요·공급·기업 재고·실적 점수는 최신 공개값을 고정한 참고용 추이입니다. 따라서 과거 당시의 전체 산업점수 실측치가 아니라 가격 흐름 중심의 재구성 지수입니다.</Notice>
   </div>
   <ScoreControls config={scoreConfig} onChange={onScoreConfigChange}/>
   <div className="panel" style={{marginTop:14}}>
