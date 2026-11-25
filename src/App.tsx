@@ -31,6 +31,9 @@ const sources=[
   {name:'산업부 · 2025년 10월 ICT 수출입 동향',date:'2025-11-14',url:'https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/171187/view',desc:'2025년 DRAM 8Gb 및 NAND 128Gb 공개 가격 일부'},
   {name:'IEA · Energy and AI',date:'2025-04-10',url:'https://www.iea.org/reports/energy-and-ai/executive-summary',desc:'2024 데이터센터 전력 actual 기준 시계열'},
   {name:'IEA · Key Questions on Energy and AI',date:'2026-04-16',url:'https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary',desc:'2025 데이터센터 전력 485 TWh estimate, 2030 950 TWh forecast, HBM 부족 전망'},
+  {name:'Berkeley Lab · 2025 United States Data Center Energy Usage Report',date:'2025 공개',url:'https://escholarship.org/uc/item/33m6w3x0',desc:'가속기 출하·GPU/ASIC 구성·AI 서버 전력·훈련/추론 비중 및 전력수요 시나리오'},
+  {name:'Microsoft Research · AI Data Center Lifecycle Compass',date:'2026 공개',url:'https://www.microsoft.com/en-us/research/wp-content/uploads/2026/03/AI-DC-Lifecycle-Compass.pdf',desc:'AI workload 유형별 모델 크기·사용자 부하·메모리·연산·인프라 요구량 분석'},
+  {name:'McKinsey · The next big shifts in AI workloads and hyperscaler strategies',date:'2025 공개',url:'https://www.mckinsey.com/industries/technology-media-and-telecommunications/our-insights/the-next-big-shifts-in-ai-workloads-and-hyperscaler-strategies',desc:'훈련과 추론의 데이터센터 수요·전력·입지 차이 및 추론 비중 전망'},
   {name:'Samsung Electronics · 3Q26 실적',date:'2026-10-29',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-third-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적 및 2027 수요 전망'},
   {name:'Samsung Electronics · 2Q26 실적',date:'2026-07-30',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-second-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적'},
   {name:'Samsung Electronics · 1Q26 실적',date:'2026-04-30',url:'https://news.samsungsemiconductor.com/global/samsung-electronics-announces-first-quarter-2026-results/',desc:'전사·DS·메모리 사업 실적'},
@@ -284,16 +287,70 @@ function Pricing(){return <>
  </>;
 }
 function Demand(){return <>
- <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="전력·AI 토큰·AI 전용 데이터센터·빅테크 투자 등 서로 다른 수요 신호를 연도별로 추적합니다. 공개 실적과 기관 전망, 자체 시나리오를 명확히 구분합니다."/>
- <div className="stats-grid"><Stat label="2025 데이터센터 전력" value="485 TWh" sub="IEA estimate · 2026 update"/><Stat label="2030 데이터센터 전력" value="950 TWh" sub="IEA base case"/><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="JPMorgan AI Tracker 추정"/><Stat label="2030 AI 전력(추정)" value="약 450 TWh" sub="IEA AI-focused 약 3배 증가 적용"/></div>
+ <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="AI 서비스 이용량에서 GPU·전력·메모리 bit 수요까지 연결합니다. 공개 실적(actual), 기관 추정(estimate), 자체 계산 경로(model)을 분리하며, 입력이 없는 값은 임의로 채우지 않습니다."/>
+ <div className="stats-grid"><Stat label="2025 데이터센터 전력" value="485 TWh" sub="IEA estimate · 2026 update"/><Stat label="2030 데이터센터 전력" value="950 TWh" sub="IEA base case forecast"/><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="J.P. Morgan AI Tracker 추정"/><Stat label="AI 전용 전력" value="약 3배" sub="IEA 2025~2030 증가 전망"/></div>
  <TrendPanel title="글로벌 데이터센터 전체 전력 수요" series={[{name:"전력 소비량",unit:"TWh/year · 2024 actual, 2025 estimate, 2026~2030 interpolated model path",data:ieaAnnual}]} note="2023년 360 TWh, 2024년 416 TWh actual, 2025년 485 TWh estimate, 2030년 950 TWh forecast는 IEA 공개치입니다. 2026~2029 값은 IEA의 2025→2030 전망을 연결한 연도별 보간 경로이며 IEA가 개별 연도별로 발표한 공식 수치가 아닙니다." source={["IEA · Key Questions on Energy and AI (2026)"]}/>
  <TrendPanel title="AI 전용 데이터센터 전력 수요" series={[{name:"AI-focused data centres",unit:"TWh/year · indicative annual path",data:aiPowerAnnual}]} note="IEA는 AI 중심 데이터센터 전력 소비가 2025~2030년 약 3배 증가한다고 제시합니다. 2025년 약 150 TWh를 기준점으로 둔 연도별 값은 추세를 보기 위한 모델 경로이며, 중간 연도 값은 공식 발표치가 아닙니다." source={["IEA · Key Questions on Energy and AI (2026)"]}/>
- <TrendPanel title="글로벌 AI 토큰 사용량 · 일평균 run-rate" series={[{name:"Median · 중앙값 기준",unit:"Trillion tokens/day · median scenario, not official forecast",data:tokenBase}]} note="JPMorgan AI Tracker의 반기별 차트 값을 과거 구간에 추가했습니다(2024년 1월 약 1조/일, 2024년 7월 3조, 2025년 1월 15조, 2025년 7월 70조, 2026년 1월 200조, 2026년 7월 360조). 그래프의 과거 값은 차트 판독 기반 근사치입니다. 2026년 말~2030년 전망은 중앙값(Median) 기준 단일 경로이며, 공식 기관 전망이 아닌 자체 모델 추정치입니다. 토큰 집계 범위·중복·모델별 공개 수준이 통일되지 않아 실측 총량이 아닌 참고용 추정치입니다." source={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)"]}/>
- <TrendPanel title="글로벌 빅테크 CAPEX" series={[{name:"Microsoft·Alphabet·Amazon·Meta",unit:"USD bn/year · four hyperscalers historical, 2026 broad-tech estimate",data:[{year:"2023",value:140},{year:"2024",value:217},{year:"2025",value:358},{year:"2026E",value:700}]}]} note="Microsoft·Alphabet·Amazon·Meta 4사의 CAPEX 합계 추이입니다. 2023~2025년은 과거 집계값, 2026년은 주요 기술기업 투자 증가 전망을 참고한 광의의 추정치로 개별 기업 공시 합계와 범위가 완전히 같지 않습니다." source={["IEA · Key Questions on Energy and AI (2026)"]}/>
- <div className="panel"><h3>연도별 수요 전망 한눈에 보기</h3><Table headers={["연도","데이터센터 전력","AI 전용 전력","AI 토큰/일 Median","구분"]} rows={[["2025","485 TWh","약 150 TWh","—","전력 estimate"],["2026","약 560 TWh","약 190 TWh","400조","전력 보간·토큰 시나리오"],["2027","약 645 TWh","약 245 TWh","600조","모델 경로"],["2028","약 740 TWh","약 310 TWh","900조","모델 경로"],["2029","약 840 TWh","약 380 TWh","1,350조","모델 경로"],["2030","950 TWh","약 450 TWh","2,000조","전력 IEA forecast·토큰 시나리오"]]}/><Notice>전력(TWh), 토큰(조/일), CAPEX(USD)는 서로 더하거나 하나의 지수로 합산하지 않습니다. 토큰 증가는 추론 workload 증가를 보여주지만, 모델 효율·토큰당 연산량·하드웨어 전성비에 따라 전력 및 메모리 수요로 전달되는 강도는 달라집니다.</Notice></div>
- <div className="panel"><h3>전력 인프라 병목·설비 밀도 지표</h3><Table headers={["지표","공개 전망","의미"]} rows={[["AI 서버 랙 전력밀도","2020~2025년 11배 상승, 2027년까지 추가 4배 수준","랙당 전력·냉각·전력반도체 수요 확대"],["AI 데이터센터 배터리 저장","2030년 약 20~25 GW 설치 가능성","전력망 변동 대응 및 UPS·ESS 투자"],["AI 데이터센터 전력 비중","2025~2030년 소비량 약 3배","전체 데이터센터 전력 증가보다 빠른 AI workload 확대"]]}/><Notice>랙 전력밀도와 배터리 저장 전망은 전력 수요량(TWh)과 다른 물리적 인프라 지표입니다. GPU 공급, 변압기·전력전자·냉각장비 리드타임을 함께 보면 실제 데이터센터 증설 속도를 판단하는 데 도움이 됩니다.</Notice><Sources items={["IEA · Key Questions on Energy and AI (2026)"]}/></div>
- <div className="panel"><h3>AI 수요 → 반도체 수요 전달 경로</h3><div className="bridge">{[["AI 학습·추론량","토큰·영상·reasoning·agent 사용량"],["가속기 설치량","GPU·ASIC 출하 및 서버 랙 증설"],["메모리 탑재량","HBM 용량·대역폭, DDR5, eSSD"],["메모리 bit 수요","출하량 × 시스템당 탑재 용량"]].map((x,i)=><div className="bridge-item" key={i}><span>0{i+1}</span><b>{x[0]}</b><small>{x[1]}</small>{i<3&&<ChevronRight/>}</div>)}</div><Notice>전력은 데이터센터 전체의 물리적 수요, 토큰은 AI 서비스 이용량, CAPEX는 투자 의지, GPU·ASIC 출하는 실제 설치 기반을 나타냅니다. 이 네 축이 함께 증가하는지 확인해야 AI 메모리 수요의 지속성을 더 정확히 판단할 수 있습니다.</Notice></div>
+ <TrendPanel title="글로벌 AI 토큰 사용량 · 일평균 run-rate" series={[{name:"Median · 중앙값 기준",unit:"Trillion tokens/day · median scenario, not official forecast",data:tokenBase}]} note="J.P. Morgan AI Tracker의 반기별 차트 판독 근사치를 포함합니다. 2026년 말~2030년 전망은 공식 기관 전망이 아닌 자체 시나리오입니다. 토큰 집계 범위·중복·모델별 공개 수준이 통일되지 않아 전 세계 실측 총량으로 해석하면 안 됩니다." source={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)"]}/>
+ <TrendPanel title="글로벌 빅테크 CAPEX" series={[{name:"Microsoft·Alphabet·Amazon·Meta",unit:"USD bn/year · historical aggregation and broad 2026 estimate",data:[{year:"2023",value:140},{year:"2024",value:217},{year:"2025",value:358},{year:"2026E",value:700}]}]} note="4개사의 CAPEX 합계 추이입니다. 2023~2025년은 과거 집계값, 2026년은 주요 기술기업 투자 증가 전망을 참고한 광의의 추정치로 개별 기업 공시 합계와 범위가 완전히 같지 않습니다. 회사별 CAPEX 정의와 회계연도 차이는 빅테크 투자 메뉴에서 별도 확인해야 합니다." source={["IEA · Key Questions on Energy and AI (2026)"]}/>
+ <div className="panel"><h3>AI 수요를 훈련·추론·기타 workload로 분해</h3><p className="muted">토큰 증가율 하나로 전체 AI 연산 수요를 대체하지 않습니다. workload별 계산 특성과 메모리 병목이 다릅니다.</p><Table headers={["Workload","수요 발생 요인","주요 병목","메모리 영향"]} rows={[
+  ["모델 학습(Training)","신규 모델·모델 크기·학습 데이터·재학습 빈도","GPU/ASIC 연산량, 노드 간 통신, 학습시간","대용량 HBM, 고대역폭 interconnect, checkpoint 저장"],
+  ["온라인 추론(Inference)","활성 사용자·요청 수·입출력 토큰·응답속도","토큰 처리량, 메모리 대역폭, KV cache, 지연시간","가중치 상주 HBM, KV cache, 시스템 DRAM"],
+  ["Reasoning·Agent","추론 단계 수·tool call·재시도·장문 context","요청당 토큰·연산량 증가, 긴 context 유지","KV cache 및 HBM/DRAM 용량·대역폭 증가"],
+  ["멀티모달","이미지 해상도·영상 길이·음성 frame·동시 처리량","모달리티별 전처리·연산·저장","HBM·DRAM 및 데이터 저장용 NAND"]
+ ]}/><Notice>Training은 대규모 병렬 연산과 통신, inference는 서비스 요청의 지속 처리와 메모리 대역폭·용량이 중요합니다. Microsoft Research는 추론 workload를 latency-sensitive·memory-bound와 throughput-oriented 유형으로 구분합니다.</Notice><Sources items={["Microsoft Research · AI Data Center Lifecycle Compass","McKinsey · The next big shifts in AI workloads and hyperscaler strategies"]}/></div>
+ <div className="panel"><h3>AI 토큰 → 유효 연산량 변환 모델</h3><p className="muted">서비스 사용량을 실제 가속기 compute demand로 변환하는 계산 계층입니다.</p><Table headers={["단계","계산 변수","계산 개념","현재 데이터 상태"]} rows={[
+  ["1. 요청량","일일 요청 수 × 요청당 입력·출력 토큰","입력 토큰과 출력 토큰을 분리해 합산","공개 범위·집계 정의가 통일되지 않음"],
+  ["2. workload 가중","Training / inference / reasoning / agent 비중","workload별 토큰 및 연산량 가중","공개 통계 미확보·시나리오 입력 필요"],
+  ["3. 토큰당 연산","모델 구조·파라미터 활성량·정밀도·context","FLOPs/token × tokens/sec","모델별 공개치만 부분 확인"],
+  ["4. 효율 조정","quantization·sparsity·batching·cache·serving SW","유효 처리량 및 tokens/W 개선 반영","세대·사업자별 성능 자료 필요"],
+  ["5. 총 compute","학습 연산량 + 추론 연산량","연산량 ÷ 가속기 실효 처리량","GPU-equivalent 환산 모델 구축 대상"]
+ ]}/><div className="formula-box"><b>개념식</b><code>AI compute demand = Σ(workload tokens × workload-specific FLOPs/token) ÷ serving efficiency</code><small>정밀한 산출에는 모델·정밀도·batch·context·cache 정책별 계수가 필요합니다. 토큰만으로 GPU 수요를 직접 계산하지 않습니다.</small></div><Sources items={["Microsoft Research · AI Data Center Lifecycle Compass","Berkeley Lab · 2025 United States Data Center Energy Usage Report"]}/></div>
+ <div className="panel"><h3>가속기 설치 기반·출하량·실효 공급량</h3><p className="muted">CAPEX 발표액이 아니라 실제 설치되어 workload를 처리할 수 있는 accelerator fleet을 추적합니다.</p><Table headers={["지표","정의·계산","반드시 분리할 항목","현재 상태"]} rows={[
+  ["신규 출하량","GPU·ASIC 연간/분기 shipment units","GPU vs ASIC, 세대별 SKU, 공급사","글로벌 통합 시계열 미확보"],
+  ["설치 기반","기초 설치량 + 신규 설치 − 폐기·이전","설치·인도·가동 시점 차이","사업자별 부분 공개"],
+  ["실효 compute","설치 대수 × 세대별 실효 성능 × 가동률","이론 peak와 실제 throughput 구분","세대별 utilization 미확보"],
+  ["공급 제약","HBM·첨단 패키징·네트워크·전력·냉각","칩 출하와 서버 가동 사이의 병목","공급사별 공개 자료로 보완 필요"],
+  ["가동률","실제 처리량 ÷ 가용 처리량","예약 용량·유휴 용량·장애·정비","사업자별 미공개"]
+ ]}/><Notice>GPU 출하량은 설치 기반과 같지 않습니다. 인도, 서버 조립, 데이터센터 전력 연결, 네트워크 구성, 고객 workload 투입까지의 지연을 반영해야 실제 compute 공급량을 추정할 수 있습니다.</Notice><Sources items={["Berkeley Lab · 2025 United States Data Center Energy Usage Report","IEA · Key Questions on Energy and AI (2026)"]}/></div>
+ <div className="panel"><h3>데이터센터 CAPEX → IT 장비 → 전력 소비 분해</h3><p className="muted">CAPEX를 곧바로 GPU 구매액이나 메모리 수요로 간주하지 않습니다.</p><Table headers={["CAPEX 구성","추적할 항목","AI 메모리 수요로 연결하는 방법"]} rows={[
+  ["IT 장비","GPU·ASIC 서버, CPU 서버, 스토리지, 네트워크","가속기 서버 수량·구성 및 장비별 메모리 탑재량"],
+  ["시설·전력","부지·건물·변전·UPS·배전·발전기","전력 연결 가능 시점과 IT load 상한"],
+  ["냉각·기계","액체냉각·공조·열교환·펌프","랙 밀도와 실제 가동 가능한 accelerator 수"],
+  ["기타·임차","토지·건설·리스·선급금·인프라 비용","IT 장비 CAPEX와 분리해 중복 계산 방지"]
+ ]}/><div className="formula-box"><b>전력 변환 개념식</b><code>Facility power ≈ IT load ÷ PUE</code><code>Annual energy (TWh) = average facility load (GW) × 8.76</code><small>IT load, facility load, PUE, 평균 가동률을 분리합니다. 설치 용량(GW)과 연간 소비량(TWh)은 서로 다른 지표입니다.</small></div><Sources items={["IEA · Key Questions on Energy and AI (2026)","Berkeley Lab · 2025 United States Data Center Energy Usage Report"]}/></div>
+ <div className="panel"><h3>전력·부지·냉각 병목 및 증설 실현율</h3><Table headers={["제약 변수","관찰 지표","수요 모델 반영"]} rows={[
+  ["전력망 연결","전력 인입 승인·변전소·송전선 증설·대기기간","발표된 IT 용량 중 실제 가동 가능한 비율 조정"],
+  ["랙 전력밀도","kW/rack, GPU당 소비전력, 랙당 accelerator","서버 세대·랙 구성별 설치 가능 대수"],
+  ["냉각","공랭/액체냉각 비중, 냉각 용량, PUE","열 제거 한계에 따른 utilization 상한"],
+  ["입지·건설","착공·준공·전력 연결·서비스 개시 일정","CAPEX 발표와 실제 capacity online 간 시차"],
+  ["전력 효율","tokens/W, FLOPs/W, workload mix","효율 개선과 총수요 증가의 상쇄 효과"]
+ ]}/><Notice>전력 효율이 개선되어도 서비스 사용량과 모델 복잡도가 더 빠르게 증가하면 총 전력 소비는 증가할 수 있습니다. Berkeley Lab은 가속기 수량·정격 전력·효율·workload mix를 구분해 전력 수요를 추정합니다.</Notice><Sources items={["Berkeley Lab · 2025 United States Data Center Energy Usage Report","IEA · Key Questions on Energy and AI (2026)"]}/></div>
+ <div className="panel"><h3>AI compute → HBM·서버 DRAM·NAND bit 수요</h3><p className="muted">이 페이지에서 가장 중요한 연결 계층입니다. accelerator 수요와 메모리 수요를 제품별로 분리합니다.</p><Table headers={["제품","핵심 수요 driver","산출 구조","누락되면 안 되는 조정"]} rows={[
+  ["HBM","AI accelerator 설치량·세대별 HBM stack 용량","가속기 대수 × accelerator당 HBM GB × 8 ÷ 10⁹ = EB","GPU/ASIC별 HBM 탑재량, 세대 전환, 수율·패키징"],
+  ["서버 DDR5","AI/일반 서버 출하량·CPU socket·서버당 DRAM","서버 대수 × 서버당 DRAM GB × 8 ÷ 10⁹ = EB","AI 서버와 일반 서버 구분, DIMM 구성·용량 증가"],
+  ["NAND·eSSD","서버·스토리지 출하량·데이터 보존·checkpoint·cache","서버/스토리지 대수 × 시스템당 SSD 용량","HDD 대체, 데이터 중복제거·압축, SSD 교체주기"],
+  ["네트워크·기타","GPU scale-out·switch·NIC·DPU 구성","서버/랙당 네트워크 장비 및 메모리","HBM/DRAM 수요와 중복 합산 금지"]
+ ]}/><div className="formula-box"><b>메모리 bit 수요 기본식</b><code>Memory demand (bits) = system shipments × memory capacity per system (bytes) × 8</code><code>Net demand = new deployments + capacity upgrades + replacement − retired capacity</code><small>HBM·DDR·NAND는 제품별 출하 기준을 맞춰 계산하고, GPU당 HBM과 서버당 DDR을 혼합하지 않습니다. GB와 GiB, decimal EB와 binary EiB도 일관되게 관리합니다.</small></div><Notice>현재 공개자료만으로 글로벌 GPU별 HBM 용량, AI 서버당 DDR5, 기업용 SSD 평균 탑재량을 전부 확정할 수 없습니다. 확인 가능한 제품 세대별 사양과 기업 공시만 입력하고, 나머지는 범위형 가정으로 표시해야 합니다.</Notice><Sources items={["Microsoft Research · AI Data Center Lifecycle Compass","Samsung Electronics · 3Q26 실적","SK hynix · 3Q26 실적","Berkeley Lab · 2025 United States Data Center Energy Usage Report"]}/></div>
+ <div className="panel"><h3>수요 전망 시나리오 엔진</h3><p className="muted">점 추정치 하나 대신 낮음·기준·높음 시나리오를 만들고, 각 시나리오의 가정과 결과를 저장합니다.</p><Table headers={["변수","낮음 시나리오","기준 시나리오","높음 시나리오"]} rows={[
+  ["AI workload 성장","사용량·도입 속도 둔화","현재 공개 추세 연장","agent·멀티모달 확산 가속"],
+  ["tokens/FLOP 효율","효율 개선 빠름","세대별 공개 성능 반영","효율 개선 제한"],
+  ["가속기 공급","출하·전력 연결 지연","공급사 가이던스 기준","패키징·전력 병목 완화"],
+  ["메모리 탑재량","압축·캐시·저용량 구성","제품 세대별 표준 구성","모델·context·용량 증가"],
+  ["데이터센터 가동률","전력·냉각 제약 지속","단계적 램프업","높은 가동률·빠른 증설"]
+ ]}/><Notice>시나리오별 결과는 아직 글로벌 통합 입력 데이터가 부족한 변수에 대해 임의의 수치를 넣지 않고, 가정값·근거·신뢰도·갱신일을 먼저 기록하도록 설계합니다. 데이터가 확보되면 3·6·12·24개월의 accelerator 설치량, AI 전력, HBM/DRAM/NAND bit 수요를 계산합니다.</Notice></div>
+ <div className="panel"><h3>연도별 수요 전망 한눈에 보기 · 기존 공개 경로</h3><Table headers={["연도","데이터센터 전력","AI 전용 전력","AI 토큰/일 Median","구분"]} rows={[["2025","485 TWh","약 150 TWh","—","전력 estimate"],["2026","약 560 TWh","약 190 TWh","400조","전력 보간·토큰 시나리오"],["2027","약 645 TWh","약 245 TWh","600조","모델 경로"],["2028","약 740 TWh","약 310 TWh","900조","모델 경로"],["2029","약 840 TWh","약 380 TWh","1,350조","모델 경로"],["2030","950 TWh","약 450 TWh","2,000조","전력 IEA forecast·토큰 시나리오"]]}/><Notice>전력(TWh), 토큰(조/일), CAPEX(USD)는 서로 더하거나 하나의 지수로 합산하지 않습니다. 기존 연도별 token median과 중간연도 전력은 공식 통계가 아닌 모델 경로입니다.</Notice></div>
+ <div className="panel"><h3>AI 수요 → 반도체 수요 전달 경로</h3><div className="bridge">{[["AI 학습·추론량","토큰·영상·reasoning·agent 사용량"],["가속기 설치량","GPU·ASIC 출하 및 서버 랙 증설"],["메모리 탑재량","HBM 용량·대역폭, DDR5, eSSD"],["메모리 bit 수요","출하량 × 시스템당 탑재 용량"]].map((x,i)=><div className="bridge-item" key={i}><span>0{i+1}</span><b>{x[0]}</b><small>{x[1]}</small>{i<3&&<ChevronRight/>}</div>)}</div><Notice>토큰·CAPEX·GPU 출하·전력·메모리 탑재량은 서로 다른 관측 축입니다. 이들을 하나의 지표로 합치지 말고 단계별로 연결해야 중복 계산과 과대 추정을 피할 수 있습니다.</Notice></div>
+ <div className="panel"><h3>데이터 품질·예측 검증 체크리스트</h3><Table headers={["검증 항목","규칙"]} rows={[
+  ["실적/추정/전망","Actual·Estimate·Forecast·Model을 모든 시계열에 표시"],
+  ["시점 정합성","발표일과 데이터 기준일을 분리하고 미래에 공개된 정보를 과거 모델 입력에 사용하지 않음"],
+  ["단위 정합성","TWh·GW·GPU units·tokens/day·GB·EB·bits를 혼합하지 않음"],
+  ["중복 제거","CAPEX와 GPU 출하액, GPU HBM과 서버 DRAM, 전력 용량과 전력 소비를 중복 합산하지 않음"],
+  ["오차 추적","월/분기별 예측 vintage를 저장하고 1·3·6·12개월 뒤 실제값과 비교"],
+  ["출처·신뢰도","원문 링크·발표일·측정 범위·추정 방식·신뢰도 기록"]
+ ]}/><Sources items={["IEA · Key Questions on Energy and AI (2026)","Berkeley Lab · 2025 United States Data Center Energy Usage Report","Microsoft Research · AI Data Center Lifecycle Compass","McKinsey · The next big shifts in AI workloads and hyperscaler strategies"]}/></div>
  </>}
+
 function NasdaqTop10Panel(){ const [selected,setSelected]=useState('전체');
  // Quarter-end market capitalization snapshots, USD billions. Values are included only where the cited public quarterly ranking reports them.
  const periods=['23 Q1','23 Q2','23 Q3','23 Q4','24 Q1','24 Q2','24 Q3','24 Q4','25 Q1','25 Q2','25 Q3','25 Q4','26 Q1','26 Q2'];
