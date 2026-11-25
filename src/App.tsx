@@ -196,7 +196,8 @@ function calculateCycleScores(cfg:ScoreConfig){
 }function monthlyCycleScoreSeries(cfg:ScoreConfig){
  const current=calculateCycleScores(cfg);
  const periods=['Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26'];
- const monthly=periods.map((period,monthIndex)=>{
+ const monthly=periods.slice(1).map((period,seriesIndex)=>{
+  const monthIndex=seriesIndex+1;
   const ddr5=priceMomentum(ddr5MomentumBase.slice(0,monthIndex+1),cfg);
   const dram8=priceMomentum(dram8MomentumBase.slice(0,monthIndex+1),cfg);
   const nand=priceMomentum(nandMomentumBase.slice(0,monthIndex+1),cfg);
@@ -205,8 +206,8 @@ function calculateCycleScores(cfg:ScoreConfig){
   const total=Math.round((current.demandScore*cfg.demandWeight+priceScore*current.priceWeight+current.supplyScore*current.supplyWeight+current.inventoryScore*current.inventoryWeight+current.financialScore*current.financialWeight)/100);
   return {year:period,value:total};
  });
- return monthly.slice(2).map((point,index)=>{
-  const previous=monthly[index+1];
+ return monthly.slice(1).map((point,index)=>{
+  const previous=monthly[index];
   const scoreDelta=point.value-previous.value;
   return {...point,scoreDelta,momPct:previous.value?(scoreDelta/previous.value)*100:null};
  });
