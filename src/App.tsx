@@ -89,11 +89,6 @@ const memoryForecast=[
   {year:'2025',value:220.1,status:'Estimate'},{year:'2026',value:837.3,status:'Forecast'},
   {year:'2027',value:1075.5,status:'Forecast'}
 ];
-const globalQuarterly=[
-  {year:'1Q26',value:298.5,status:'Actual',note:'SIA 발표 2026-05-04'},
-  {year:'2Q26',value:403.3,status:'Actual',note:'SIA 발표 2026-08-06'},
-  {year:'3Q26',value:517.7,status:'Actual',note:'SIA 발표 2026-11-03'}
-];
 const samsungAnnual=[
  {year:'2016',revenue:201.867,op:29.241},{year:'2017',revenue:239.575,op:53.645},{year:'2018',revenue:243.771,op:58.887},{year:'2019',revenue:230.401,op:27.769},{year:'2020',revenue:236.807,op:35.994},{year:'2021',revenue:279.605,op:51.634},{year:'2022',revenue:302.231,op:43.377},{year:'2023',revenue:258.935,op:6.567},{year:'2024',revenue:300.871,op:32.726},{year:'2025',revenue:333.606,op:43.601}
 ];
