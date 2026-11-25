@@ -231,9 +231,15 @@ function MultiLineChart({series,label,height=220}:{series:{name:string;unit:stri
  const y=(v:number)=>top+(max-v)/range*(bottom-top);
  const colors=['#68c5d4','#e6a85c','#9b8bea','#62bd8b'];
  const active=selected?series[selected.series].data[selected.point]:null;
- return <div className="line-chart" style={{height:height+58}}>
-  <div className="chart-value-callout" aria-live="polite">{selected&&active?<><b>{series[selected.series].name} · {active.year}</b><strong>{active.value.toLocaleString('ko-KR',{maximumFractionDigits:2})} {series[selected.series].unit}</strong></>:<span>그래프의 점을 선택하면 해당 계열과 연도별 값이 표시됩니다</span>}</div>
-  <div className="line-plot"><div className="line-y-axis"><span>{max.toLocaleString('ko-KR')}</span><span>{((max+min)/2).toLocaleString('ko-KR',{maximumFractionDigits:1})}</span><span>{min.toLocaleString('ko-KR')}</span></div>
+ const activeSeries=selected?series[selected.series]:null;
+ const previous=selected&&selected.point>0?series[selected.series].data[selected.point-1]:null;
+ const delta=active&&previous?active.value-previous.value:null;
+ const deltaPct=active&&previous&&previous.value!==0?(active.value/previous.value-1)*100:null;
+ const signed=(v:number)=>v>0?'+':'';
+ const fmt=(v:number)=>v.toLocaleString('ko-KR',{maximumFractionDigits:2});
+ return <div className="line-chart" style={{height:height+76}}>
+  <div className="chart-value-callout" aria-live="polite">{selected&&active&&activeSeries?<><b>{activeSeries.name} · {active.year}</b><strong>{fmt(active.value)} {activeSeries.unit}</strong><small style={{display:'block',marginTop:5,color:deltaPct===null?'var(--muted,#9aa9b7)':deltaPct>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{previous?(`이전 타점(${previous.year}) 대비 ${signed(deltaPct as number)}${(deltaPct as number).toFixed(1)}% · ${signed(delta as number)}${fmt(Math.abs(delta as number))} ${activeSeries.unit}`):'첫 번째 타점 · 이전 시점 비교 없음'}</small>{previous&&<small style={{display:'block',marginTop:3,color:'var(--muted,#9aa9b7)'}}>이전 값 {fmt(previous.value)} {activeSeries.unit}</small>}</>:<span>그래프의 타점을 누르면 해당 시점의 값과 직전 타점 대비 증감률이 표시됩니다</span>}</div>
+  <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
     {series.map((s,si)=>{const pts=s.data.map((d,i)=>[x(i,s.data.length),y(d.value)] as [number,number]);const path=pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.4" vectorEffect="non-scaling-stroke"/>{pts.map((p,pi)=><g key={pi} onClick={()=>setSelected({series:si,point:pi})} style={{cursor:'pointer'}}><circle cx={p[0]} cy={p[1]} r="4.4" fill="transparent"/><circle cx={p[0]} cy={p[1]} r={selected?.series===si&&selected.point===pi?2.8:1.8} fill={colors[si%colors.length]} stroke="#101a23" strokeWidth=".7" vectorEffect="non-scaling-stroke"/></g>)}</g>})}
    </svg>
