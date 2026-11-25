@@ -6,17 +6,17 @@ import {
 } from 'lucide-react';
 
 type Section = 'overview'|'pricing'|'demand'|'capex'|'companies'|'cycles'|'insights'|'market';
-type Period = '3Y'|'5Y'|'10Y'|'MAX';
+type Period = '3Y'|'5Y'|'6Y';
 
 const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
   {id:'overview',no:'01',label:'산업 사이클',sub:'시장 흐름과 업황 점수',icon:Activity},
   {id:'pricing',no:'02',label:'제품별 가격',sub:'DRAM·NAND·DDR 가격',icon:Layers3},
   {id:'demand',no:'03',label:'AI 수요 & 데이터센터',sub:'AI 투자와 전력 수요',icon:Server},
   {id:'capex',no:'04',label:'빅테크 투자',sub:'주요 기업 설비투자',icon:Wallet},
-  {id:'companies',no:'06',label:'기업 실적',sub:'반도체 주요 기업',icon:BarChart3},
-  {id:'cycles',no:'07',label:'장기 사이클',sub:'과거 흐름과 전망',icon:TrendingUp},
-  {id:'insights',no:'08',label:'투자 시나리오',sub:'업황별 투자 관점',icon:Gauge},
-  {id:'market',no:'10',label:'글로벌 금융시장',sub:'미국 증시·산업별 강세 지도',icon:TrendingUp},
+  {id:'companies',no:'05',label:'기업 실적',sub:'반도체 주요 기업',icon:BarChart3},
+  {id:'cycles',no:'06',label:'장기 사이클',sub:'과거 흐름과 전망',icon:TrendingUp},
+  {id:'insights',no:'07',label:'투자 시나리오',sub:'업황별 투자 관점',icon:Gauge},
+  {id:'market',no:'08',label:'글로벌 금융시장',sub:'미국 증시·산업별 강세 지도',icon:TrendingUp},
 ];
 
 const sources=[
@@ -147,7 +147,7 @@ const scoredBaseWeight=scoreable.reduce((s,x)=>s+x.baseWeight,0);
 const cycleScore=Math.round(scoreable.reduce((s,x)=>s+(x.score as number)*x.baseWeight,0)/scoredBaseWeight);
 
 function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
-function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow.replace('01 / CYCLE MONITOR','01 / 산업 사이클').replace('02 / PRODUCT PRICING','02 / 제품별 가격').replace('03 / COMPUTE DEMAND','03 / AI 수요').replace('04 / HYPERSCALER INVESTMENT','04 / 빅테크 투자').replace('05 / SUPPLY & INVENTORY','05 / 공급과 재고').replace('06 / COMPANY FINANCIALS','06 / 기업 실적').replace('07 / LONG-TERM CYCLES','07 / 장기 사이클').replace('08 / INVESTMENT SCENARIOS','08 / 투자 시나리오').replace('09 / DATA & METHODOLOGY','09 / 데이터 방법론')}</div><h1>{title}</h1><p>{desc}</p></div>}
+function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
 function krwText(value:any){if(typeof value!=='string')return value;return value.replace(/\$([\d,]+(?:\.\d+)?)(\s*(?:B|bn|billion))?/gi,(_m,n,suffix)=>{const v=Number(n.replace(/,/g,''));return suffix?'₩'+(v*FX_USDKRW/1000).toFixed(1)+'조':'₩'+Math.round(v*FX_USDKRW).toLocaleString('ko-KR')+'원'}).replace(/USD\s*\/\s*chip/gi,'원/칩').replace(/USD\s*bn/gi,'조 원').replace(/USD/gi,'KRW')}function visibleUnit(value:string){return value.replace(/USD\s*\/\s*chip/gi,'원/칩').replace(/USD\s*bn/gi,'조 원').replace(/USD/gi,'KRW')}
 function Stat({label,value,sub}:{label:string;value:string;sub:string}){return <div className="stat"><span>{krwText(label)}</span><strong>{krwText(value)}</strong><small>{krwText(sub)}</small></div>}
 function Table({headers,rows}:{headers:string[];rows:any[][]}){return <div className="table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{visibleUnit(h)}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c===null?'미확보':krwText(c)}</td>)}</tr>)}</tbody></table></div>}
@@ -254,7 +254,7 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
     ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
     ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
    ]}/>
-   <Notice>92점은 Server DDR5·HBM·NAND에 부여한 정성 점수를 가중 평균한 참고값입니다. 전체 7개 지표 중 4개가 미확보이므로 점수 하나만으로 사이클 정점이나 하락 시점을 판단하지 않습니다.</Notice>
+   <Notice>{cycleScore}점은 현재 정량 점수를 확보한 Server DDR5·HBM·NAND 3개 지표의 가중 평균 참고값입니다. 전체 7개 지표 중 4개가 미확보이므로 전체 업황 점수로 해석하거나 사이클 정점·하락 시점을 단정하지 않습니다.</Notice>
   </div>
   <div className="panel"><div className="panel-head"><div><h3>현재 사이클 해석</h3><p>이번 주 핵심 판단만 읽도록 요약</p></div><Pill tone="green">강한 확장 국면</Pill></div>
    <Table headers={['구분','판단']} rows={[
@@ -265,7 +265,7 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
     ['판단 신뢰도','중간 이하: 재고일수·제품별 ASP·bit 공급 데이터 부족']
    ]}/>
   </div>
-  <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','10Y','MAX'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p==='MAX'?'전체':p}</button>)}</div></div>
+  <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={market.map((x,i)=>[x.year,'$'+x.value.toFixed(1)+'B',i===0?'—':((x.value/market[i-1].value-1)*100).toFixed(1)+'%'])}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
  </>;
 }
@@ -390,11 +390,11 @@ function NasdaqTop10Panel(){ const [selected,setSelected]=useState('전체');
 }
 function Capex(){return <>
  <Title eyebrow="04 / HYPERSCALER INVESTMENT" title="빅테크 CAPEX" desc="나스닥 시가총액 상위 기업의 규모와 빅테크 설비투자를 함께 살펴봅니다. 회사별 FY/CY와 CAPEX 정의 차이를 구분합니다."/><NasdaqTop10Panel/>
- <div className="panel"><h3>최근 분기 CAPEX 순위 · 높은 순</h3><p className="muted">2026년 7~9월에 해당하는 최신 공개 분기 기준. Microsoft FY27 Q1은 2026년 7~9월이며, 나머지는 CY26 Q3입니다. 회사별 공시 정의는 표 하단 주석을 확인하세요.</p><Table headers={['순위','기업','기간','분기 CAPEX','비교 기준']} rows={[
-  ['1','Amazon','3Q26','$77.259B','Gross PPE purchases'],
-  ['2','Alphabet','3Q26','$51.4B','PPE purchases'],
-  ['3','Microsoft','FY27 Q1','$45.2B','CAPEX incl. finance leases'],
-  ['4','Meta','3Q26','$34.91B','CAPEX incl. finance lease principal']
+ <div className="panel"><h3>최근 분기 CAPEX 규모 참고 · 공시 정의 상이</h3><p className="muted">2026년 7~9월에 해당하는 최신 공개 분기 기준. Microsoft FY27 Q1은 2026년 7~9월이며, 나머지는 CY26 Q3입니다. 회사별 CAPEX 정의가 달라 직접적인 투자 강도 순위가 아닌 규모 참고용입니다.</p><Table headers={['기업','기간','분기 CAPEX','비교 기준']} rows={[
+  ['Amazon','3Q26','$77.259B','Gross PPE purchases'],
+  ['Alphabet','3Q26','$51.4B','PPE purchases'],
+  ['Microsoft','FY27 Q1','$45.2B','CAPEX incl. finance leases'],
+  ['Meta','3Q26','$34.91B','CAPEX incl. finance lease principal']
  ]}/><Sources items={['Amazon · 3Q26 실적','Alphabet · 3Q26 실적발표 콜','Microsoft · FY2027 Q1 실적발표 콜','Meta · 3Q26 SEC 10-Q']}/></div>
  <div className="panel"><h3>최근 연간 CAPEX · 2025년 공시 기준</h3><Table headers={['순위','기업','회계기간','CAPEX','정의']} rows={[
   ['1','Amazon','CY2025','$128.32B','Gross PPE purchases'],
