@@ -630,13 +630,17 @@ function Cycles(){
  const memoryOutlook=memoryForecast.map(x=>({year:x.year,value:x.value}));
  const findValue=(rows:{year:string;value:number}[],year:string)=>rows.find(x=>x.year===year)?.value;
  const money=(value:number|undefined)=>value===undefined?'—':'$'+value.toFixed(1)+'B';
- const summaryRows=annualYears.map(year=>[
-  year,
-  money(findValue(globalActual,year)),
-  money(findValue(globalOutlook,year)),
-  money(findValue(memoryOutlook,year)),
-  findValue(globalActual,year)!==undefined?'SIA actual':findValue(globalOutlook,year)!==undefined?'Gartner forecast':'—'
- ]);
+ const summaryRows=[
+  ...annualYears.map(year=>[
+   year,
+   money(findValue(globalActual,year)),
+   '—',
+   money(findValue(globalOutlook,year)),
+   money(findValue(memoryOutlook,year)),
+   findValue(globalActual,year)!==undefined?'SIA annual actual':findValue(globalOutlook,year)!==undefined?'Gartner estimate / forecast':'—'
+  ]),
+  ...globalQuarterly.map(item=>[item.year,'—',money(item.value),'—','—','SIA quarterly actual'])
+ ];
  return <>
  <Title eyebrow="06 / LONG-TERM HISTORY" title="장기 반도체 사이클" desc="글로벌 반도체 전체 시장과 메모리 시장의 연간 매출 규모를 하나의 축에서 비교합니다. 실적·추정·전망은 출처별로 구분합니다."/>
  <div className="panel">
@@ -646,7 +650,7 @@ function Cycles(){
    {name:'글로벌 반도체 · Gartner estimate/forecast',unit:'USD bn',data:globalOutlook},
    {name:'메모리 반도체 · Gartner estimate/forecast',unit:'USD bn',data:memoryOutlook}
   ]}/>
-  <Table headers={['연도','글로벌 반도체 SIA actual','글로벌 반도체 Gartner 추정·전망','메모리 반도체 Gartner 추정·전망','구분']} rows={summaryRows}/>
+  <Table headers={['기간','글로벌 반도체 SIA 연간 actual','글로벌 반도체 SIA 분기 actual','글로벌 반도체 Gartner 추정·전망','메모리 반도체 Gartner 추정·전망','구분']} rows={summaryRows}/>
   <Notice>2025년 글로벌 반도체 매출은 SIA actual $791.7B와 Gartner estimate $809.0B가 서로 다른 출처·시점의 수치입니다. 두 값을 하나로 합치지 않고 별도 선·열로 표시합니다. 메모리 시장은 Gartner 추정·전망 계열이며, 전체 반도체 시장과 중복 합산하지 않습니다. 2026~2027년은 전망치로 실제 실적이 아닙니다.</Notice>
   <Sources items={['SIA · 2025년 연간 글로벌 반도체 매출','Gartner · 2026년 반도체 시장 공개 전망']}/>
  </div>
