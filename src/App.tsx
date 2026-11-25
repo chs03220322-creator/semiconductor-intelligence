@@ -184,8 +184,8 @@ function calculateCycleScores(cfg:ScoreConfig){
  const residual=100-cfg.demandWeight;
  const priceWeight=residual*0.40,supplyWeight=residual*0.25,inventoryWeight=residual*0.20,financialWeight=residual*0.15;
  const totalScore=Math.round((demandScore*cfg.demandWeight+priceScore*priceWeight+supplyScore*supplyWeight+inventoryScore*inventoryWeight+financialScore*financialWeight)/100);
- const avgDramMonthly=(ddr5.avgMonthly+dram8.avgMonthly)/2;
- const latestDramMonthly=(ddr5.latestMonthly+dram8.latestMonthly)/2;
+ const avgDramMonthly=ddr5.avgMonthly*PRICE_WEIGHTS[0]/100+dram8.avgMonthly*PRICE_WEIGHTS[1]/100;
+ const latestDramMonthly=ddr5.latestMonthly*PRICE_WEIGHTS[0]/100+dram8.latestMonthly*PRICE_WEIGHTS[1]/100;
  const cycleSignal=latestDramMonthly<0&&avgDramMonthly>0?'DRAM 가격 하락 전환 주의':latestDramMonthly<avgDramMonthly-1.5?'가격 상승 모멘텀 둔화':supplyScore<48?'공급 증가·수급 완화 주의':inventoryScore<42?'기업 재고 부담 확대':financialScore<45?'기업 실적 모멘텀 약화':'상승 흐름 유지';
  return {demandScore,priceScore,supplyScore,financialScore,inventoryScore,totalScore,priceWeight,supplyWeight,inventoryWeight,financialWeight,ddr5,dram16,dram8,nand,dramScore,demandItems,companyItems,avgDramMonthly,latestDramMonthly,cycleSignal};
 }function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
@@ -274,13 +274,13 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
   <small>{visibleLabel} · {fmt(min)}–{fmt(max)}</small>
  </div>
 }
-function MultiLineChart({series,label,height=220}:{series:{name:string;unit:string;data:{year:string;value:number}[]}[];label:string;height?:number}){
+function MultiLineChart({series,label,height=220,zeroBaseline=true}:{series:{name:string;unit:string;data:{year:string;value:number}[]}[];label:string;height?:number;zeroBaseline?:boolean}){
  const [selected,setSelected]=useState<{series:number;period:string}|null>(null);
  const [activeSeriesIndex,setActiveSeriesIndex]=useState(0);
  const periods=Array.from(new Set(series.flatMap(item=>item.data.map(point=>point.year))));
  const aligned=series.map(item=>({...item,byPeriod:new Map(item.data.map(point=>[point.year,point.value]))}));
  const values=aligned.flatMap(item=>periods.map(period=>item.byPeriod.get(period)).filter((value):value is number=>value!==undefined&&Number.isFinite(value)));
- const min=Math.min(...values),max=Math.max(...values),range=max-min||1;
+ const min=zeroBaseline?Math.min(0,...values):Math.min(...values),max=Math.max(...values),range=max-min||1;
  const top=10,bottom=76;
  const x=(i:number)=>periods.length<=1?50:8+i*84/(periods.length-1);
  const y=(v:number)=>top+(max-v)/range*(bottom-top);
@@ -375,7 +375,7 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
  </div>
  <div className="panel">
   <div className="panel-head"><div><h3>DRAM 제품별 가격 통합 추이</h3><p className="muted">동일한 월 축에서 3개 가격 계열 비교 · USD/chip</p></div><Pill tone="blue">3개 제품 통합</Pill></div>
-  <MultiLineChart label="DRAM 16Gb, DDR5 16Gb and DRAM 8Gb monthly prices" height={210} series={[
+  <MultiLineChart label="DRAM 16Gb, DDR5 16Gb and DRAM 8Gb monthly prices" height={210} zeroBaseline={false} series={[
    {name:'DRAM 16Gb 범용',unit:'USD/chip',data:pricesDram16},
    {name:'DDR5 16Gb',unit:'USD/chip',data:pricesDdr5_16},
    {name:'DRAM 8Gb 범용',unit:'USD/chip',data:pricesDram8}
