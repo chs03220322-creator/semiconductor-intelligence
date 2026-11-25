@@ -279,6 +279,14 @@ function Demand(){return <>
  <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="글로벌 AI 토큰 사용량에서 GPU 연산 수요와 HBM·서버 DRAM·eSSD bit 수요까지 연결합니다. 공개 실적(actual), 기관 추정(estimate), 자체 계산 경로(model)를 분리하며, 입력이 없는 값은 임의로 채우지 않습니다."/>
  <div className="stats-grid"><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="J.P. Morgan AI Tracker 추정"/><Stat label="2026E 연말 토큰" value="400조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2027E 토큰" value="600조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2030E 토큰" value="2,000조/일" sub="자체 기준 시나리오 · forecast"/></div>
  <TrendPanel title="글로벌 AI 토큰 사용량 · 일평균 run-rate" series={[{name:"Median · 중앙값 기준",unit:"Trillion tokens/day · median scenario, not official forecast",data:tokenBase}]} note="J.P. Morgan AI Tracker의 반기별 차트 판독 근사치를 포함합니다. 2026년 말~2030년 전망은 공식 기관 전망이 아닌 자체 시나리오입니다. 토큰 집계 범위·중복·모델별 공개 수준이 통일되지 않아 전 세계 실측 총량으로 해석하면 안 됩니다." source={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)"]}/>
+ <div className="panel"><h3>플랫폼 실측 토큰 성장 · OpenRouter 관측치</h3><p className="muted">글로벌 전체 시장 추정치와 분리한 플랫폼 관측 proxy입니다. OpenRouter 경유 요청만 포함하며, 직접 API·자체 호스팅·다른 라우터 트래픽은 포함하지 않습니다.</p><Table headers={["기간","OpenRouter 토큰/일","전년 대비","데이터 성격"]} rows={[[ "2025-10","0.721조","—","월평균 관측"],["2025-11","0.885조","+23%","월평균 관측"],["2026-01","1.0조","—","월평균 관측"],["2026-04","3.2조","—","월평균 관측"],["2026-07","8.0조","약 21배 vs 2025-07","월평균 관측"],["2026-10","25조","약 35배 vs 2025-10","월평균 관측"],["2026-11 (1~23일)","35조","약 40배 vs 2025-11","월평균 잠정"] ]}/><Notice>2026-11-24 업데이트된 공개 집계에서 최근 7일 평균은 약 46조 tokens/day, 2025년 같은 기간 대비 약 50배로 제시됩니다. 월평균·최근 7일 평균·특정일 값은 서로 다른 통계이므로 혼합하지 않습니다. OpenRouter는 글로벌 AI 사용량의 일부를 보여주는 관측 표본입니다.</Notice><Sources items={["OpenRouter · Data and October 2026 recap","06.ai · OpenRouter tokens and spend tracker (updated 2026-11-24)"]}/></div>
+ <div className="panel"><h3>토큰 성장의 질: Input·Output·Reasoning·Agent</h3><p className="muted">단순 토큰 합계뿐 아니라 어떤 유형의 토큰이 증가하는지 구분해야 GPU 연산과 메모리 대역폭·용량 수요를 추정할 수 있습니다.</p><Table headers={["구분","핵심 관측 변수","연산·메모리 영향","데이터 확보 상태"]} rows={[
+ ["Input / Prefill","입력 tokens/day, 평균 context, cache hit ratio","대량 prompt prefill, 순간 연산량·KV cache 생성","사업자별 공개치 일부"],
+ ["Output / Decode","출력 tokens/day, tokens/sec, 동시 세션","지속적 decode 처리량, HBM bandwidth","플랫폼별 공개 범위 상이"],
+ ["Reasoning","요청당 thinking tokens, reasoning 단계, 재시도","요청당 토큰·연산량 증가, 긴 context 유지","모델별 공개·비공개 혼재"],
+ ["Agent / Tool","task당 tool call, 반복 횟수, context 재전송","입력 토큰 누적, KV cache 및 시스템 DRAM 수요","특정 업무 연구 중심"],
+ ["Multimodal","이미지 patch, video frame, audio token","텍스트 외 encoder 연산·메모리 증가","모델별 단위가 달라 직접 합산 주의"]
+ ]}/><Notice>2026년 4월 Microsoft Research의 SWE-bench Verified 분석에서는 특정 agentic coding 작업이 일반적인 code reasoning/chat보다 최대 1,000배 많은 토큰을 소비한 사례가 보고됐습니다. 동일 작업 실행 간 사용량 편차도 최대 30배였습니다. 특정 코딩 benchmark 결과이므로 전체 AI 트래픽의 평균 배수로 적용하지 않습니다.</Notice><Sources items={["Microsoft Research · How Do AI Agents Spend Your Money? (April 2026)"]}/></div>
  <div className="panel"><h3>빅테크 CAPEX 데이터 연결</h3><p className="muted">기업별 연간·분기 CAPEX actual과 회계연도, 리스 포함 여부, 누계 기준은 ‘빅테크 투자’ 메뉴에서 통합 관리합니다. 이 페이지에서는 CAPEX 금액을 중복 집계하지 않고, 데이터센터 투자액이 실제 IT 장비·가속기 설치로 전환되는 경로만 추적합니다.</p><Notice>CAPEX 발표액은 GPU 구매액이나 메모리 bit 수요가 아닙니다. 시설·건설·임차 비용과 IT 장비 지출을 분리하고, 가속기 서버의 실제 인도·가동 시점을 확인해야 합니다.</Notice></div>
  <div className="panel"><h3>AI 수요를 훈련·추론·기타 workload로 분해</h3><p className="muted">토큰 증가율 하나로 전체 AI 연산 수요를 대체하지 않습니다. workload별 계산 특성과 메모리 병목이 다릅니다.</p><Table headers={["Workload","수요 발생 요인","주요 병목","메모리 영향"]} rows={[
   ["모델 학습(Training)","신규 모델·모델 크기·학습 데이터·재학습 빈도","GPU/ASIC 연산량, 노드 간 통신, 학습시간","대용량 HBM, 고대역폭 interconnect, checkpoint 저장"],
@@ -312,8 +320,8 @@ function Demand(){return <>
  ["NVIDIA H100 SXM","HBM3","80 GB","3.35 TB/s","640 GB"],
  ["NVIDIA H200 SXM","HBM3e","141 GB","4.8 TB/s","약 1.1 TB"],
  ["NVIDIA B200 SXM","HBM3e","180 GB","최대 8 TB/s","1.44 TB"],
- ["NVIDIA Rubin GPU","HBM4","최대 288 GB","최대 22 TB/s","최대 2.304 TB (8 GPU 환산)"]
- ]}/><Notice>세대 간 비교에서 HBM 용량은 모델 상주·KV cache 수용량을, 대역폭은 decode 단계의 token generation 처리능력에 영향을 줍니다. Rubin 수치는 NVIDIA가 공개한 최대 사양이며, 실제 시스템 구성·출하 시점에 따라 달라질 수 있습니다.</Notice><Sources items={["NVIDIA · HGX AI Factory H100/H200/B200 specifications","NVIDIA · Rubin GPU architecture (2026)"]}/></div>
+ ["NVIDIA HGX Rubin NVL8","HBM4","시스템 합계 2 TB","시스템 HBM 대역폭 130 TB/s","2 TB (공식 시스템 사양)"]
+ ]}/><Notice>세대 간 비교에서 HBM 용량은 모델 상주·KV cache 수용량을, 대역폭은 decode 단계의 token generation 처리능력에 영향을 줍니다. Rubin은 개별 GPU 최대치와 HGX NVL8 시스템 공식 사양을 혼용하지 않습니다. NVIDIA HGX Vera Rubin NVL8 공개 사양은 시스템 GPU 메모리 2 TB HBM4, 대역폭 130 TB/s입니다.</Notice><Sources items={["NVIDIA · HGX AI Factory H100/H200/B200 specifications","NVIDIA · Rubin GPU architecture (2026)"]}/></div>
  <div className="panel"><h3>Inference 메모리 병목: Weight와 KV Cache</h3><p className="muted">토큰 증가가 HBM 수요로 이어지는 핵심 경로는 모델 가중치 상주와 동시 요청의 KV cache입니다.</p><Table headers={["메모리 항목","증가 요인","영향"]} rows={[
  ["Model weights","파라미터 수·모델 복제본·정밀도","모델을 GPU 메모리에 상주시킬 용량"],
  ["KV cache","동시 batch × sequence/context length × layer × hidden size × precision","동시 세션이 늘거나 context가 길어질수록 선형적으로 증가하는 메모리 점유"],
@@ -326,7 +334,18 @@ function Demand(){return <>
   ["NAND·eSSD","서버·스토리지 출하량·데이터 보존·checkpoint·cache","서버/스토리지 대수 × 시스템당 SSD 용량","HDD 대체, 데이터 중복제거·압축, SSD 교체주기"],
   ["네트워크·기타","GPU scale-out·switch·NIC·DPU 구성","서버/랙당 네트워크 장비 및 메모리","HBM/DRAM 수요와 중복 합산 금지"]
  ]}/><div className="formula-box"><b>메모리 bit 수요 기본식</b><code>Memory demand (bits) = system shipments × memory capacity per system (bytes) × 8</code><code>Net demand = new deployments + capacity upgrades + replacement − retired capacity</code><small>HBM·DDR·NAND는 제품별 출하 기준을 맞춰 계산하고, GPU당 HBM과 서버당 DDR을 혼합하지 않습니다. GB와 GiB, decimal EB와 binary EiB도 일관되게 관리합니다.</small></div><Notice>현재 공개자료만으로 글로벌 GPU별 HBM 용량, AI 서버당 DDR5, 기업용 SSD 평균 탑재량을 전부 확정할 수 없습니다. 확인 가능한 제품 세대별 사양과 기업 공시만 입력하고, 나머지는 범위형 가정으로 표시해야 합니다.</Notice><Sources items={["Microsoft Research · AI Data Center Lifecycle Compass","Samsung Electronics · 3Q26 실적","SK hynix · 3Q26 실적","Berkeley Lab · 2025 United States Data Center Energy Usage Report"]}/></div>
- <div className="panel"><h3>AI 서버 DRAM·eSSD: 공개 사양과 수요 전환</h3><p className="muted">GPU당 HBM 외에도 호스트 CPU 메모리와 inference용 SSD가 별도 수요 축입니다. 서버별 실제 평균 탑재량은 고객·OEM 구성에 따라 다르므로 공개된 reference configuration만 제시합니다.</p><Table headers={["플랫폼/수요처","공개 구성·관측","반도체 관점","해석 제한"]} rows={[
+ <div className="panel"><h3>AI 서버 DRAM·eSSD: 공개 사양과 수요 전환</h3> <div className="panel"><h3>AI inference 메모리 계층: HBM → DDR5 → KV Cache SSD</h3><p className="muted">모든 KV cache가 HBM에만 머무르는 것은 아닙니다. context와 동시 요청이 커지면 host DRAM·고성능 SSD로 계층화하는 설계가 메모리 수요를 넓힐 수 있습니다.</p><Table headers={["계층","주요 역할","수요 driver","반도체 수혜"]} rows={[
+ ["HBM","활성 모델 weight·hot KV cache","실시간 decode, batch, 낮은 latency","HBM 용량·대역폭·stack 수"],
+ ["Host DDR5","CPU-side cache·offload·retrieval·agent runtime","동시 agent 수, CPU socket·memory channel","서버당 DRAM 용량·대역폭"],
+ ["Local NVMe SSD","KV cache spillover·checkpoint·빠른 restore","긴 context, cache eviction, 재사용률","고성능 TLC/QLC eSSD, controller"],
+ ["Shared / Capacity SSD","vector DB·RAG corpus·대규모 비정형 데이터","데이터 보존량·retrieval·멀티모달 corpus","고용량 QLC NAND·스토리지 시스템"]
+ ]}/><Notice>TrendForce는 agentic AI의 KV cache 증가와 QLC eSSD 기반 cache offload를 주요 수요 요인으로 제시했습니다. 다만 SSD offload는 HBM을 1:1로 대체하는 것이 아니라 latency·비용·용량 trade-off에 따른 계층화입니다.</Notice><Sources items={["TrendForce · 2026 Trends: Memory for New AI Inference Demand (2026-06-12)","TrendForce · QLC SSDs Rise: Agentic AI Redefines CSP Storage (2026-09-22)"]}/></div>
+ <div className="panel"><h3>AI 서버 DRAM reference 구성과 민감도</h3><p className="muted">시장 평균 탑재량을 임의로 가정하지 않고, 공개 reference node를 기준점으로 삼아 서버 대수와 메모리 용량 가정을 분리합니다.</p><Table headers={["플랫폼","CPU system DRAM","GPU HBM","스토리지 reference","해석"]} rows={[
+ ["HGX B200 8-GPU node","최소 1.5 TB","최대 1.44 TB","Inference: CPU socket당 NVMe 1 TB 이상","NVIDIA reference 구성 최소치"],
+ ["HGX H200 8-GPU node","최소 1.5 TB","최대 약 1.1 TB","Training: CPU socket당 NVMe 2 TB 이상","세대별 host DRAM 최소치는 동일"],
+ ["HGX H100 8-GPU node","최소 1.5 TB","640 GB","HPC: CPU socket당 NVMe 1 TB 이상","실제 OEM 구성은 다를 수 있음"]
+ ]}/><Notice>위 수치는 NVIDIA HGX reference architecture 기준이며 글로벌 AI 서버의 평균 DRAM·SSD 탑재량이 아닙니다. 실제 수요 추정에는 출하 대수, OEM별 DIMM 구성, CPU socket 수, GPU node 비중이 추가로 필요합니다.</Notice><Sources items={["NVIDIA · HGX AI Factory H100/H200/B200 components and node configurations"]}/></div>
+<p className="muted">GPU당 HBM 외에도 호스트 CPU 메모리와 inference용 SSD가 별도 수요 축입니다. 서버별 실제 평균 탑재량은 고객·OEM 구성에 따라 다르므로 공개된 reference configuration만 제시합니다.</p><Table headers={["플랫폼/수요처","공개 구성·관측","반도체 관점","해석 제한"]} rows={[
  ["HGX B200 AI 서버 reference","시스템 DRAM 최소 1.5 TB; CPU 2소켓 이상 구성","GPU HBM과 별개로 대용량 host DDR5 필요","NVIDIA reference architecture 최소 구성; 시장 평균 탑재량 아님"],
  ["Inference SSD","RAG random read, low latency·QoS, checkpoint·restore sequential throughput","eSSD 성능·용량·컨트롤러·DRAM buffer 중요","모든 AI 서버에 동일한 SSD 용량을 가정하면 안 됨"],
  ["Nearline QLC SSD","AI inference와 HDD 공급 제약으로 고용량 QLC 채택 확대 전망","NAND bit 수요 및 제품 mix가 enterprise로 이동","수요 전망이며 확정 출하량이 아님"]
@@ -339,6 +358,12 @@ function Demand(){return <>
   ["가속기 실효 가동률","초기 설치·소프트웨어 최적화 지연","단계적 램프업","높은 utilization·빠른 workload 투입"]
  ]}/><Notice>시나리오별 결과는 아직 글로벌 통합 입력 데이터가 부족한 변수에 대해 임의의 수치를 넣지 않고, 가정값·근거·신뢰도·갱신일을 먼저 기록하도록 설계합니다. 데이터가 확보되면 3·6·12·24개월의 토큰 수요, accelerator 설치량, HBM/DRAM/NAND bit 수요를 계산합니다.</Notice></div>
  <div className="panel"><h3>연도별 수요 전망 한눈에 보기 · 기존 공개 경로</h3><Table headers={["연도","AI 토큰/일 Median","구분"]} rows={[["2025","—","실측 글로벌 통합치 미확보"],["2026E 연말","400조","자체 시나리오"],["2027","600조","모델 경로"],["2028","900조","모델 경로"],["2029","1,350조","모델 경로"],["2030","2,000조","모델 경로"]]}/><Notice>2026년 말 이후 연도별 토큰 수치는 공식 기관 전망이 아닌 자체 기준 시나리오입니다. 글로벌 토큰 집계 범위와 모델별 공개 수준이 통일되지 않아 실측 총량과 구분합니다.</Notice></div>
+ <div className="panel"><h3>메모리 수요 계산식과 입력값 검증</h3><p className="muted">토큰 성장률을 메모리 bit 성장률로 바로 치환하지 않습니다. workload와 플랫폼 구성을 거쳐 제품별 수요를 산출합니다.</p><Table headers={["산출 대상","기본 계산식","필수 입력값","현재 한계"]} rows={[
+ ["GPU compute","Σ(tokens by workload × FLOPs/token) ÷ effective FLOPs/GPU","모델·정밀도·input/output·batch·utilization","모델별 FLOPs/token 및 실효 utilization 미공개"],
+ ["HBM bit demand","신규 accelerator × HBM GB/GPU × GPU/node × 8","세대별 출하 믹스·GPU당 HBM·ASIC 비중","ASIC별 HBM 탑재량·출하 믹스 부족"],
+ ["Server DDR5 bit demand","AI server shipments × DRAM GB/server × 8","서버 출하량·CPU socket·DIMM 용량","시장 평균 서버당 DRAM 공개치 부족"],
+ ["eSSD NAND bit demand","AI server/storage shipments × SSD TB/system × 8","TLC/QLC 비중·SSD 용량·offload 비율","KV cache SSD 채택률과 용량 미공개"]
+ ]}/><div className="formula-box"><b>제품별 bit 수요 (decimal 기준)</b><code>EB = systems × capacity(GB) × 8 ÷ 10⁹</code><code>Incremental demand = new deployments + capacity upgrades + replacements − retired capacity</code><small>실제 산출 시 GB/GiB, TB/TiB, EB/EiB를 통일하고 GPU당 HBM과 서버당 DDR5를 별도 집계합니다.</small></div><Notice>현재 확인 가능한 공개 사양은 reference 구성으로 입력하고, 글로벌 shipment mix·평균 탑재량·KV cache offload 비중은 데이터가 확보되기 전까지 숫자를 임의 생성하지 않습니다.</Notice></div>
  <div className="panel"><h3>AI 수요 → 반도체 수요 전달 경로</h3><div className="bridge">{[["AI 학습·추론량","토큰·영상·reasoning·agent 사용량"],["가속기 설치량","GPU·ASIC 출하 및 서버 랙 증설"],["메모리 탑재량","HBM 용량·대역폭, DDR5, eSSD"],["메모리 bit 수요","출하량 × 시스템당 탑재 용량"]].map((x,i)=><div className="bridge-item" key={i}><span>0{i+1}</span><b>{x[0]}</b><small>{x[1]}</small>{i<3&&<ChevronRight/>}</div>)}</div><Notice>토큰·CAPEX·GPU 출하·메모리 탑재량은 서로 다른 관측 축입니다. 이들을 하나의 지표로 합치지 말고 단계별로 연결해야 중복 계산과 과대 추정을 피할 수 있습니다.</Notice></div>
  <div className="panel"><h3>데이터 품질·예측 검증 체크리스트</h3><Table headers={["검증 항목","규칙"]} rows={[
   ["실적/추정/전망","Actual·Estimate·Forecast·Model을 모든 시계열에 표시"],
