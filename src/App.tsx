@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, BarChart3, CalendarDays, ChevronRight, ExternalLink,
   Gauge, Layers3, Menu, Server, ShieldCheck,
@@ -606,8 +606,11 @@ function Market(){
  const [updated,setUpdated]=useState('');
  const [error,setError]=useState('');
  const [expanded,setExpanded]=useState<string|null>(null);
+ const inFlight=useRef(false);
  const symbols=useMemo(()=>Array.from(new Set(['^GSPC','^IXIC','^DJI','^RUT','^VIX','NVDA','MSFT','GOOGL','AMZN','META','AAPL','AVGO','TSLA',...MARKET_GROUPS.flatMap(g=>[g.ticker,...g.symbols])])),[]);
  const load=async()=>{
+  if(inFlight.current)return;
+  inFlight.current=true;
   setLoading(true);setError('');
   try{
    const batches=Array.from({length:Math.ceil(symbols.length/5)},(_,i)=>symbols.slice(i*5,(i+1)*5));
@@ -621,8 +624,7 @@ function Market(){
     if(!yieldResponse.ok||!yieldPayload?.ok) throw new Error(yieldPayload?.error||('HTTP '+yieldResponse.status));
     latestYields=yieldPayload.latest||{};
     latestYieldHistory=Array.isArray(yieldPayload.history)?yieldPayload.history:[];
-    if(latestYieldHistory.length<8) throw new Error('분기 데이터가 충분하지 않습니다.');
-    setYieldError('');
+    setYieldError(latestYieldHistory.length?'':'분기 데이터가 아직 충분하지 않습니다.');
     setYieldUpdated(yieldPayload.updatedAt||'');
    } catch(rateError) {
     setYieldError(rateError instanceof Error?rateError.message:'금리 데이터 요청 실패');
@@ -630,13 +632,16 @@ function Market(){
     setYieldHistory([]);
    }
    for(let i=0;i<batches.length;i+=2){
-    const results=await Promise.all(batches.slice(i,i+2).map(async(batch)=>{
+    const results=await Promise.allSettled(batches.slice(i,i+2).map(async(batch)=>{
      const response=await fetch('/api/market?symbols='+encodeURIComponent(batch.join(','))+'&includeYields=0',{cache:'no-store'});
      const payload=await response.json();
      if(!response.ok)throw new Error(payload?.error||('HTTP '+response.status));
      return payload;
     }));
-    for(const payload of results){Object.assign(merged,payload?.quotes||{});allErrors.push(...(payload?.errors||[]));}
+    for(const result of results){
+     if(result.status==='fulfilled'){Object.assign(merged,result.value?.quotes||{});allErrors.push(...(result.value?.errors||[]));}
+     else allErrors.push(result.reason instanceof Error?result.reason.message:'시세 묶음 요청 실패');
+    }
    }
    setQuotes(merged);
    setYields(latestYields);
@@ -649,6 +654,7 @@ function Market(){
   }finally{
    setUpdated(new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}));
    setLoading(false);
+   inFlight.current=false;
   }
  };
  useEffect(()=>{void load();const id=window.setInterval(()=>void load(),300000);return()=>window.clearInterval(id);},[]);
