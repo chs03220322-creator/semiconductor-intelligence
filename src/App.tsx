@@ -275,29 +275,35 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
  </div>
 }
 function MultiLineChart({series,label,height=220}:{series:{name:string;unit:string;data:{year:string;value:number}[]}[];label:string;height?:number}){
- const [selected,setSelected]=useState<{series:number;point:number}|null>(null);
+ const [selected,setSelected]=useState<{series:number;period:string}|null>(null);
  const [activeSeriesIndex,setActiveSeriesIndex]=useState(0);
- const all=series.flatMap(s=>s.data.map(d=>d.value));
- const min=Math.min(0,...all),max=Math.max(...all),range=max-min||1;
+ const periods=Array.from(new Set(series.flatMap(item=>item.data.map(point=>point.year))));
+ const aligned=series.map(item=>({...item,byPeriod:new Map(item.data.map(point=>[point.year,point.value]))}));
+ const values=aligned.flatMap(item=>periods.map(period=>item.byPeriod.get(period)).filter((value):value is number=>value!==undefined&&Number.isFinite(value)));
+ const min=Math.min(...values),max=Math.max(...values),range=max-min||1;
  const top=10,bottom=76;
- const x=(i:number,n:number)=>n<=1?50:8+i*84/(n-1);
+ const x=(i:number)=>periods.length<=1?50:8+i*84/(periods.length-1);
  const y=(v:number)=>top+(max-v)/range*(bottom-top);
  const colors=['#68c5d4','#e6a85c','#9b8bea','#62bd8b'];
  const chosenSeriesIndex=selected?.series??activeSeriesIndex;
- const chosenSeries=series[chosenSeriesIndex];
- const active=selected?series[selected.series].data[selected.point]:null;
- const activeSeries=selected?series[selected.series]:null;
- const previous=selected&&selected.point>0?series[selected.series].data[selected.point-1]:null;
- const delta=active&&previous?active.value-previous.value:null;
- const deltaPct=active&&previous&&previous.value!==0?(active.value/previous.value-1)*100:null;
+ const activeSeries=selected?aligned[selected.series]:null;
+ const activeValue=selected&&activeSeries?activeSeries.byPeriod.get(selected.period):undefined;
+ const selectedPeriodIndex=selected?periods.indexOf(selected.period):-1;
+ const previous=selected&&activeSeries?periods.slice(0,selectedPeriodIndex).reverse().map(period=>({year:period,value:activeSeries.byPeriod.get(period)})).find(point=>point.value!==undefined):null;
+ const delta=activeValue!==undefined&&previous?.value!==undefined?activeValue-previous.value:null;
+ const deltaPct=delta!==null&&previous?.value?delta/previous.value*100:null;
  const signed=(v:number)=>v>0?'+':'';
- const fmt=(v:number)=>v.toLocaleString('ko-KR',{maximumFractionDigits:2}); const selectPoint=(si:number,pi:number)=>{setActiveSeriesIndex(si);setSelected({series:si,point:pi})};
+ const fmt=(v:number,unit:string)=>unit.toLowerCase().includes('usd')?'$'+v.toFixed(1):v.toLocaleString('ko-KR',{maximumFractionDigits:2});
+ const selectPoint=(si:number,period:string)=>{setActiveSeriesIndex(si);setSelected({series:si,period})};
  return <div className="line-chart" style={{height:height+76}}>
-  <div className="chart-value-callout" aria-live="polite">{selected&&active&&activeSeries?<><b>{activeSeries.name} · {active.year}</b><strong>{fmt(active.value)} {activeSeries.unit}</strong><small style={{display:'block',marginTop:5,color:deltaPct===null?'var(--muted,#9aa9b7)':deltaPct>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{previous?(`직전 타점(${previous.year}) 대비 ${signed(deltaPct as number)}${(deltaPct as number).toFixed(1)}% · ${signed(delta as number)}${fmt(Math.abs(delta as number))} ${activeSeries.unit}`):'첫 번째 타점 · 이전 시점 비교 없음'}</small>{previous&&<small style={{display:'block',marginTop:3,color:'var(--muted,#9aa9b7)'}}>이전 값 {fmt(previous.value)} {activeSeries.unit}</small>}</>:<span>아래 연도 버튼 또는 그래프의 점을 선택하면 직전 시점 대비 증감률이 표시됩니다</span>}</div>  <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
-   <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>    {series.map((s,si)=>{const pts=s.data.map((d,i)=>[x(i,s.data.length),y(d.value)] as [number,number]);const path=pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.4" vectorEffect="non-scaling-stroke"/>{pts.map((p,pi)=><g key={pi} onClick={()=>selectPoint(si,pi)} style={{cursor:'pointer'}}><circle cx={p[0]} cy={p[1]} r="5" fill="transparent" pointerEvents="all"/><circle cx={p[0]} cy={p[1]} r={selected?.series===si&&selected.point===pi?2.8:1.8} fill={colors[si%colors.length]} stroke="#101a23" strokeWidth=".7" vectorEffect="non-scaling-stroke" pointerEvents="none"/></g>)}</g>})}
-   </svg>  </div>
-  <div className="line-labels">{(chosenSeries?.data||[]).map((d,pi)=><button type="button" key={d.year} className={selected?.series===chosenSeriesIndex&&selected.point===pi?'chosen':''} onClick={()=>selectPoint(chosenSeriesIndex,pi)} aria-label={`${chosenSeries?.name} ${d.year} 선택`}>{d.year}</button>)}</div>
-  <div className="legend-row">{series.map((s,i)=><button type="button" key={s.name} onClick={()=>{setActiveSeriesIndex(i);setSelected(null)}} aria-pressed={chosenSeriesIndex===i} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 7px',border:'1px solid '+(chosenSeriesIndex===i?'#66899a':'transparent'),borderRadius:5,background:chosenSeriesIndex===i?'#1b2b36':'transparent',color:'inherit',font:'inherit',cursor:'pointer'}}><i style={{background:colors[i%colors.length]}}/>{s.name}</button>)}</div>
+  <div className="chart-value-callout" aria-live="polite">{selected&&activeSeries&&activeValue!==undefined?<><b>{activeSeries.name} · {selected.period}</b><strong>{fmt(activeValue,activeSeries.unit)} {activeSeries.unit}</strong><small style={{display:'block',marginTop:5,color:deltaPct===null?'var(--muted,#9aa9b7)':deltaPct>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{previous&&delta!==null&&deltaPct!==null?(`직전 공개 월(${previous.year}) 대비 ${signed(deltaPct)}${deltaPct.toFixed(1)}% · ${signed(delta)}${fmt(Math.abs(delta),activeSeries.unit)} ${activeSeries.unit}`):'이전 공개 가격 없음 · 증감 비교 불가'}</small>{previous&&<small style={{display:'block',marginTop:3,color:'var(--muted,#9aa9b7)'}}>이전 값 {fmt(previous.value as number,activeSeries.unit)} {activeSeries.unit}</small>}</>:<span>그래프의 점을 누르면 제품별 가격과 직전 공개 월 대비 변화율이 표시됩니다</span>}</div>
+  <div className="line-plot"><div className="line-y-axis"><span>{fmt(max,series[0]?.unit||'')}</span><span>{fmt((max+min)/2,series[0]?.unit||'')}</span><span>{fmt(min,series[0]?.unit||'')}</span></div>
+   <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
+    {aligned.map((item,si)=>{let drawing=false;const path=periods.map((period,i)=>{const value=item.byPeriod.get(period);if(value===undefined||!Number.isFinite(value)){drawing=false;return null;}const command=(drawing?'L':'M')+x(i)+','+y(value);drawing=true;return command;}).filter(Boolean).join(' ');return <g key={item.name}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.4" vectorEffect="non-scaling-stroke"/>{periods.map((period,pi)=>{const value=item.byPeriod.get(period);if(value===undefined||!Number.isFinite(value))return null;const active=selected?.series===si&&selected.period===period;return <g key={period} onClick={()=>selectPoint(si,period)} style={{cursor:'pointer'}}><circle cx={x(pi)} cy={y(value)} r="5" fill="transparent" pointerEvents="all"/><circle cx={x(pi)} cy={y(value)} r={active?2.8:1.8} fill={colors[si%colors.length]} stroke={active?'#fff0c7':'#101a23'} strokeWidth=".7" vectorEffect="non-scaling-stroke" pointerEvents="none"/></g>})}</g>})}
+   </svg>
+  </div>
+  <div className="line-labels">{periods.map(period=><button type="button" key={period} className={selected?.period===period?'chosen':''} onClick={()=>{const si=selected?.series??activeSeriesIndex;if(aligned[si]?.byPeriod.has(period))selectPoint(si,period);}}>{period}</button>)}</div>
+  <div className="legend-row">{series.map((item,i)=><button type="button" key={item.name} onClick={()=>{setActiveSeriesIndex(i);setSelected(null)}} aria-pressed={chosenSeriesIndex===i} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 7px',border:'1px solid '+(chosenSeriesIndex===i?'#66899a':'transparent'),borderRadius:5,background:chosenSeriesIndex===i?'#1b2b36':'transparent',color:'inherit',font:'inherit',cursor:'pointer'}}><i style={{background:colors[i%colors.length]}}/>{item.name}</button>)}</div>
  </div>
 }
 function Sources({items}:{items:string[]}){return <div className="source-list">{items.map(name=>{const x=sources.find(v=>v.name===name);return <a href={x?.url||'#'} target="_blank" rel="noreferrer" key={name}><ExternalLink size={12}/>{name}</a>})}</div>}
@@ -356,18 +362,27 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
   <div className="panel-head"><div><h3>공개 메모리 가격 모멘텀 · 산업 사이클 반영 항목</h3><p>산업 사이클 시트와 동일한 가중치 설정을 사용합니다.</p></div><Pill tone="blue">점수 연동</Pill></div>
   <div className="stats-grid three">
    <Stat label="DRAM 가격 점수" value={scores.dramScore+" / 100"} sub="DDR5 16Gb 60% · DRAM 8Gb 40%"/>
-   <Stat label="NAND 가격 점수" value={nand.score+" / 100"} sub="NAND 128Gb 공개 기준가격"/>
+   <Stat label="NAND 가격 점수" value={Math.round(nand.score)+" / 100"} sub="NAND 128Gb 공개 기준가격"/>
    <Stat label="통합 가격 점수" value={scores.priceScore+" / 100"} sub={`DRAM ${scoreConfig.dramShare}% · NAND ${100-scoreConfig.dramShare}%`}/>
   </div>
   <Table headers={["가격 지표","관측구간 월평균","최근 월","개별 점수","DRAM 내부 비중"]} rows={[
    ["DDR5 16Gb",ddr5.avgMonthly.toFixed(1)+"%",ddr5.latestMonthly.toFixed(1)+"%",ddr5.score.toFixed(0),"60%"],
    ["DRAM 16Gb · 참고",dram16.avgMonthly.toFixed(1)+"%",dram16.latestMonthly.toFixed(1)+"%",dram16.score.toFixed(0),"점수 중복 방지로 제외"],
    ["DRAM 8Gb",dram8.avgMonthly.toFixed(1)+"%",dram8.latestMonthly.toFixed(1)+"%",dram8.score.toFixed(0),"40%"],
-   ["NAND 128Gb",nand.avgMonthly.toFixed(1)+"%",nand.latestMonthly.toFixed(1)+"%",nand.score.toFixed(0),"DRAM/NAND 통합 가중치 적용"]
+   ["NAND 128Gb",nand.avgMonthly.toFixed(1)+"%",nand.latestMonthly.toFixed(1)+"%",String(Math.round(nand.score)),"DRAM/NAND 통합 가중치 적용"]
   ]}/>
   <Notice>가격 모멘텀은 관측구간 월평균과 최근 월 변화율을 사용합니다. DRAM 내부는 DDR5 16Gb와 DRAM 8Gb를 60:40으로 계산하며, 유사 흐름의 DRAM 16Gb는 중복 집계를 피하기 위해 참고만 합니다. 통합 가격 점수는 산업 사이클 시트의 DRAM/NAND 가중치 슬라이더와 동일하게 계산됩니다. 정부 공개 기준가격은 Server RDIMM·PC DDR5 계약 ASP가 아닙니다.</Notice>
  </div>
- <TrendPanel title="2026년 정부 공개 메모리 고정가격" series={[{name:'DRAM 16Gb 공개 기준가격',unit:'USD / chip',data:pricesDram16},{name:'DDR5 16Gb 고정가격 (별도 계열)',unit:'USD / chip',data:pricesDdr5_16},{name:'DRAM 8Gb 공개 기준가격',unit:'USD / chip',data:pricesDram8,comparisonData:prices2025Dram8},{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand,comparisonData:prices2025Nand}]} quarterHeaders={['월','DRAM 16Gb','증감액(원)','증감률','DDR5 16Gb','증감액(원)','증감률','DRAM 8Gb','증감액(원)','증감률','NAND 128Gb','증감액(원)','증감률','상태']} quarterRows={[
+ <div className="panel">
+  <div className="panel-head"><div><h3>DRAM 제품별 가격 통합 추이</h3><p className="muted">동일한 월 축에서 3개 가격 계열 비교 · USD/chip</p></div><Pill tone="blue">3개 제품 통합</Pill></div>
+  <MultiLineChart label="DRAM 16Gb, DDR5 16Gb and DRAM 8Gb monthly prices" height={210} series={[
+   {name:'DRAM 16Gb 범용',unit:'USD/chip',data:pricesDram16},
+   {name:'DDR5 16Gb',unit:'USD/chip',data:pricesDdr5_16},
+   {name:'DRAM 8Gb 범용',unit:'USD/chip',data:pricesDram8}
+  ]}/>
+  <Notice>각 선은 정부 공개 가격의 서로 다른 제품 계열입니다. 발표되지 않은 월은 선을 연결하지 않고 공백으로 표시합니다. DRAM 16Gb는 가격 점수에서 DDR5와의 중복을 피하기 위해 참고용으로만 사용합니다.</Notice>
+ </div>
+ <TrendPanel title="2026년 정부 공개 NAND 고정가격" series={[{name:'NAND 128Gb 공개 기준가격',unit:'USD / chip',data:pricesNand,comparisonData:prices2025Nand}]} quarterHeaders={['월','DRAM 16Gb','증감액(원)','증감률','DDR5 16Gb','증감액(원)','증감률','DRAM 8Gb','증감액(원)','증감률','NAND 128Gb','증감액(원)','증감률','상태']} quarterRows={[
   ['Jun 26','$40.0',priceChangeCell(pricesDram16,'Jun 26','delta'),priceChangeCell(pricesDram16,'Jun 26','rate'),'$40.0',priceChangeCell(pricesDdr5_16,'Jun 26','delta'),priceChangeCell(pricesDdr5_16,'Jun 26','rate'),'—',priceChangeCell(pricesDram8,'Jun 26','delta'),priceChangeCell(pricesDram8,'Jun 26','rate'),'$28.8',priceChangeCell(pricesNand,'Jun 26','delta'),priceChangeCell(pricesNand,'Jun 26','rate'),'Actual'],
   ['Jul 26','$45.0',priceChangeCell(pricesDram16,'Jul 26','delta'),priceChangeCell(pricesDram16,'Jul 26','rate'),'$45.0',priceChangeCell(pricesDdr5_16,'Jul 26','delta'),priceChangeCell(pricesDdr5_16,'Jul 26','rate'),'$24.0',priceChangeCell(pricesDram8,'Jul 26','delta'),priceChangeCell(pricesDram8,'Jul 26','rate'),'$30.1',priceChangeCell(pricesNand,'Jul 26','delta'),priceChangeCell(pricesNand,'Jul 26','rate'),'Actual'],
   ['Aug 26','$46.5',priceChangeCell(pricesDram16,'Aug 26','delta'),priceChangeCell(pricesDram16,'Aug 26','rate'),'$46.5',priceChangeCell(pricesDdr5_16,'Aug 26','delta'),priceChangeCell(pricesDdr5_16,'Aug 26','rate'),'$25.0',priceChangeCell(pricesDram8,'Aug 26','delta'),priceChangeCell(pricesDram8,'Aug 26','rate'),'$30.5',priceChangeCell(pricesNand,'Aug 26','delta'),priceChangeCell(pricesNand,'Aug 26','rate'),'Actual'],
