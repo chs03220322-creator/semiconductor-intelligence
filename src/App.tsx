@@ -388,7 +388,7 @@ function Demand(){
  ];
  const aiDemandScore=Math.round(demandItems.reduce((sum,item)=>sum+item.score,0)/demandItems.length);
  return <>
- <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="기관이 공개한 AI 서버·메모리 수요 전망과 가격 추세를 분리해 평가합니다. Actual·Estimate·Forecast를 구분하고 미확보 수치는 점수에 넣지 않습니다."/>
+ <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="AI 서버 출하, Server DRAM bit, Enterprise SSD bit 수요의 공개 전망과 서버별 메모리 탑재량을 확인합니다. 가격·CAPEX·기업 실적은 각각 전용 시트에서 다룹니다."/>
  <div className="stats-grid">
   <Stat label="2029년 AI 서버 DRAM wafer 수요" value="월 150만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 5.6배"/>
   <Stat label="2029년 AI 서버 NAND wafer 수요" value="월 22.7만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 2.5배"/>
