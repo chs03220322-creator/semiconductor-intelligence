@@ -605,6 +605,36 @@ function Market(){
  const sectorData=MARKET_GROUPS.map(g=>{const list=g.symbols.map(s=>quotes[s]).filter((q):q is MarketQuote=>Boolean(q));const avg=list.length?list.reduce((a,q)=>a+q.change,0)/list.length:null;const fiveList=list.filter(q=>q.change5d!=null);const avg5d=fiveList.length?fiveList.reduce((a,q)=>a+(q.change5d||0),0)/fiveList.length:null;const etf=quotes[g.ticker];return {...g,avg,avg5d,etf,coverage:list.length};}).sort((a,b)=>(b.avg??-999)-(a.avg??-999)); const up=sectorData.filter(g=>(g.avg??0)>0).length;
  const benchmark=quotes['^GSPC']?.change;
  return <><Title eyebrow="08 / GLOBAL MARKET PULSE" title="글로벌 금융시장 & 산업별 강세 지도" desc="미국 주요 지수·빅테크·산업별 대표 종목·국채 금리를 한 화면에서 확인합니다. 초록은 상승, 빨강은 하락이며 모든 주가 수치는 전일 종가 기준 등락률입니다."/>
+ <section className="panel market-panel" style={{marginBottom:18,border:"1px solid var(--border)"}}>
+  <div className="panel-head"><div><h3>Nasdaq-100 투자 후보 TOP 3</h3><p>밸류에이션 · 구조적 수요 · 영업이익 성장성 · 재무 리스크를 함께 평가한 선별 의견</p></div><span className="pill blue">2026.11.25 기준</span></div>
+  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:12}}>
+   <article style={{padding:16,border:"1px solid var(--border)",borderRadius:12,background:"var(--surface-2,rgba(127,127,127,.06))"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}><span className="pill blue">1위 · 최우선 검토</span><b style={{fontSize:22}}>GOOGL</b></div>
+    <h4 style={{margin:"12px 0 6px"}}>Alphabet</h4>
+    <p style={{margin:"0 0 10px",fontSize:13}}>AI를 검색·광고·클라우드·자체 TPU까지 직접 수익화하는 플랫폼 기업</p>
+    <div style={{display:"grid",gap:5,fontSize:12}}><div><b>밸류에이션</b> · TTM P/E 14.6배</div><div><b>실적 모멘텀</b> · Q3 매출 +25%, 영업이익 +30%</div><div><b>수요 근거</b> · Google Cloud 매출 +103%, AI 인프라 수요 강세</div></div>
+    <p style={{fontSize:12,margin:"10px 0 0",color:"var(--muted,#888)"}}>핵심 위험: AI 검색 전환에 따른 기존 광고 모델 잠식, 반독점 규제, 대규모 AI CAPEX</p>
+    <a href="https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm" target="_blank" rel="noreferrer" style={{fontSize:12}}>Q3 2026 공식 실적 ↗</a> · <a href="https://www.morningstar.com/stocks/an-undervalued-stock-buy-that-even-warren-buffett-likes" target="_blank" rel="noreferrer" style={{fontSize:12}}>Morningstar 가치평가 ↗</a>
+   </article>
+   <article style={{padding:16,border:"1px solid var(--border)",borderRadius:12,background:"var(--surface-2,rgba(127,127,127,.06))"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}><span className="pill">2위 · AI 반도체 공급망</span><b style={{fontSize:22}}>AMAT</b></div>
+    <h4 style={{margin:"12px 0 6px"}}>Applied Materials</h4>
+    <p style={{margin:"0 0 10px",fontSize:13}}>선단 로직·DRAM·HBM 패키징 투자 확대의 장비 수혜 기업</p>
+    <div style={{display:"grid",gap:5,fontSize:12}}><div><b>밸류에이션</b> · Morningstar 4성, 공정가치 $570 (11/20)</div><div><b>실적 모멘텀</b> · FY26 Q4 매출 +53% YoY</div><div><b>수요 근거</b> · 회사는 2027년 WFE 시장 +30% 초과 성장 전망</div></div>
+    <p style={{fontSize:12,margin:"10px 0 0",color:"var(--muted,#888)"}}>핵심 위험: 반도체 설비투자 사이클, 중국 수출규제, 고객사 팹 증설 지연</p>
+    <a href="https://ir.appliedmaterials.com/static-files/14fd85ae-ff29-4756-879c-c899da301ae6" target="_blank" rel="noreferrer" style="fontSize:12}}>FY26 Q4 실적발표 자료 ↗</a> · <a href="https://www.morningstar.com/stocks/applied-materials-earnings-recap-strong-results-guidance-point-solid-year-ahead" target="_blank" rel="noreferrer" style="fontSize:12}}>Morningstar 가치평가 ↗</a>
+   </article>
+   <article style={{padding:16,border:"1px solid var(--border)",borderRadius:12,background:"var(--surface-2,rgba(127,127,127,.06))"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}><span className="pill">3위 · 메모리 성장 수혜</span><b style={{fontSize:22}}>MU</b></div>
+    <h4 style={{margin:"12px 0 6px"}}>Micron Technology</h4>
+    <p style={{margin:"0 0 10px",fontSize:13}}>HBM·서버 DRAM·고성능 SSD 수요 확대에 직접 노출</p>
+    <div style={{display:"grid",gap:5,fontSize:12}}><div><b>밸류에이션</b> · TTM P/E 8.4배 (11/24)</div><div><b>실적 모멘텀</b> · FY26 매출 $133.2B vs FY25 $37.4B</div><div><b>수요 근거</b> · FY27 Q1 매출 가이던스 $61.5B ± $1.5B</div></div>
+    <p style={{fontSize:12,margin:"10px 0 0",color:"var(--muted,#888)"}}>핵심 위험: 메모리 가격·공급 증설에 따른 이익 변동성. 낮은 PER을 정상화 이익 기준으로 재검증 필요</p>
+    <a href="https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Fiscal-Fourth-Quarter-and-Full-Year-2026-Results/default.aspx" target="_blank" rel="noreferrer" style={{fontSize:12}}>FY26 공식 실적·가이던스 ↗</a>
+   </article>
+  </div>
+  <div style={{marginTop:12,fontSize:12,color:"var(--muted,#888)"}}>선정 기준: Nasdaq-100 편입 여부 확인 후 최신 공시 실적, 시장 수요 방향, 이익 성장 가시성, Morningstar의 가치평가 및 최근 밸류에이션을 종합. P/E는 2026.11.24 종가 기준 TTM 수치이며, 서로 다른 회계연도·업종의 배수를 단순 비교하지 않습니다. 순위는 수익률 보장이나 개인별 매수 권유가 아닌 분석 우선순위입니다.</div>
+ </section>
  <div className="market-toolbar"><div><span className="market-live-dot"/><b>시장 데이터</b><small>{updated?'최근 확인 '+updated+' (한국시간)':'데이터 확인 중'}</small></div><button className="market-refresh" onClick={()=>void load()} disabled={loading}><Activity size={14}/>{loading?'업데이트 중':'새로고침'}</button></div>
  {error&&<div className="market-warning"><Info size={15}/>{error} · 시세 제공처의 접속 정책에 따라 일부 브라우저에서 제한될 수 있습니다.</div>}
  <div className="market-index-grid">{['^GSPC','^IXIC','^DJI','^RUT','^VIX'].map(s=>{const q=quotes[s];return <div className={'market-index '+(q?'tone-'+tone(s==='^VIX'?-q.change:q.change):'')} key={s}><span>{MARKET_NAMES[s]}</span><strong>{q?fmt(q.price):'—'}</strong><div className="market-index-changes"><div><span>전일 대비</span><b>{q?pct(q.change):loading?'불러오는 중':'미확보'}</b></div><div><span>5일 대비</span><b>{q&&q.change5d!=null?pct(q.change5d):'—'}</b></div></div>{s==='^VIX'&&<small className="market-index-note">변동성 지수 · 상승은 위험 신호</small>}</div>})}</div>
