@@ -162,7 +162,8 @@ const nandMomentum=priceMomentum([28.8,30.1,30.5,30.6,30.6]);
 const dramPriceScore=ddr5Momentum.score*0.40+dram16Momentum.score*0.35+dram8Momentum.score*0.25;
 const priceMomentumScore=Math.round(dramPriceScore*0.80+nandMomentum.score*0.20);
 // 수요가 가격보다 선행한다는 점을 반영하되, 가격이 확인되지 않은 수요만으로 과대평가하지 않도록 60:40
-const cycleScore=Math.round(aiDemandScore*0.60+priceMomentumScore*0.40);
+const weightedCycleScore=(demandWeight:number)=>Math.round(aiDemandScore*(demandWeight/100)+priceMomentumScore*(1-demandWeight/100));
+const cycleScore=weightedCycleScore(60);
 
 function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
 function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
@@ -285,11 +286,13 @@ function TrendPanel({title,series,quarterHeaders,quarterRows,note,source}:{title
  </div>
 }
 
-function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void}){
+function Overview({period,setPeriod,demandWeight}:{period:Period;setPeriod:(p:Period)=>void;demandWeight:number}){
+ const priceWeight=100-demandWeight;
+ const liveCycleScore=weightedCycleScore(demandWeight);
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
   <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI 메모리 수요 성장과 실제 공개 메모리 가격 모멘텀을 분리 평가한 참고 지수입니다. 공급·재고·기업별 ASP는 공개 데이터가 부족해 별도 확정 점수에 넣지 않습니다."/>
-  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> AI 메모리 수요·가격 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{cycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 모멘텀 {priceMomentumScore}점 · 평가 축 2/2</p><div className="score-foot"><span>AI 수요 성장 강세</span><span>DRAM 가격 상승</span><span>NAND 상승 둔화</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{cycleScore}</strong><span>수요·가격 지수</span></div></div><small>전체 업황·정점 예측 점수 아님</small></div></div>
+  <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> AI 메모리 수요·가격 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 모멘텀 {priceMomentumScore}점 · 가중치 {demandWeight}:{priceWeight}</p><div className="score-foot"><span>AI 수요 성장 강세</span><span>DRAM 가격 상승</span><span>NAND 상승 둔화</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>수요·가격 지수</span></div></div><small>전체 업황·정점 예측 점수 아님</small></div></div>
   <div className="stats-grid three">
    <Stat label="DDR5 16Gb · 2026년 10월" value="$50.0" sub="전월 대비 +4.2% · 공개 고정가격"/>
    <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
@@ -323,7 +326,10 @@ function Pricing(){return <>
  ]}/></div>
  </>;
 }
-function Demand(){return <>
+function Demand({demandWeight,setDemandWeight}:{demandWeight:number;setDemandWeight:(v:number)=>void}){
+ const priceWeight=100-demandWeight;
+ const liveCycleScore=weightedCycleScore(demandWeight);
+ return <>
  <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="기관이 공개한 AI 서버·메모리 수요 전망과 가격 추세를 분리해 평가합니다. Actual·Estimate·Forecast를 구분하고 미확보 수치는 점수에 넣지 않습니다."/>
  <div className="stats-grid">
   <Stat label="2029년 AI 서버 DRAM wafer 수요" value="월 150만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 5.6배"/>
@@ -336,7 +342,13 @@ function Demand(){return <>
   <div className="stats-grid three">
    <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub="DRAM·NAND wafer, Server DRAM bit, AI 서버 출하"/>
    <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub="DRAM 가격 80% · NAND 가격 20%"/>
-   <Stat label="수요·가격 종합" value={cycleScore+" / 100"} sub="AI 수요 60% · 가격 40%"/>
+   <Stat label="수요·가격 종합" value={liveCycleScore+" / 100"} sub={`AI 수요 ${demandWeight}% · 가격 ${priceWeight}%`}/>
+  </div>
+  <div className="weight-adjuster">
+   <div className="weight-adjuster-head"><div><b>종합 점수 가중치 조절</b><small>슬라이더를 움직이면 AI 수요와 가격의 반영 비중 및 종합 점수가 즉시 바뀝니다.</small></div><strong>{demandWeight}% : {priceWeight}%</strong></div>
+   <input aria-label="AI 수요 가중치 조절" type="range" min="0" max="100" step="5" value={demandWeight} onChange={e=>setDemandWeight(Number(e.target.value))}/>
+   <div className="weight-adjuster-range"><span>가격 중심 0:100</span><span>균형 50:50</span><span>수요 중심 100:0</span></div>
+   <div className="weight-adjuster-result"><span>AI 수요 {aiDemandScore}점 × {demandWeight}%</span><span>가격 {priceMomentumScore}점 × {priceWeight}%</span><b>현재 종합 {liveCycleScore}점</b></div>
   </div>
   <Table headers={["평가 항목","원자료 성장률","환산 점수","가중치"]} rows={[
    ["AI 서버 DRAM wafer 수요 CAGR · 2024~2029",aiDramWaferCagr.toFixed(1)+"%",growthScore(aiDramWaferCagr).toFixed(0), "35%"],
@@ -350,7 +362,7 @@ function Demand(){return <>
    ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0)],
    ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0)]
   ]}/>
-  <Notice>성장 점수는 0~100 범위에서 50점(중립) + CAGR×1.1로 환산합니다. 가격 점수는 평균 월간 상승률 60%와 최신 월 상승률 40%를 반영하고, 50점 + 월간 모멘텀×5.5로 환산합니다. 종합 점수는 수요 60%·가격 40%입니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
+  <Notice>성장 점수는 0~100 범위에서 50점(중립) + CAGR×1.1로 환산합니다. 가격 점수는 평균 월간 상승률 60%와 최신 월 상승률 40%를 반영하고, 50점 + 월간 모멘텀×5.5로 환산합니다. 종합 점수는 사용자가 조절하는 AI 수요 {demandWeight}%·가격 {priceWeight}%를 적용합니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
   <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
  </div>
  <div className="panel"><h3>AI 서버용 DRAM wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server DRAM wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:180},{year:"2025",value:360},{year:"2026",value:500},{year:"2027",value:620},{year:"2028",value:720},{year:"2029",value:800}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:90},{year:"2025",value:180},{year:"2026",value:280},{year:"2027",value:420},{year:"2028",value:570},{year:"2029",value:700}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.13 (2026-02-10)"]}/></div>
@@ -733,12 +745,13 @@ function Market(){
 function App(){
  const [active,setActive]=useState<Section>(()=>{const tab=new URLSearchParams(window.location.search).get('tab');return menu.some(m=>m.id===tab)?tab as Section:'overview'});
  const [period,setPeriod]=useState<Period>('3Y');
+ const [demandWeight,setDemandWeight]=useState(60);
  const [mobileOpen,setMobileOpen]=useState(false);
  const current=menu.find(m=>m.id===active)!;
  const render=()=>{switch(active){
-  case'overview':return <Overview period={period} setPeriod={setPeriod}/>;
+  case'overview':return <Overview period={period} setPeriod={setPeriod} demandWeight={demandWeight}/>;
   case'pricing':return <Pricing/>;
-  case'demand':return <Demand/>;
+  case'demand':return <Demand demandWeight={demandWeight} setDemandWeight={setDemandWeight}/>;
   case'capex':return <Capex/>;
     case'companies':return <Companies/>;
   case'cycles':return <Cycles/>;
