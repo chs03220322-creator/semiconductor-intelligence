@@ -431,8 +431,11 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
  </div>
  <div className="panel">
   <div className="panel-head"><div><h3>2025년 월별 공개 기준가격</h3></div></div>
-  <Table headers={['월','DRAM 8Gb 가격(전월 대비)','NAND 128Gb 가격(전월 대비)']} rows={prices2025Dram8.map(x=>[
-   x.year,<>{'
+  <Table headers={['월','DRAM 8Gb 가격(증감률)','NAND 128Gb 가격(증감률)']} rows={prices2025Dram8.map(x=>[
+   x.year,
+   <>{'$'+x.value.toFixed(1)} ({priceChangeCell(prices2025Dram8,x.year,'rate')})</>,
+   <>{valueAt(prices2025Nand,x.year)} ({priceChangeCell(prices2025Nand,x.year,'rate')})</>
+  ])}/>
   <Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/>
  </div>
  <div className="panel">
