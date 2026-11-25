@@ -321,7 +321,7 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
  const scores=calculateCycleScores(scoreConfig),aiDemandScore=scores.demandScore,priceMomentumScore=scores.priceScore,financialScore=scores.financialScore,inventoryScore=scores.inventoryScore,liveCycleScore=scores.totalScore;
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
-  <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI·메모리 수요 전망, 공개 메모리 가격, 메모리 3사 실적을 반영한 공개자료 기반 참고 지수입니다. 비공개 생산·재고 데이터는 점수에서 제외합니다."/>
+  <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI·메모리 수요 전망, 공개 메모리 가격, 메모리 3사 실적과 공시 재고를 반영한 공개자료 기반 참고 지수입니다. 비공개 생산 데이터는 점수에서 제외합니다."/>
   <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 메모리 산업 사이클 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 {priceMomentumScore}점 · 기업 실적 {financialScore}점</p><div className="score-foot"><span>AI 수요 {demandWeight}%</span><span>가격 {Math.round(nonDemandWeight*0.7)}%</span><span>기업 실적 {Math.round(nonDemandWeight*0.3)}%</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>산업 사이클 지수</span></div></div><small>수급·정점 예측 확정 점수 아님</small></div></div>
   <ScoreControls config={scoreConfig} onChange={onScoreConfigChange}/>
   <div className="panel" style={{marginTop:14}}>
@@ -337,12 +337,12 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
    <Stat label="DRAM 8Gb · 2026년 10월" value="$27.5" sub="전월 대비 +5.8% · 공개 기준가격"/>
    <Stat label="NAND 128Gb · 2026년 10월" value="$30.6" sub="전월 대비 0.0% · 공개 기준가격"/>
   </div>
-  <div className="panel"><div className="panel-head"><div><h3>사이클 판단 핵심 신호</h3><p>공개된 수요 전망·가격·분기 실적만 점수화하고 비공개 항목은 분리 표시</p></div><Pill tone="blue">점수 반영 3개 영역</Pill></div>
+  <div className="panel"><div className="panel-head"><div><h3>사이클 판단 핵심 신호</h3><p>공개된 수요 전망·가격·분기 실적만 점수화하고 비공개 항목은 분리 표시</p></div><Pill tone="blue">3개 대분류 · 재고 세부지표 포함</Pill></div>
    <Table headers={['핵심 신호','현재 점수/상태','계산 기준']} rows={[
     ['AI·메모리 수요',aiDemandScore+'점','AI 서버 출하 +31%, Server DRAM bit CAGR, Enterprise SSD bit CAGR 공개 전망'],
     ['메모리 가격',priceMomentumScore+'점','DDR5·DRAM 16Gb·DRAM 8Gb·NAND 128Gb 공개 가격 모멘텀'],
     ['메모리 3사 실적',financialScore+'점','삼성·SK하이닉스·Micron 최근 공시 분기 매출 QoQ 및 영업이익률 변화'],
-    ['기업 전체 재고',inventoryScore+'점','삼성·SK하이닉스·Micron 공시 재고 증감률과 매출 증감률의 차이를 반영; 제품별 재고와는 구분'],
+    ['기업 전체 재고 · 실적 점수 내 세부지표',inventoryScore+'점','삼성·SK하이닉스·Micron 공시 재고 증감률과 매출 증감률의 차이를 반영; 제품별 재고와는 구분'],
     ['공급 전망','점수 제외 · 공개 전망만','TrendForce: 2027년 Server DRAM+HBM bit 공급 증가 전망 및 NAND 수급 완화 가능성'],
     ['제품별 재고일수·수율·가동률','점수 제외 · 미확보','고객사별 재고와 제조사 제품별 재고일수·실제 수율·가동률은 비교 가능한 공개 시계열 없음']
    ]}/>
@@ -354,7 +354,7 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
     ['NAND','2027년 공급 여건 완화 및 수급 균형 개선 가능성','DRAM과 다른 방향으로 움직일 위험'],
     ['공급업체 CAPEX','삼성 3Q26 ₩29.0T · Micron FY26 Q4 $10.77B (정의 상이)','투자 의지는 확인하되 생산량·bit 공급으로 직접 환산하지 않음']
    ]}/>
-   <Sources items={['TrendForce · 2026년 7월 30일 메모리 수급 전망']}/>
+   <Sources items={['TrendForce · 2026년 7월 30일 메모리 수급 전망','Samsung Electronics · 3Q26 실적','SK hynix · 3Q26 실적','Micron · FY2026 Q4 및 연간 실적']}/>
   </div>
   <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
