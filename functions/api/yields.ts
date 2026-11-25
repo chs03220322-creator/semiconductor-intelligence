@@ -7,7 +7,7 @@ const BASE_URL = 'https://home.treasury.gov/resource-center/data-chart-center/in
 function xmlText(entry: string, field: string): string | null {
   const pattern = new RegExp('<(?:[A-Za-z_][\\w.-]*:)?' + field + '\\b([^>]*)>([\\s\\S]*?)<\\/(?:[A-Za-z_][\\w.-]*:)?' + field + '\\s*>', 'i');
   const match = entry.match(pattern);
-  if (!match || /(?:m:)?null\\s*=\\s*["']true["']/i.test(match[1])) return null;
+  if (!match || /(?:m:)?null\s*=\s*["']true["']/i.test(match[1])) return null;
   const value = match[2].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/<[^>]+>/g, '').trim();
   if (!value || /^(null|n\/a)$/i.test(value)) return null;
   return value;
