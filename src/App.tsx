@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, BarChart3, CalendarDays, ExternalLink,
-  Gauge, Layers3, Menu, Server, ShieldCheck,
+  Layers3, Menu, Server, ShieldCheck,
   TrendingUp, Wallet, X, Info
 } from 'lucide-react';
 
