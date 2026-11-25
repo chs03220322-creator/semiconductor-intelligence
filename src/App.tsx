@@ -307,7 +307,7 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
     ['NAND 가격','보합','NAND 128Gb 공개 기준가격은 9~10월 $30.6으로 횡보'],
     ['공급·재고','주의 관찰','증설 계획은 확인되나 제품별 재고일수·bit 공급량은 동일 기준 미확보']
    ]}/>
-   <Notice>기존 92점은 Server DDR5·HBM·NAND의 제한된 지표를 가중 평균한 점수였습니다. 현재 종합지수는 AI 수요 {demandWeight}%(DRAM wafer CAGR 35%, NAND wafer CAGR 15%, Server DRAM bit CAGR 30%, AI 서버 출하 성장 20%)와 가격 {priceWeight}%(DRAM 80%, NAND 20%)로 계산합니다. 현재는 수요 {aiDemandScore}점, 가격 {priceMomentumScore}점, 종합 {liveCycleScore}점입니다. 각 세부 지표 가중치와 환산 민감도도 이 페이지에서 조절할 수 있습니다. 공급·재고·회사별 ASP는 비교 가능한 공개 시계열이 없어 제외했으므로 전체 업황 확정 점수로 보지 않습니다.</Notice>
+   <Notice>기존 92점은 Server DDR5·HBM·NAND의 제한된 지표를 가중 평균한 점수였습니다. 현재 종합지수는 AI 수요 {demandWeight}%(DRAM wafer {scoreConfig.demandDramWafer}%, NAND wafer {scoreConfig.demandNandWafer}%, Server DRAM bit {scoreConfig.demandServerBit}%, AI 서버 출하 {scoreConfig.demandShipment}%)와 가격 {priceWeight}%(DRAM {scoreConfig.dramShare}%, NAND {100-scoreConfig.dramShare}%)로 계산합니다. 현재는 수요 {aiDemandScore}점, 가격 {priceMomentumScore}점, 종합 {liveCycleScore}점입니다. 각 세부 지표 가중치와 환산 민감도도 이 페이지에서 조절할 수 있습니다. 공급·재고·회사별 ASP는 비교 가능한 공개 시계열이 없어 제외했으므로 전체 업황 확정 점수로 보지 않습니다.</Notice>
   </div>
   <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
@@ -343,8 +343,8 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
  <div className="panel">
   <div className="panel-head"><div><h3>AI 수요·메모리 가격 정량 평가</h3><p>수요 전망과 실제 가격 흐름을 분리하고, 중복 집계는 피했습니다.</p></div><Pill tone="blue">산식 공개</Pill></div>
   <div className="stats-grid three">
-   <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub="DRAM·NAND wafer, Server DRAM bit, AI 서버 출하"/>
-   <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub="DRAM 가격 80% · NAND 가격 20%"/>
+   <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub={`DRAM wafer ${scoreConfig.demandDramWafer}% · NAND wafer ${scoreConfig.demandNandWafer}% · Server bit ${scoreConfig.demandServerBit}% · 출하 ${scoreConfig.demandShipment}%`}/>
+   <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub={`DRAM ${scoreConfig.dramShare}% · NAND ${100-scoreConfig.dramShare}%`}/>
    <Stat label="수요·가격 종합" value={liveCycleScore+" / 100"} sub={`AI 수요 ${demandWeight}% · 가격 ${priceWeight}%`}/>
   </div>
   <Table headers={["평가 항목","원자료 성장률","환산 점수","가중치"]} rows={[
@@ -353,13 +353,13 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
    ["Server DRAM bit 수요 CAGR · 2026~2028",serverDramBitCagr.toFixed(1)+"%",growthScore(serverDramBitCagr,scoreConfig).toFixed(0), scoreConfig.demandServerBit+"%"],
    ["AI 서버 출하 증가율 · 2026 전망",aiServerShipmentGrowth.toFixed(0)+"%",growthScore(aiServerShipmentGrowth,scoreConfig).toFixed(0), scoreConfig.demandShipment+"%"]
   ]}/>
-  <Table headers={["가격 지표","전체 구간 월평균","최근 월","가격 점수"]} rows={[
-   ["DDR5 16Gb",ddr5Momentum.avgMonthly.toFixed(1)+"%",ddr5Momentum.latestMonthly.toFixed(1)+"%",ddr5Momentum.score.toFixed(0)],
-   ["DRAM 16Gb",dram16Momentum.avgMonthly.toFixed(1)+"%",dram16Momentum.latestMonthly.toFixed(1)+"%",dram16Momentum.score.toFixed(0)],
-   ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0)],
-   ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0)]
+  <Table headers={["가격 지표","전체 구간 월평균","최근 월","가격 점수","DRAM 내 가중치"]} rows={[
+   ["DDR5 16Gb",ddr5Momentum.avgMonthly.toFixed(1)+"%",ddr5Momentum.latestMonthly.toFixed(1)+"%",ddr5Momentum.score.toFixed(0),scoreConfig.priceDdr5+"%"],
+   ["DRAM 16Gb",dram16Momentum.avgMonthly.toFixed(1)+"%",dram16Momentum.latestMonthly.toFixed(1)+"%",dram16Momentum.score.toFixed(0),scoreConfig.priceDram16+"%"],
+   ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0),scoreConfig.priceDram8+"%"],
+   ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0),"-"]
   ]}/>
-  <Notice>성장 점수는 0~100 범위에서 50점(중립) + CAGR×1.1로 환산합니다. 가격 점수는 평균 월간 상승률 60%와 최신 월 상승률 40%를 반영하고, 50점 + 월간 모멘텀×5.5로 환산합니다. 종합 점수는 사용자가 조절하는 AI 수요 {demandWeight}%·가격 {priceWeight}%를 적용합니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
+  <Notice>성장 점수는 0~100 범위에서 중립 기준 {scoreConfig.neutralScore}점 + CAGR×{scoreConfig.growthSensitivity.toFixed(1)}로 환산합니다. 가격 점수는 평균 월간 상승률 {scoreConfig.avgMomentumShare}%와 최신 월 상승률 {100-scoreConfig.avgMomentumShare}%를 반영하고, 중립 기준 {scoreConfig.neutralScore}점 + 월간 모멘텀×{scoreConfig.priceSensitivity.toFixed(1)}로 환산합니다. 종합 점수는 사용자가 조절하는 AI 수요 {demandWeight}%·가격 {priceWeight}%를 적용합니다. 이 환산계수와 가중치는 공개된 관측치를 비교하기 위한 내부 분석 규칙이지 통계적으로 검증된 예측모형은 아닙니다. DRAM·NAND wafer와 bit 수요는 기관 전망치이며 실적이 아닙니다. 가격은 정부 공개 기준가격으로, 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
   <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
  </div>
  <div className="panel"><h3>AI 서버용 DRAM wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server DRAM wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:180},{year:"2025",value:360},{year:"2026",value:500},{year:"2027",value:620},{year:"2028",value:720},{year:"2029",value:800}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:90},{year:"2025",value:180},{year:"2026",value:280},{year:"2027",value:420},{year:"2028",value:570},{year:"2029",value:700}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.13 (2026-02-10)"]}/></div>
