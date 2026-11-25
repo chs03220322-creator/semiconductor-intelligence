@@ -340,7 +340,7 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
  <div className="panel">
   <div className="panel-head"><div><h3>AI 수요·메모리 가격 정량 평가</h3><p>수요 전망과 실제 가격 흐름을 분리하고, 중복 집계는 피했습니다.</p></div><Pill tone="blue">산식 공개</Pill></div>
   <div className="stats-grid three">
-   <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub={`DRAM wafer ${scoreConfig.demandDramWafer}% · NAND wafer ${scoreConfig.demandNandWafer}% · Server bit ${scoreConfig.demandServerBit}% · 출하 ${scoreConfig.demandShipment}%`}/>
+   <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub="DRAM wafer 35% · NAND wafer 15% · Server bit 30% · 출하 20%"/>
    <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub={`DRAM ${scoreConfig.dramShare}% · NAND ${100-scoreConfig.dramShare}%`}/>
    <Stat label="수요·가격 종합" value={liveCycleScore+" / 100"} sub={`AI 수요 ${demandWeight}% · 가격 ${priceWeight}%`}/>
   </div>
