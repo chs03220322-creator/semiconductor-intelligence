@@ -225,7 +225,7 @@ function MultiLineChart({series,label,height=220}:{series:{name:string;unit:stri
  const [selected,setSelected]=useState<{series:number;point:number}|null>(null);
  const all=series.flatMap(s=>s.data.map(d=>d.value));
  const min=Math.min(0,...all),max=Math.max(...all),range=max-min||1;
- const width=100,top=10,bottom=76;
+ const top=10,bottom=76;
  const x=(i:number,n:number)=>n<=1?50:8+i*84/(n-1);
  const y=(v:number)=>top+(max-v)/range*(bottom-top);
  const colors=['#68c5d4','#e6a85c','#9b8bea','#62bd8b'];
@@ -237,7 +237,7 @@ function MultiLineChart({series,label,height=220}:{series:{name:string;unit:stri
     {series.map((s,si)=>{const pts=s.data.map((d,i)=>[x(i,s.data.length),y(d.value)] as [number,number]);const path=pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.4" vectorEffect="non-scaling-stroke"/>{pts.map((p,pi)=><g key={pi} onClick={()=>setSelected({series:si,point:pi})} style={{cursor:'pointer'}}><circle cx={p[0]} cy={p[1]} r="4.4" fill="transparent"/><circle cx={p[0]} cy={p[1]} r={selected?.series===si&&selected.point===pi?2.8:1.8} fill={colors[si%colors.length]} stroke="#101a23" strokeWidth=".7" vectorEffect="non-scaling-stroke"/></g>)}</g>})}
    </svg>
   </div>
-  <div className="line-labels">{(series[0]?.data||[]).map((d,i)=><span key={d.year}>{d.year}</span>)}</div>
+  <div className="line-labels">{(series[0]?.data||[]).map(d=><span key={d.year}>{d.year}</span>)}</div>
   <div className="legend-row">{series.map((s,i)=><span key={s.name}><i style={{background:colors[i%colors.length]}}/>{s.name}</span>)}</div>
  </div>
 }
