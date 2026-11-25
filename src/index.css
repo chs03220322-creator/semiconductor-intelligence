@@ -262,3 +262,5 @@ p strong{color:var(--em-key);font-weight:750}
 .score-weight-control input[type=range]:focus-visible{outline:2px solid #9be8f1;outline-offset:3px}
 .score-control-note{margin-top:3px;color:#8298a8;font-size:10px;line-height:1.5}
 @media(max-width:760px){.score-control-panel{padding:13px}.score-control-grid{grid-template-columns:1fr;gap:9px}.score-control-grid>section{padding:11px}.score-control-heading b{font-size:14px}.score-control-heading small{font-size:10px}.score-weight-control>span{font-size:10px}}
+
+.score-control-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))}.score-control-grid.compact>section{padding:10px 12px}.score-control-grid.compact .score-weight-control{margin:4px 0 8px}.score-control-note.bottom{margin-top:10px;padding-top:8px;border-top:1px solid #354d5d}@media(max-width:760px){.score-control-grid.compact{grid-template-columns:1fr}}
