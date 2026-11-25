@@ -123,8 +123,6 @@ const prices2025Dram8=[
 const prices2025Nand=[
   {year:'Jul 25',value:3.4},{year:'Aug 25',value:3.4},{year:'Sep 25',value:3.8},{year:'Oct 25',value:4.4}
 ];
-// Token forecast is a transparent scenario model, not an official global census. Anchor: JPMorgan AI Tracker estimated about 360T tokens/day in Jul-2026.
-const tokenHistory=[{year:'Jan 2024',value:1},{year:'Jul 2024',value:3},{year:'Jan 2025',value:15},{year:'Jul 2025',value:70},{year:'Jan 2026',value:200},{year:'Jul 2026',value:360}];
 const supplierCapex=[
   {company:'Samsung Electronics',period:'3Q26',quarter:'₩29.0T',ytd:'₩56.9T',definition:'전사 CAPEX; DS 3Q ₩27.2T, 1~3Q ₩52.8T'},
   {company:'Micron',period:'FY2026 Q4',quarter:'$10.77B',ytd:'$27.37B',definition:'Net CAPEX; FY2026 누계'}
