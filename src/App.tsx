@@ -279,7 +279,7 @@ function Demand(){return <>
  <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="글로벌 AI 토큰 사용량에서 GPU 연산 수요와 HBM·서버 DRAM·eSSD bit 수요까지 연결합니다. 공개 실적(actual), 기관 추정(estimate), 자체 계산 경로(model)를 분리하며, 입력이 없는 값은 임의로 채우지 않습니다."/>
  <div className="stats-grid"><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="J.P. Morgan AI Tracker 추정"/><Stat label="2026E 연말 토큰" value="400조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2027E 토큰" value="600조/일" sub="자체 기준 시나리오 · forecast"/><Stat label="2030E 토큰" value="2,000조/일" sub="자체 기준 시나리오 · forecast"/></div>
  <TrendPanel title="글로벌 AI 토큰 사용량 · 일평균 run-rate" series={[{name:"Median · 중앙값 기준",unit:"Trillion tokens/day · median scenario, not official forecast",data:tokenBase}]} note="J.P. Morgan AI Tracker의 반기별 차트 판독 근사치를 포함합니다. 2026년 말~2030년 전망은 공식 기관 전망이 아닌 자체 시나리오입니다. 토큰 집계 범위·중복·모델별 공개 수준이 통일되지 않아 전 세계 실측 총량으로 해석하면 안 됩니다." source={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)"]}/>
- <div className="panel"><h3>빅테크 CAPEX 데이터 연결</h3><p className="muted">기업별 연간·분기 CAPEX actual과 회계연도, 리스 포함 여부, 누계 기준은 ‘빅테크 투자’ 메뉴에서 통합 관리합니다. 이 페이지에서는 CAPEX 금액을 중복 집계하지 않고, 데이터센터 투자액이 실제 IT 장비·가속기 설치·전력 가동으로 전환되는 경로만 추적합니다.</p><Notice>CAPEX 발표액은 GPU 구매액이나 메모리 bit 수요가 아닙니다. 시설·전력·냉각·임차 비용을 분리하고, IT 장비의 실제 인도·가동 시점을 확인해야 합니다.</Notice></div>
+ <div className="panel"><h3>빅테크 CAPEX 데이터 연결</h3><p className="muted">기업별 연간·분기 CAPEX actual과 회계연도, 리스 포함 여부, 누계 기준은 ‘빅테크 투자’ 메뉴에서 통합 관리합니다. 이 페이지에서는 CAPEX 금액을 중복 집계하지 않고, 데이터센터 투자액이 실제 IT 장비·가속기 설치로 전환되는 경로만 추적합니다.</p><Notice>CAPEX 발표액은 GPU 구매액이나 메모리 bit 수요가 아닙니다. 시설·건설·임차 비용과 IT 장비 지출을 분리하고, 가속기 서버의 실제 인도·가동 시점을 확인해야 합니다.</Notice></div>
  <div className="panel"><h3>AI 수요를 훈련·추론·기타 workload로 분해</h3><p className="muted">토큰 증가율 하나로 전체 AI 연산 수요를 대체하지 않습니다. workload별 계산 특성과 메모리 병목이 다릅니다.</p><Table headers={["Workload","수요 발생 요인","주요 병목","메모리 영향"]} rows={[
   ["모델 학습(Training)","신규 모델·모델 크기·학습 데이터·재학습 빈도","GPU/ASIC 연산량, 노드 간 통신, 학습시간","대용량 HBM, 고대역폭 interconnect, checkpoint 저장"],
   ["온라인 추론(Inference)","활성 사용자·요청 수·입출력 토큰·응답속도","토큰 처리량, 메모리 대역폭, KV cache, 지연시간","가중치 상주 HBM, KV cache, 시스템 DRAM"],
@@ -290,7 +290,7 @@ function Demand(){return <>
   ["1. 요청량","일일 요청 수 × 요청당 입력·출력 토큰","입력 토큰과 출력 토큰을 분리해 합산","공개 범위·집계 정의가 통일되지 않음"],
   ["2. workload 가중","Training / inference / reasoning / agent 비중","workload별 토큰 및 연산량 가중","공개 통계 미확보·시나리오 입력 필요"],
   ["3. 토큰당 연산","모델 구조·파라미터 활성량·정밀도·context","FLOPs/token × tokens/sec","모델별 공개치만 부분 확인"],
-  ["4. 효율 조정","quantization·sparsity·batching·cache·serving SW","유효 처리량 및 tokens/W 개선 반영","세대·사업자별 성능 자료 필요"],
+  ["4. 효율 조정","quantization·sparsity·batching·cache·serving SW","유효 처리량 및 GPU당 tokens/sec 개선 반영","세대·사업자별 성능 자료 필요"],
   ["5. 총 compute","학습 연산량 + 추론 연산량","연산량 ÷ 가속기 실효 처리량","GPU-equivalent 환산 모델 구축 대상"]
  ]}/><div className="formula-box"><b>개념식</b><code>AI compute demand = Σ(workload tokens × workload-specific FLOPs/token) ÷ serving efficiency</code><small>정밀한 산출에는 모델·정밀도·batch·context·cache 정책별 계수가 필요합니다. 토큰만으로 GPU 수요를 직접 계산하지 않습니다.</small></div><Sources items={["Microsoft Research · AI Data Center Lifecycle Compass","Berkeley Lab · 2025 United States Data Center Energy Usage Report"]}/></div>
  <div className="panel"><h3>가속기 설치 기반·출하량·실효 공급량</h3><p className="muted">CAPEX 발표액이 아니라 실제 설치되어 workload를 처리할 수 있는 accelerator fleet을 추적합니다.</p><Table headers={["지표","정의·계산","반드시 분리할 항목","현재 상태"]} rows={[
