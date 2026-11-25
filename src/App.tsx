@@ -116,7 +116,6 @@ const micronQuarterly=[
 const tsmcAnnual=[{year:'2023',value:69.30},{year:'2024',value:90.08},{year:'2025',value:122.42}];
 const nvidiaAnnual=[{year:'FY2024',value:60.922},{year:'FY2025',value:130.497},{year:'FY2026',value:215.938}];
 const nvidiaQuarterly=[{year:'1Q FY27',value:81.615},{year:'2Q FY27',value:96.221},{year:'3Q FY27',value:115.8}];
-const pricesDram16=[{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0}];
 const pricesDdr5_16=[{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0},{year:'Oct 26',value:50.0}];
 const pricesDram8=[{year:'Jul 26',value:24.0},{year:'Aug 26',value:25.0},{year:'Sep 26',value:26.0},{year:'Oct 26',value:27.5}];
 const pricesNand=[
@@ -190,7 +189,7 @@ function calculateCycleScores(cfg:ScoreConfig){
  const avgDramMonthly=ddr5.avgMonthly*PRICE_WEIGHTS[0]/100+dram8.avgMonthly*PRICE_WEIGHTS[1]/100;
  const latestDramMonthly=ddr5.latestMonthly*PRICE_WEIGHTS[0]/100+dram8.latestMonthly*PRICE_WEIGHTS[1]/100;
  const cycleSignal=latestDramMonthly<0&&avgDramMonthly>0?'DRAM 가격 하락 전환 주의':latestDramMonthly<avgDramMonthly-1.5?'가격 상승 모멘텀 둔화':supplyScore<48?'공급 증가·수급 완화 주의':inventoryScore<42?'기업 재고 부담 확대':financialScore<45?'기업 실적 모멘텀 약화':'상승 흐름 유지';
- return {demandScore,priceScore,supplyScore,financialScore,inventoryScore,totalScore,priceWeight,supplyWeight,inventoryWeight,financialWeight,ddr5,dram16,dram8,nand,dramScore,demandItems,companyItems,avgDramMonthly,latestDramMonthly,cycleSignal};
+ return {demandScore,priceScore,supplyScore,financialScore,inventoryScore,totalScore,priceWeight,supplyWeight,inventoryWeight,financialWeight,ddr5,dram8,nand,dramScore,demandItems,companyItems,avgDramMonthly,latestDramMonthly,cycleSignal};
 }function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
  return <label className="score-weight-control"><span>{label}<b>{value}%</b></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>;
 }
