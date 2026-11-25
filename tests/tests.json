@@ -75,7 +75,7 @@
       "Review TSMC annual and NVIDIA annual series",
       "Review the latest NVIDIA and TSMC quarterly actuals"
     ],
-    "expected": "IEA data-centre electricity shows 415 TWh for 2024 actual, 485 TWh for 2025 estimate and 950 TWh for 2030 forecast; TSMC CY and NVIDIA FY annual revenue series remain separate from quarterly actuals."
+    "expected": "IEA data-centre electricity shows 416 TWh for 2024 actual, 485 TWh for 2025 estimate and 945 TWh for 2030 forecast; TSMC CY and NVIDIA FY annual revenue series remain separate from quarterly actuals."
   },
   {
     "name": "Verify mobile navigation and chart readability",
