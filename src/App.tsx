@@ -11,7 +11,7 @@ type Period = '3Y'|'4Y'|'5Y'|'6Y';
 const menu:{id:Section;no:string;label:string;sub:string;icon:any}[]=[
   {id:'overview',no:'01',label:'산업 사이클',sub:'시장 흐름과 업황 점수',icon:Activity},
   {id:'pricing',no:'02',label:'제품별 가격',sub:'DRAM·NAND·DDR 가격',icon:Layers3},
-  {id:'demand',no:'03',label:'AI 수요 & 데이터센터',sub:'토큰·GPU·메모리 수요',icon:Server},
+  {id:'demand',no:'03',label:'AI 수요',sub:'토큰·GPU·메모리 수요',icon:Server},
   {id:'capex',no:'04',label:'빅테크 투자',sub:'주요 기업 설비투자',icon:Wallet},
   {id:'companies',no:'05',label:'기업 실적',sub:'반도체 주요 기업',icon:BarChart3},
   {id:'cycles',no:'06',label:'장기 사이클',sub:'과거 흐름과 전망',icon:TrendingUp},
@@ -464,7 +464,7 @@ function Demand(){
  ];
  const aiDemandScore=Math.round(demandItems.reduce((sum,item)=>sum+item.score,0)/demandItems.length);
  return <>
- <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="AI 서버 출하, Server DRAM bit, Enterprise SSD bit 수요의 공개 전망과 서버별 메모리 탑재량을 확인합니다. 가격·CAPEX·기업 실적은 각각 전용 시트에서 다룹니다."/>
+ <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요" desc="AI 서버 출하, Server DRAM bit, Enterprise SSD bit 수요의 공개 전망과 서버별 메모리 탑재량을 확인합니다. 가격·CAPEX·기업 실적은 각각 전용 시트에서 다룹니다."/>
  <div className="stats-grid">
   <Stat label="2029년 AI 서버 DRAM wafer 수요" value="월 150만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 5.6배"/>
   <Stat label="2029년 AI 서버 NAND wafer 수요" value="월 22.7만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 2.5배"/>
