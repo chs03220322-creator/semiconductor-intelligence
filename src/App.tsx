@@ -430,7 +430,7 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
   <Sources items={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향','TEAMGROUP · 2026 Q4 기업설명회 자료','BonusCHIP · 2026년 10월 메모리 고정거래가격 월별 추이']}/>
  </div>
  <div className="panel">
-  <div className="panel-head"><div><h3>2025년 월별 공개 기준가격</h3><p className="muted">USD / chip · 2026년과 별도 비교</p></div></div>
+  <div className="panel-head"><div><h3>2025년 월별 공개 기준가격</h3></div></div>
   <Table headers={['월','DRAM 8Gb','MoM','NAND 128Gb','MoM']} rows={prices2025Dram8.map(x=>[
    x.year,'$'+x.value.toFixed(1),priceChangeCell(prices2025Dram8,x.year,'rate'),
    valueAt(prices2025Nand,x.year),priceChangeCell(prices2025Nand,x.year,'rate')
@@ -904,7 +904,7 @@ function App(){
   </aside>
   {mobileOpen&&<div className="scrim" onClick={()=>setMobileOpen(false)}/>}
   <main className="main">
-   <header className="topbar"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button><span>대시보드 / <b>{current.label}</b></span></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="pricing-shortcut" onClick={()=>{setActive('pricing');setMobileOpen(false);}}><Layers3 size={15}/> 제품별 가격</button><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></header>
+   <header className="topbar"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="pricing-shortcut" onClick={()=>{setActive('pricing');setMobileOpen(false);}}><Layers3 size={15}/> 제품별 가격</button><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></header>
    <div className="content">{render()}<footer><div><b>SI · Semiconductor Intelligence</b><span>공개자료 기반 반도체 산업 분석 대시보드</span></div><span>실적 / 추정 / 전망 / 미확보 · v1.1</span></footer></div>
   </main> </div>;
 }
