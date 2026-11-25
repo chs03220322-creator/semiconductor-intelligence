@@ -152,11 +152,15 @@ const priceMomentum=(values:number[],cfg:ScoreConfig)=>{
 // Enterprise SSD는 NAND 전체의 부분집합이며 DRAM 수요와 합산하지 않고 별도 성장 신호로만 사용한다.
 const aiServerShipmentGrowth=31,serverDramBitCagr=growthPct(164,269,2),enterpriseSsdBitCagr=growthPct(3927.2,7491.2,2);
 const ddr5MomentumBase=[40,45,46.5,48,50],dram16MomentumBase=[40,45,46.5,48],dram8MomentumBase=[24,25,26,27.5],nandMomentumBase=[28.8,30.1,30.5,30.6,30.6];
-function financialMomentum(rows:{revenue:number;op:number;margin:number}[]){
+function financialMomentum(rows:{revenue:number;op:number;margin:number}[],inventoryValues:number[]){
  const current=rows[rows.length-1],previous=rows[rows.length-2];
- if(!current||!previous||!previous.revenue)return {revenueGrowth:0,marginDelta:0,score:NEUTRAL_SCORE};
+ if(!current||!previous||!previous.revenue||inventoryValues.length<2||!inventoryValues[0])return {revenueGrowth:0,marginDelta:0,inventoryGrowth:0,inventoryScore:NEUTRAL_SCORE,score:NEUTRAL_SCORE};
  const revenueGrowth=(current.revenue/previous.revenue-1)*100,marginDelta=current.margin-previous.margin;
- return {revenueGrowth,marginDelta,score:clampScore(NEUTRAL_SCORE+revenueGrowth*0.55+marginDelta*1.5)};
+ const inventoryGrowth=(inventoryValues[1]/inventoryValues[0]-1)*100;
+ const earningsScore=clampScore(NEUTRAL_SCORE+revenueGrowth*0.55+marginDelta*1.5);
+ // 재고가 매출보다 빠르게 늘면 재고 부담, 매출보다 느리게 늘거나 감소하면 상대적으로 양호한 신호.
+ const inventoryScore=clampScore(NEUTRAL_SCORE-(inventoryGrowth-revenueGrowth)*0.8);
+ return {revenueGrowth,marginDelta,inventoryGrowth,inventoryScore,score:Math.round(earningsScore*0.7+inventoryScore*0.3)};
 }
 function calculateCycleScores(cfg:ScoreConfig){
  const demandItems=[
@@ -169,9 +173,9 @@ function calculateCycleScores(cfg:ScoreConfig){
  const dramScore=ddr5.score*PRICE_WEIGHTS[0]/100+dram16.score*PRICE_WEIGHTS[1]/100+dram8.score*PRICE_WEIGHTS[2]/100;
  const priceScore=Math.round(dramScore*cfg.dramShare/100+nand.score*(100-cfg.dramShare)/100);
  const companyItems=[
-  {name:'삼성전자',...financialMomentum(samsungQuarterly)},
-  {name:'SK하이닉스',...financialMomentum(skQuarterly)},
-  {name:'Micron',...financialMomentum(micronQuarterly)}
+  {name:'삼성전자',...financialMomentum(samsungQuarterly,[2617.7,2411.2])},
+  {name:'SK하이닉스',...financialMomentum(skQuarterly,[17986,19356])},
+  {name:'Micron',...financialMomentum(micronQuarterly,[8.567,10.372])}
  ];
  const financialScore=Math.round(companyItems.reduce((sum,item)=>sum+item.score,0)/companyItems.length);
  const nonDemandScore=priceScore*0.7+financialScore*0.3;
@@ -313,7 +317,7 @@ function TrendPanel({title,series,quarterHeaders,quarterRows,note,source}:{title
 
 function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Period;setPeriod:(p:Period)=>void;scoreConfig:ScoreConfig;onScoreConfigChange:(key:keyof ScoreConfig,value:number)=>void}){
  const demandWeight=scoreConfig.demandWeight,nonDemandWeight=100-demandWeight;
- const scores=calculateCycleScores(scoreConfig),aiDemandScore=scores.demandScore,priceMomentumScore=scores.priceScore,financialScore=scores.financialScore,liveCycleScore=scores.totalScore;
+ const scores=calculateCycleScores(scoreConfig),aiDemandScore=scores.demandScore,priceMomentumScore=scores.priceScore,financialScore=scores.financialScore,inventoryScore=scores.inventoryScore,liveCycleScore=scores.totalScore;
  const data=period==='3Y'?market.slice(-3):period==='5Y'?market.slice(-5):market;
  return <>
   <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI·메모리 수요 전망, 공개 메모리 가격, 메모리 3사 실적을 반영한 공개자료 기반 참고 지수입니다. 비공개 생산·재고 데이터는 점수에서 제외합니다."/>
@@ -337,15 +341,17 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
     ['AI·메모리 수요',aiDemandScore+'점','AI 서버 출하 +31%, Server DRAM bit CAGR, Enterprise SSD bit CAGR 공개 전망'],
     ['메모리 가격',priceMomentumScore+'점','DDR5·DRAM 16Gb·DRAM 8Gb·NAND 128Gb 공개 가격 모멘텀'],
     ['메모리 3사 실적',financialScore+'점','삼성·SK하이닉스·Micron 최근 공시 분기 매출 QoQ 및 영업이익률 변화'],
+    ['기업 전체 재고',inventoryScore+'점','삼성·SK하이닉스·Micron 공시 재고 증감률과 매출 증감률의 차이를 반영; 제품별 재고와는 구분'],
     ['공급 전망','점수 제외 · 공개 전망만','TrendForce: 2027년 Server DRAM+HBM bit 공급 증가 전망 및 NAND 수급 완화 가능성'],
-    ['재고·가동률·수율','점수 제외 · 미확보','제품별 고객 재고, 제조사 제품별 재고일수, 실제 수율·가동률의 비교 가능한 공개 시계열 없음']
+    ['제품별 재고일수·수율·가동률','점수 제외 · 미확보','고객사별 재고와 제조사 제품별 재고일수·실제 수율·가동률은 비교 가능한 공개 시계열 없음']
    ]}/>
-   <Notice>종합점수 = AI 수요 {demandWeight}% + 나머지 {nonDemandWeight}% 중 가격 70%·기업 실적 30%. 가격 내부는 DRAM {scoreConfig.dramShare}%·NAND {100-scoreConfig.dramShare}%, 가격 모멘텀은 관측구간 평균 {scoreConfig.avgMomentumShare}%·최근 월 {100-scoreConfig.avgMomentumShare}%로 계산합니다. 수요는 AI 서버 출하·Server DRAM bit·Enterprise SSD bit 공개 전망을 동일 가중 평균합니다. 공급·재고·수율·가동률은 신뢰할 수 있는 비교 시계열이 없어 점수에서 제외하며, 확보된 것처럼 임의 추정하지 않습니다.</Notice>
+   <Notice>종합점수 = AI 수요 {demandWeight}% + 나머지 {nonDemandWeight}% 중 가격 70%·기업 실적 30%. 가격 내부는 DRAM {scoreConfig.dramShare}%·NAND {100-scoreConfig.dramShare}%, 가격 모멘텀은 관측구간 평균 {scoreConfig.avgMomentumShare}%·최근 월 {100-scoreConfig.avgMomentumShare}%로 계산합니다. 수요는 AI 서버 출하·Server DRAM bit·Enterprise SSD bit 공개 전망을 동일 가중 평균합니다. 기업 전체 재고는 삼성(3Q26 ₩2.411T vs 2Q26 ₩2.618T), SK하이닉스(₩19.356T vs ₩17.986T), Micron(FY26 Q4 $10.372B vs Q3 $8.567B)의 공시 수치를 사용해 매출 증감률 대비 재고 증감률을 반영합니다. 제품별 재고·고객 재고·재고일수·수율·가동률은 공개 비교 데이터가 부족해 점수에서 제외합니다.</Notice>
    <div className="panel-head" style={{marginTop:14}}><div><h3>공급 측 공개 전망</h3><p>회사 내부 생산계획이 아닌 공개 시장조사기관의 산업 전망</p></div></div>
    <Table headers={['시장','공개 전망','사이클 해석']} rows={[
     ['DRAM','2026년 수급 부족 추정, 2027년에도 공급 증가가 수요를 따라가지 못할 가능성','단기 공급 제약 신호'],
     ['Server DRAM + HBM','TrendForce 2027년 bit 공급 약 27% 증가 전망','증설·공정전환이 중기 공급을 늘리는 요인'],
-    ['NAND','2027년 공급 여건 완화 및 수급 균형 개선 가능성','DRAM과 다른 방향으로 움직일 위험']
+    ['NAND','2027년 공급 여건 완화 및 수급 균형 개선 가능성','DRAM과 다른 방향으로 움직일 위험'],
+    ['공급업체 CAPEX','삼성 3Q26 ₩29.0T · Micron FY26 Q4 $10.77B (정의 상이)','투자 의지는 확인하되 생산량·bit 공급으로 직접 환산하지 않음']
    ]}/>
    <Sources items={['TrendForce · 2026년 7월 30일 메모리 수급 전망']}/>
   </div>
