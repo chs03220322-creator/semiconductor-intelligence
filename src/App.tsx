@@ -123,8 +123,8 @@ const prices2025Dram8=[
 const prices2025Nand=[
   {year:'Jul 25',value:3.4},{year:'Aug 25',value:3.4},{year:'Sep 25',value:3.8},{year:'Oct 25',value:4.4}
 ];
-const ieaAnnual=[{year:'2023',value:360},{year:'2024',value:416},{year:'2025',value:485},{year:'2026E',value:560},{year:'2027E',value:645},{year:'2028E',value:740},{year:'2029E',value:840},{year:'2030F',value:950}];
-const aiPowerAnnual=[{year:'2025E',value:150},{year:'2026E',value:190},{year:'2027E',value:245},{year:'2028E',value:310},{year:'2029E',value:380},{year:'2030F',value:450}];
+const ieaAnnual=[{year:'2023',value:360},{year:'2024',value:416},{year:'2025',value:485},{year:'2026E',value:560},{year:'2027E',value:645},{year:'2028E',value:740},{year:'2029E',value:840},{year:'2030F',value:945}];
+const aiPowerAnnual=[{year:'2025E',value:150},{year:'2026E',value:190},{year:'2027E',value:245},{year:'2028E',value:310},{year:'2029E',value:380},{year:'2030F',value:460}];
 // Token forecast is a transparent scenario model, not an official global census. Anchor: JPMorgan AI Tracker estimated about 360T tokens/day in Jul-2026.
 const tokenHistory=[{year:'Jan 2024',value:1},{year:'Jul 2024',value:3},{year:'Jan 2025',value:15},{year:'Jul 2025',value:70},{year:'Jan 2026',value:200},{year:'Jul 2026',value:360}];
 const tokenBase=[...tokenHistory,{year:'2026E',value:400},{year:'2027E',value:600},{year:'2028E',value:900},{year:'2029E',value:1350},{year:'2030F',value:2000}];
@@ -132,7 +132,7 @@ const supplierCapex=[
   {company:'Samsung Electronics',period:'3Q26',quarter:'₩29.0T',ytd:'₩56.9T',definition:'전사 CAPEX; DS 3Q ₩27.2T, 1~3Q ₩52.8T'},
   {company:'Micron',period:'FY2026 Q4',quarter:'$10.77B',ytd:'$27.37B',definition:'Net CAPEX; FY2026 누계'}
 ];
-const FX_USDKRW=1345; // 2026-11-23 spot mid-market reference
+const FX_USDKRW=1344.23; // 2026-11-25 reference mid-market rate
 const memorySignals=[
   {id:'server',name:'Server DDR5',baseWeight:25,score:93,direction:'상승 · 강한 수요',basis:'SK hynix 3Q26는 server DDR5 판매가 크게 늘었다고 공시했고, 삼성은 서버 수요가 전 응용처 가격을 끌어올렸다고 설명. 정부 공개 범용 DRAM 16Gb 기준가격은 Jun $40.0 → Sep $48.0, DRAM 8Gb는 Jul $24.0 → Oct $27.5(+5.8% MoM). 이 가격은 서버 전용 ASP가 아닌 범용 proxy.'},
   {id:'pc',name:'PC DDR5',baseWeight:10,score:null,direction:'정량 미확보',basis:'PC 전용 DDR5 계약 ASP·출하량의 공개 시계열 미확보. 범용 DRAM 기준가격을 PC DDR5 가격으로 대체하지 않음.'},
@@ -288,7 +288,7 @@ function Pricing(){return <>
 }
 function Demand(){return <>
  <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="AI 서비스 이용량에서 GPU·전력·메모리 bit 수요까지 연결합니다. 공개 실적(actual), 기관 추정(estimate), 자체 계산 경로(model)을 분리하며, 입력이 없는 값은 임의로 채우지 않습니다."/>
- <div className="stats-grid"><Stat label="2025 데이터센터 전력" value="485 TWh" sub="IEA estimate · 2026 update"/><Stat label="2030 데이터센터 전력" value="950 TWh" sub="IEA base case forecast"/><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="J.P. Morgan AI Tracker 추정"/><Stat label="AI 전용 전력" value="약 3배" sub="IEA 2025~2030 증가 전망"/></div>
+ <div className="stats-grid"><Stat label="2025 데이터센터 전력" value="485 TWh" sub="IEA estimate · 2026 update"/><Stat label="2030 데이터센터 전력" value="945 TWh" sub="IEA 2030 base case · exact table value"/><Stat label="2026년 7월 글로벌 AI 토큰" value="약 360조/일" sub="J.P. Morgan AI Tracker 추정"/><Stat label="AI 전용 전력" value="약 3배" sub="IEA 2025~2030 증가 전망"/></div>
  <TrendPanel title="글로벌 데이터센터 전체 전력 수요" series={[{name:"전력 소비량",unit:"TWh/year · 2024 actual, 2025 estimate, 2026~2030 interpolated model path",data:ieaAnnual}]} note="2023년 360 TWh, 2024년 416 TWh actual, 2025년 485 TWh estimate, 2030년 950 TWh forecast는 IEA 공개치입니다. 2026~2029 값은 IEA의 2025→2030 전망을 연결한 연도별 보간 경로이며 IEA가 개별 연도별로 발표한 공식 수치가 아닙니다." source={["IEA · Key Questions on Energy and AI (2026)"]}/>
  <TrendPanel title="AI 전용 데이터센터 전력 수요" series={[{name:"AI-focused data centres",unit:"TWh/year · indicative annual path",data:aiPowerAnnual}]} note="IEA는 AI 중심 데이터센터 전력 소비가 2025~2030년 약 3배 증가한다고 제시합니다. 2025년 약 150 TWh를 기준점으로 둔 연도별 값은 추세를 보기 위한 모델 경로이며, 중간 연도 값은 공식 발표치가 아닙니다." source={["IEA · Key Questions on Energy and AI (2026)"]}/>
  <TrendPanel title="글로벌 AI 토큰 사용량 · 일평균 run-rate" series={[{name:"Median · 중앙값 기준",unit:"Trillion tokens/day · median scenario, not official forecast",data:tokenBase}]} note="J.P. Morgan AI Tracker의 반기별 차트 판독 근사치를 포함합니다. 2026년 말~2030년 전망은 공식 기관 전망이 아닌 자체 시나리오입니다. 토큰 집계 범위·중복·모델별 공개 수준이 통일되지 않아 전 세계 실측 총량으로 해석하면 안 됩니다." source={["J.P. Morgan Asset Management · Eye on the Market: AI Tracker (2026)"]}/>
@@ -710,7 +710,7 @@ function App(){
   </aside>
   {mobileOpen&&<div className="scrim" onClick={()=>setMobileOpen(false)}/>}
   <main className="main">
-   <header className="topbar"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button><span>대시보드 / <b>{current.label}</b></span></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 데이터 기준 · 2026.11.23 · USD/KRW 1,345원</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></header>
+   <header className="topbar"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button><span>대시보드 / <b>{current.label}</b></span></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></header>
    <div className="content">{render()}<footer><div><b>SI · Semiconductor Intelligence</b><span>공개자료 기반 반도체 산업 분석 대시보드</span></div><span>실적 / 추정 / 전망 / 미확보 · v1.1</span></footer></div>
   </main>
  </div>;
