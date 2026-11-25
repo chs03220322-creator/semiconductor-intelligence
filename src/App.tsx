@@ -178,12 +178,13 @@ function calculateCycleScores(cfg:ScoreConfig){
   {name:'Micron',...financialMomentum(micronQuarterly,[8.567,10.372])}
  ];
  const financialScore=Math.round(companyItems.reduce((sum,item)=>sum+item.score,0)/companyItems.length);
+ const inventoryScore=Math.round(companyItems.reduce((sum,item)=>sum+item.inventoryScore,0)/companyItems.length);
  const nonDemandScore=priceScore*0.7+financialScore*0.3;
  const totalScore=Math.round(demandScore*cfg.demandWeight/100+nonDemandScore*(100-cfg.demandWeight)/100);
  const avgDramMonthly=(ddr5.avgMonthly+dram16.avgMonthly+dram8.avgMonthly)/3;
  const latestDramMonthly=(ddr5.latestMonthly+dram16.latestMonthly+dram8.latestMonthly)/3;
  const cycleSignal=latestDramMonthly<0&&avgDramMonthly>0?'DRAM 가격 하락 전환 주의':latestDramMonthly<avgDramMonthly-1.5?'가격 상승 모멘텀 둔화':financialScore<45?'기업 실적 모멘텀 약화':'상승 흐름 유지';
- return {demandScore,priceScore,financialScore,totalScore,ddr5,dram16,dram8,nand,dramScore,demandItems,companyItems,avgDramMonthly,latestDramMonthly,cycleSignal};
+ return {demandScore,priceScore,financialScore,inventoryScore,totalScore,ddr5,dram16,dram8,nand,dramScore,demandItems,companyItems,avgDramMonthly,latestDramMonthly,cycleSignal};
 }function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
  return <label className="score-weight-control"><span>{label}<b>{value}%</b></span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></label>;
 }
