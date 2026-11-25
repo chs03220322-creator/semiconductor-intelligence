@@ -330,6 +330,13 @@ function Demand({demandWeight,setDemandWeight}:{demandWeight:number;setDemandWei
  const liveCycleScore=weightedCycleScore(demandWeight);
  return <>
  <Title eyebrow="03 / COMPUTE DEMAND" title="AI 수요 & 데이터센터" desc="기관이 공개한 AI 서버·메모리 수요 전망과 가격 추세를 분리해 평가합니다. Actual·Estimate·Forecast를 구분하고 미확보 수치는 점수에 넣지 않습니다."/>
+  <div className="weight-adjuster">
+   <div className="weight-adjuster-head"><div><b>종합 점수 가중치 조절</b><small>슬라이더를 움직이면 AI 수요와 가격의 반영 비중 및 종합 점수가 즉시 바뀝니다.</small></div><strong>{demandWeight}% : {priceWeight}%</strong></div>
+   <input aria-label="AI 수요 가중치 조절" type="range" min="0" max="100" step="5" value={demandWeight} onChange={e=>setDemandWeight(Number(e.target.value))}/>
+   <div className="weight-adjuster-range"><span>가격 중심 0:100</span><span>균형 50:50</span><span>수요 중심 100:0</span></div>
+   <div className="weight-adjuster-result"><span>AI 수요 {aiDemandScore}점 × {demandWeight}%</span><span>가격 {priceMomentumScore}점 × {priceWeight}%</span><b>현재 종합 {liveCycleScore}점</b></div>
+  </div>
+
  <div className="stats-grid">
   <Stat label="2029년 AI 서버 DRAM wafer 수요" value="월 150만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 5.6배"/>
   <Stat label="2029년 AI 서버 NAND wafer 수요" value="월 22.7만 장" sub="SUMCO 공개 전망 · 2024년 대비 약 2.5배"/>
@@ -342,12 +349,6 @@ function Demand({demandWeight,setDemandWeight}:{demandWeight:number;setDemandWei
    <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub="DRAM·NAND wafer, Server DRAM bit, AI 서버 출하"/>
    <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub="DRAM 가격 80% · NAND 가격 20%"/>
    <Stat label="수요·가격 종합" value={liveCycleScore+" / 100"} sub={`AI 수요 ${demandWeight}% · 가격 ${priceWeight}%`}/>
-  </div>
-  <div className="weight-adjuster">
-   <div className="weight-adjuster-head"><div><b>종합 점수 가중치 조절</b><small>슬라이더를 움직이면 AI 수요와 가격의 반영 비중 및 종합 점수가 즉시 바뀝니다.</small></div><strong>{demandWeight}% : {priceWeight}%</strong></div>
-   <input aria-label="AI 수요 가중치 조절" type="range" min="0" max="100" step="5" value={demandWeight} onChange={e=>setDemandWeight(Number(e.target.value))}/>
-   <div className="weight-adjuster-range"><span>가격 중심 0:100</span><span>균형 50:50</span><span>수요 중심 100:0</span></div>
-   <div className="weight-adjuster-result"><span>AI 수요 {aiDemandScore}점 × {demandWeight}%</span><span>가격 {priceMomentumScore}점 × {priceWeight}%</span><b>현재 종합 {liveCycleScore}점</b></div>
   </div>
   <Table headers={["평가 항목","원자료 성장률","환산 점수","가중치"]} rows={[
    ["AI 서버 DRAM wafer 수요 CAGR · 2024~2029",aiDramWaferCagr.toFixed(1)+"%",growthScore(aiDramWaferCagr).toFixed(0), "35%"],
