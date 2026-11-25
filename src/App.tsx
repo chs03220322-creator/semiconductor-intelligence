@@ -395,7 +395,7 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
  const scores=calculateCycleScores(scoreConfig);
  const {ddr5,dram8,nand}=scores;
  const monthlyPeriods=Array.from(new Set([...pricesDdr5_16,...pricesDram8,...pricesNand].map(x=>x.year)));
- const valueAt=(data:{year:string;value:number}[],period:string)=>{const item=data.find(x=>x.year===period);return item?'$'+item.value.toFixed(1):'—';};
+ const valueAt=(data:{year:string;value:number}[],period:string)=>{const item=data.find(x=>x.year===period);return item?'₩'+Math.round(item.value*FX_USDKRW).toLocaleString('ko-KR')+'원':'—';};
  return <>
  <Title eyebrow="02 / PRODUCT PRICING" title="메모리 제품별 가격" desc="제품·세대·거래 형태가 다른 가격을 구분하고, 실제 공개된 월별 기준가격만 표시합니다. 현물가·계약가·모듈 ASP는 서로 대체하지 않습니다."/>
  <div className="panel">
@@ -433,7 +433,7 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
   <div className="panel-head"><div><h3>2025년 월별 공개 기준가격</h3></div></div>
   <Table headers={['월','DRAM 8Gb 가격(증감률)','NAND 128Gb 가격(증감률)']} rows={prices2025Dram8.map(x=>[
    x.year,
-   <>{'$'+x.value.toFixed(1)} ({priceChangeCell(prices2025Dram8,x.year,'rate')})</>,
+   <>{'₩'+Math.round(x.value*FX_USDKRW).toLocaleString('ko-KR')+'원'} ({priceChangeCell(prices2025Dram8,x.year,'rate')})</>,
    <>{valueAt(prices2025Nand,x.year)} ({priceChangeCell(prices2025Nand,x.year,'rate')})</>
   ])}/>
   <Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/>
