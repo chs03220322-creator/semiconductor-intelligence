@@ -620,7 +620,7 @@ function Market(){
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}><span className="pill">2위 · AI 반도체 공급망</span><b style={{fontSize:22}}>AMAT</b></div>
     <h4 style={{margin:"12px 0 6px"}}>Applied Materials</h4>
     <p style={{margin:"0 0 10px",fontSize:13}}>선단 로직·DRAM·HBM 패키징 투자 확대의 장비 수혜 기업</p>
-    <div style={{display:"grid",gap:5,fontSize:12}}><div><b>밸류에이션</b> · Morningstar 4성, 공정가치 $570 (11/20)</div><div><b>실적 모멘텀</b> · FY26 Q4 매출 +53% YoY</div><div><b>수요 근거</b> · 회사는 2027년 WFE 시장 +30% 초과 성장 전망</div></div>
+    <div style={{display:"grid",gap:5,fontSize:12}}><div><b>밸류에이션</b> · TTM P/E 27.7배, Morningstar 4성·공정가치 $570 (11/20)</div><div><b>실적 모멘텀</b> · FY26 Q4 매출 +53% YoY</div><div><b>수요 근거</b> · 회사는 2027년 WFE 시장 +30% 초과 성장 전망</div></div>
     <p style={{fontSize:12,margin:"10px 0 0",color:"var(--muted,#888)"}}>핵심 위험: 반도체 설비투자 사이클, 중국 수출규제, 고객사 팹 증설 지연</p>
     <a href="https://ir.appliedmaterials.com/static-files/14fd85ae-ff29-4756-879c-c899da301ae6" target="_blank" rel="noreferrer" style="fontSize:12}}>FY26 Q4 실적발표 자료 ↗</a> · <a href="https://www.morningstar.com/stocks/applied-materials-earnings-recap-strong-results-guidance-point-solid-year-ahead" target="_blank" rel="noreferrer" style="fontSize:12}}>Morningstar 가치평가 ↗</a>
    </article>
