@@ -711,7 +711,7 @@ function Cycles(){
    {name:'글로벌 반도체 · Gartner estimate/forecast',unit:'USD bn',data:globalOutlook},
    {name:'메모리 반도체 · Gartner estimate/forecast',unit:'USD bn',data:memoryOutlook}
   ]}/>
-  <Table headers={['기간','글로벌 반도체 SIA 연간 actual','글로벌 반도체 SIA 분기 actual','글로벌 반도체 Gartner 추정·전망','메모리 반도체 Gartner 추정·전망','구분']} rows={summaryRows}/>
+
   <Notice>2025년 글로벌 반도체 매출은 SIA actual $791.7B와 Gartner estimate $809.0B가 서로 다른 출처·시점의 수치입니다. 두 값을 하나로 합치지 않고 별도 선·열로 표시합니다. 메모리 시장은 Gartner 추정·전망 계열이며, 전체 반도체 시장과 중복 합산하지 않습니다. 2026~2027년은 전망치로 실제 실적이 아닙니다.</Notice>
   <Sources items={['SIA · 2025년 연간 글로벌 반도체 매출','Gartner · 2026년 반도체 시장 공개 전망']}/>
  </div>
@@ -906,7 +906,7 @@ function App(){
   </aside>
   {mobileOpen&&<div className="scrim" onClick={()=>setMobileOpen(false)}/>}
   <main className="main">
-   <header className="topbar"><div className="topbar-main"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></div><nav className="top-sheet-nav" aria-label="대시보드 시트 이동">{menu.filter(item=>item.id!==active).map(item=><button type="button" key={item.id} className="top-sheet-link" onClick={()=>setActive(item.id)}>{Number(item.no)}. {item.label}</button>)}</nav></header>
+   <header className="topbar"><div className="topbar-main"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></div><nav className="top-sheet-nav" aria-label="대시보드 시트 이동">{menu.filter(item=>item.id!==active).map(item=><button type="button" key={item.id} className="top-sheet-link" onClick={()=>setActive(item.id)}>{Number(item.no)}. {Number(item.no)}. {item.label}</button>)}</nav></header>
    <div className="content">{render()}<footer><div><b>SI · Semiconductor Intelligence</b><span>공개자료 기반 반도체 산업 분석 대시보드</span></div><span>실적 / 추정 / 전망 / 미확보 · v1.1</span></footer></div>
   </main> </div>;
 }
