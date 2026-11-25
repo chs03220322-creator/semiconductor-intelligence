@@ -360,7 +360,7 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
 function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
  const scores=calculateCycleScores(scoreConfig);
  const {ddr5,dram8,nand}=scores;
- const monthlyPeriods=Array.from(new Set([...pricesDdr5_16,...pricesDram8,...pricesNand].map(x=>x.year))).sort((x,y)=>new Date(x.replace(' ',' 1, ')).getTime()-new Date(y.replace(' ',' 1, ')).getTime());
+ const monthlyPeriods=Array.from(new Set([...pricesDdr5_16,...pricesDram8,...pricesNand].map(x=>x.year)));
  const valueAt=(data:{year:string;value:number}[],period:string)=>{const item=data.find(x=>x.year===period);return item?'$'+item.value.toFixed(1):'—';};
  return <>
  <Title eyebrow="02 / PRODUCT PRICING" title="메모리 제품별 가격" desc="제품·세대·거래 형태가 다른 가격을 구분하고, 실제 공개된 월별 기준가격만 표시합니다. 현물가·계약가·모듈 ASP는 서로 대체하지 않습니다."/>
