@@ -256,15 +256,6 @@ function Overview({period,setPeriod}:{period:Period;setPeriod:(p:Period)=>void})
    ]}/>
    <Notice>{cycleScore}점은 현재 정량 점수를 확보한 Server DDR5·HBM·NAND 3개 지표의 가중 평균 참고값입니다. 전체 {memorySignals.length}개 지표 중 {memorySignals.length-scoreable.length}개가 미확보이므로 전체 업황 점수로 해석하거나 사이클 정점·하락 시점을 단정하지 않습니다.</Notice>
   </div>
-  <div className="panel"><div className="panel-head"><div><h3>현재 사이클 해석</h3><p>이번 주 핵심 판단만 읽도록 요약</p></div><Pill tone="green">강한 확장 국면</Pill></div>
-   <Table headers={['구분','판단']} rows={[
-    ['현재 위치','호황·강한 확장 국면'],
-    ['방향','상승 지속. 다만 NAND는 DRAM보다 가격 모멘텀이 약함'],
-    ['상승 동력','AI 데이터센터 투자, HBM4 및 서버 DRAM 수요, 메모리 가격 상승'],
-    ['가장 큰 위험','신규 공급 증가가 수요를 앞서거나, 메모리 가격 상승이 PC·모바일 수요를 위축시키는 경우'],
-    ['판단 신뢰도','중간 이하: 재고일수·제품별 ASP·bit 공급 데이터 부족']
-   ]}/>
-  </div>
   <div className="period-bar"><div><b>글로벌 반도체 시장 규모</b><span>장기 사이클 확인용 · SIA 연간 actual</span></div><div className="segmented">{(['3Y','5Y','6Y'] as Period[]).map(p=><button className={period===p?'active':''} onClick={()=>setPeriod(p)} key={p}>{p}</button>)}</div></div>
   <div className="panel"><LineChart data={data} keyName="value" label="Global semiconductor sales · USD bn" height={190}/><Table headers={['연도','시장 매출','전년 대비']} rows={data.map((x)=>{const i=market.findIndex(m=>m.year===x.year);const previous=i>0?market[i-1]:null;return [x.year,'$'+x.value.toFixed(1)+'B',previous?((x.value/previous.value-1)*100).toFixed(1)+'%':'—'];})}/><Sources items={['SIA · 2025년 연간 글로벌 반도체 매출']}/></div>
  </>;
@@ -280,7 +271,6 @@ function Pricing(){return <>
   ['Oct 26','—',priceChangeCell(pricesDram16,'Oct 26','delta'),priceChangeCell(pricesDram16,'Oct 26','rate'),'$50.0',priceChangeCell(pricesDdr5_16,'Oct 26','delta'),priceChangeCell(pricesDdr5_16,'Oct 26','rate'),'$27.5',priceChangeCell(pricesDram8,'Oct 26','delta'),priceChangeCell(pricesDram8,'Oct 26','rate'),'$30.6',priceChangeCell(pricesNand,'Oct 26','delta'),priceChangeCell(pricesNand,'Oct 26','rate'),'Actual']
  ]} note="DRAM 16Gb 범용 기준가격과 DDR5 16Gb 고정가격은 서로 다른 공개 계열이므로 분리했습니다. 증감액은 기준가격의 USD/chip 차이를 기준 환율 1,345원으로 환산한 원/chip입니다. DDR5 16Gb는 10월 $50.0까지 공개되어 있습니다. 어느 series도 Server DDR5 RDIMM·PC DDR5 모듈 ASP와 동일하지 않습니다." source={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향']}/>
  <div className="panel"><h3>2025년 공개 DRAM 8Gb·NAND 128Gb 기준가격</h3><p className="muted">2025년 7~10월 관측치 · USD/chip · 2026년 series와 연도·시장 환경을 구분</p><LineChart data={prices2025Dram8} keyName="value" label="DRAM 8Gb reference · USD/chip" height={180}/><LineChart data={prices2025Nand} keyName="value" label="NAND 128Gb reference · USD/chip" height={180}/><Table headers={['월','DRAM 8Gb','증감액(원)','증감률','NAND 128Gb','증감액(원)','증감률']} rows={prices2025Dram8.map(x=>[x.year,'$'+x.value.toFixed(2),priceChangeCell(prices2025Dram8,x.year,'delta'),priceChangeCell(prices2025Dram8,x.year,'rate'),'$'+(prices2025Nand.find(n=>n.year===x.year)?.value??0).toFixed(2),priceChangeCell(prices2025Nand,x.year,'delta'),priceChangeCell(prices2025Nand,x.year,'rate')])}/><Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/></div>
- <TrendPanel title="메모리 시장 규모 대리지표" series={[{name:'Memory semiconductor revenue',unit:'USD bn · 시장규모, ASP 아님',data:memoryForecast}]} quarterHeaders={['연도','메모리 시장 규모','상태','출처 기준']} quarterRows={memoryForecast.map(x=>[x.year,'$'+x.value.toFixed(1)+'B',x.status,'Gartner Aug 2026 public release'])} note="메모리 시장규모는 연간 매출 estimate/forecast이며 제품 단가·ASP가 아닙니다. 2025 estimate, 2026~2027 forecast를 actual과 분리했습니다." source={['Gartner · 2026년 반도체 시장 공개 전망']}/>
  <div className="panel"><h3>제품별 데이터 범위</h3><Table headers={['제품군','확인 가능한 항목','미확보 항목']} rows={[
   ['Server DDR5','기업 IR의 서버 DDR5 수요·제품 믹스 코멘트, 범용 DRAM 8Gb·16Gb 기준가격','Server RDIMM 계약 ASP·제품별 출하 bit'],['PC DDR5','글로벌 시장·기업 실적의 간접 신호','PC 전용 DDR5 계약 ASP·출하량'],['DDR4','기업 코멘트 및 범용 DRAM 시장 지표 일부','DDR4 단독 고정가격·계약 ASP'],['HBM','삼성·SK hynix의 HBM4 출하·사업 코멘트','고객별 HBM3E/HBM4 계약가격·ASP'],['NAND','NAND 128Gb 기준가격·SSD 수출','Enterprise SSD 제품별 계약 ASP'],['삼성·SK ASP','분기 매출·이익 및 가격 방향 코멘트','회사별·제품별 ASP 증감률']
  ]}/></div>
