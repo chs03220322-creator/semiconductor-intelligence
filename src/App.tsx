@@ -123,8 +123,6 @@ const prices2025Dram8=[
 const prices2025Nand=[
   {year:'Jul 25',value:3.4},{year:'Aug 25',value:3.4},{year:'Sep 25',value:3.8},{year:'Oct 25',value:4.4}
 ];
-const ieaAnnual=[{year:'2023',value:360},{year:'2024',value:416},{year:'2025',value:485},{year:'2026E',value:560},{year:'2027E',value:645},{year:'2028E',value:740},{year:'2029E',value:840},{year:'2030F',value:945}];
-const aiPowerAnnual=[{year:'2025E',value:150},{year:'2026E',value:190},{year:'2027E',value:245},{year:'2028E',value:310},{year:'2029E',value:380},{year:'2030F',value:460}];
 // Token forecast is a transparent scenario model, not an official global census. Anchor: JPMorgan AI Tracker estimated about 360T tokens/day in Jul-2026.
 const tokenHistory=[{year:'Jan 2024',value:1},{year:'Jul 2024',value:3},{year:'Jan 2025',value:15},{year:'Jul 2025',value:70},{year:'Jan 2026',value:200},{year:'Jul 2026',value:360}];
 const tokenBase=[...tokenHistory,{year:'2026E',value:400},{year:'2027E',value:600},{year:'2028E',value:900},{year:'2029E',value:1350},{year:'2030F',value:2000}];
