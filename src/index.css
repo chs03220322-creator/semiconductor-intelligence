@@ -79,9 +79,9 @@ p strong{color:var(--em-key);font-weight:750}
 
 /* Month-over-month price change: positive red, negative blue */
 .price-change{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
-.price-change.up{color:#ff7777}
-.price-change.down{color:#78b7ff}
-.price-change.flat,.price-change-na{color:#9aa7b3}
+.price-change.up{color:#75e0ae}
+.price-change.down{color:#ff8b91}
+.price-change.flat,.price-change-na{color:#c3ced8}
 .price-change-na{font-weight:500}
 
 
