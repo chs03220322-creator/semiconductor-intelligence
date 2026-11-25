@@ -906,7 +906,7 @@ function App(){
   </aside>
   {mobileOpen&&<div className="scrim" onClick={()=>setMobileOpen(false)}/>}
   <main className="main">
-   <header className="topbar"><div className="topbar-main"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></div><nav className="sheet-quick-nav" aria-label="시트 바로가기">{menu.filter(item=>item.id!==active).map(item=><button key={item.id} className="sheet-quick-button" onClick={()=>{setActive(item.id);setMobileOpen(false);}}>{item.label}</button>)}</nav></header>
+   <header className="topbar"><div className="topbar-main"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></div></header>
    <div className="content">{render()}<footer><div><b>SI · Semiconductor Intelligence</b><span>공개자료 기반 반도체 산업 분석 대시보드</span></div><span>실적 / 추정 / 전망 / 미확보 · v1.1</span></footer></div>
   </main> </div>;
 }
