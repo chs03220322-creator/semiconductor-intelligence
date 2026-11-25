@@ -70,6 +70,8 @@ const sources=[
   {name:'TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)',date:'2026-08-03',url:'https://www.trendforce.com/presscenter/news/20260803-13161.html',desc:'2026년 AI 서버 출하량 약 31% 증가 전망 · 공개 보도자료'},
   {name:'TrendForce · 2026년 7월 30일 메모리 수급 전망',date:'2026-07-30',url:'https://www.trendforce.com/presscenter/news/20260730-13158.html',desc:'DRAM·NAND 공급 증가 및 2027년 제품별 수급 방향 공개 전망'},
   {name:'TrendForce · DRAM Price Trends',date:'2026-11-25',url:'https://www.trendforce.com/price/dram/dram_contract',desc:'DDR4·DDR5 spot 및 계약가격, 서버·PC 모듈·모바일 DRAM 가격 항목'},
+  {name:'TEAMGROUP · 2026 Q4 기업설명회 자료',date:'2026-11 공개',url:'https://file.teamgroupinc.com/about/corporate-information-session/2026/2026-q4-tw.pdf',desc:'TrendForce 기준 2026년 3~9월 DDR5 16Gb·DDR4 8Gb 월별 계약가격'},
+  {name:'BonusCHIP · 2026년 10월 메모리 고정거래가격 월별 추이',date:'2026-11-08',url:'https://bonuschip.app/blog/memory-contract-prices-october-2026',desc:'2026년 3~10월 DDR4 8Gb·NAND 128Gb MLC 월별 계약가격'},
   {name:'TrendForce · NAND Flash Price Trends',date:'2026-11-25',url:'https://www.trendforce.com/price/flash/flash_contract',desc:'NAND chip 계약·현물, wafer spot, PC SSD·eMMC/UFS 계약가격 항목'},
   {name:'TrendForce · NAND Flash Wafer Contract Price',date:'2026-10-30',url:'https://www.trendforce.com/research/download/RP261030YB',desc:'TLC·QLC NAND wafer 계약가격 월별 리포트'},
   {name:'TrendForce · DRAMeXchange Membership Plans',date:'상시 안내',url:'https://www.trendforce.com/membership/DRAMeXchange',desc:'DRAM/NAND 최근 5년 일별 spot·월별 contract Excel 데이터 제공 안내'}
@@ -116,11 +118,11 @@ const micronQuarterly=[
 const tsmcAnnual=[{year:'2023',value:69.30},{year:'2024',value:90.08},{year:'2025',value:122.42}];
 const nvidiaAnnual=[{year:'FY2024',value:60.922},{year:'FY2025',value:130.497},{year:'FY2026',value:215.938}];
 const nvidiaQuarterly=[{year:'1Q FY27',value:81.615},{year:'2Q FY27',value:96.221},{year:'3Q FY27',value:115.8}];
-const pricesDdr5_16=[{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0},{year:'Oct 26',value:50.0}];
-const pricesDram8=[{year:'Jul 26',value:24.0},{year:'Aug 26',value:25.0},{year:'Sep 26',value:26.0},{year:'Oct 26',value:27.5}];
+const pricesDdr5_16=[{year:'May 26',value:37.5},{year:'Jun 26',value:40.0},{year:'Jul 26',value:45.0},{year:'Aug 26',value:46.5},{year:'Sep 26',value:48.0},{year:'Oct 26',value:50.0}];
+const pricesDram8=[{year:'May 26',value:20.0},{year:'Jun 26',value:21.0},{year:'Jul 26',value:24.0},{year:'Aug 26',value:25.0},{year:'Sep 26',value:26.0},{year:'Oct 26',value:27.5}];
 const pricesNand=[
-  {year:'Jun 26',value:28.8},{year:'Jul 26',value:30.1},{year:'Aug 26',value:30.5},
-  {year:'Sep 26',value:30.6},{year:'Oct 26',value:30.6}
+  {year:'May 26',value:26.5},{year:'Jun 26',value:28.8},{year:'Jul 26',value:30.1},
+  {year:'Aug 26',value:30.5},{year:'Sep 26',value:30.6},{year:'Oct 26',value:30.6}
 ];
 const prices2025Dram8=[
   {year:'Jul 25',value:3.9},{year:'Aug 25',value:5.7},{year:'Sep 25',value:6.3},{year:'Oct 25',value:7.0}
@@ -150,7 +152,8 @@ const priceMomentum=(values:number[],cfg:ScoreConfig)=>{
 // 공개 기관 전망: AI 서버 출하 +31%, Server DRAM bit 164→269, Enterprise SSD bit 3,927.2→7,491.2 (십억 Gb).
 // Enterprise SSD는 NAND 전체의 부분집합이며 DRAM 수요와 합산하지 않고 별도 성장 신호로만 사용한다.
 const aiServerShipmentGrowth=31,serverDramBitCagr=growthPct(164,269,2),enterpriseSsdBitCagr=growthPct(3927.2,7491.2,2);
-const ddr5MomentumBase=[40,45,46.5,48,50],dram8MomentumBase=[24,25,26,27.5],nandMomentumBase=[28.8,30.1,30.5,30.6,30.6];
+// 2026년 3~4월은 월별 점수의 전월 비교 기준값, 그래프는 최근 6개월(5~10월)만 표시한다.
+const ddr5MomentumBase=[31,35,37.5,40,45,46.5,48,50],dram8MomentumBase=[13,16,20,21,24,25,26,27.5],nandMomentumBase=[17.7,24.2,26.5,28.8,30.1,30.5,30.6,30.6];
 function financialMomentum(rows:{revenue:number;op:number;margin:number}[],inventoryValues:number[]){
  const current=rows[rows.length-1],previous=rows[rows.length-2];
  if(!current||!previous||!previous.revenue||inventoryValues.length<2||!inventoryValues[0])return {revenueGrowth:0,marginDelta:0,inventoryGrowth:0,inventoryScore:NEUTRAL_SCORE,score:NEUTRAL_SCORE};
@@ -192,15 +195,20 @@ function calculateCycleScores(cfg:ScoreConfig){
  return {demandScore,priceScore,supplyScore,financialScore,inventoryScore,totalScore,priceWeight,supplyWeight,inventoryWeight,financialWeight,ddr5,dram8,nand,dramScore,demandItems,companyItems,avgDramMonthly,latestDramMonthly,cycleSignal};
 }function monthlyCycleScoreSeries(cfg:ScoreConfig){
  const current=calculateCycleScores(cfg);
- const periods=['Jun 26','Jul 26','Aug 26','Sep 26','Oct 26'];
- return [2,3,4].map(monthIndex=>{
+ const periods=['Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26'];
+ const monthly=periods.map((period,monthIndex)=>{
   const ddr5=priceMomentum(ddr5MomentumBase.slice(0,monthIndex+1),cfg);
-  const dram8=priceMomentum(dram8MomentumBase.slice(0,monthIndex),cfg);
+  const dram8=priceMomentum(dram8MomentumBase.slice(0,monthIndex+1),cfg);
   const nand=priceMomentum(nandMomentumBase.slice(0,monthIndex+1),cfg);
   const dramScore=Math.round(ddr5.score*PRICE_WEIGHTS[0]/100+dram8.score*PRICE_WEIGHTS[1]/100);
   const priceScore=Math.round(dramScore*cfg.dramShare/100+nand.score*(100-cfg.dramShare)/100);
   const total=Math.round((current.demandScore*cfg.demandWeight+priceScore*current.priceWeight+current.supplyScore*current.supplyWeight+current.inventoryScore*current.inventoryWeight+current.financialScore*current.financialWeight)/100);
-  return {year:periods[monthIndex],value:total};
+  return {year:period,value:total};
+ });
+ return monthly.slice(2).map((point,index)=>{
+  const previous=monthly[index+1];
+  const scoreDelta=point.value-previous.value;
+  return {...point,scoreDelta,momPct:previous.value?(scoreDelta/previous.value)*100:null};
  });
 }
 function WeightControl({label,value,min=0,max=100,step=5,onChange}:{label:string;value:number;min?:number;max?:number;step?:number;onChange:(v:number)=>void}){
@@ -265,7 +273,7 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
  const chosenYoy=chosen?yoyChange(Number(chosen[keyName]),chosenPrevious?Number(chosenPrevious[keyName]):undefined):null;
  const isScore=/score|점수/i.test(label);
  const chosenMonthPrevious=chosen&&(perChip||isScore)&&selected!==null&&selected>0?data[selected-1]:null;
- const chosenMom=chosenMonthPrevious?(isScore?Number(chosen[keyName])-Number(chosenMonthPrevious[keyName]):yoyChange(Number(chosen[keyName]),Number(chosenMonthPrevious[keyName]))):null;
+ const chosenMom=chosen?(isScore&&typeof chosen.momPct==='number'?chosen.momPct:chosenMonthPrevious?(isScore?Number(chosen[keyName])-Number(chosenMonthPrevious[keyName]):yoyChange(Number(chosen[keyName]),Number(chosenMonthPrevious[keyName]))):null):null;
  const fmt=(v:number)=>perChip?'₩'+Math.round(v).toLocaleString('ko-KR'):isUsd?'₩'+v.toFixed(1)+'조':Number.isInteger(v)?v.toLocaleString('ko-KR'):v.toLocaleString('ko-KR',{maximumFractionDigits:2});
  const unitValue=(v:number)=>{
   if(/trillion tokens/i.test(label)) return v.toLocaleString('ko-KR',{maximumFractionDigits:1})+'조 개/일';
@@ -278,7 +286,7 @@ function LineChart({data,keyName,label,height=220,comparisonData}:{data:any[];ke
  };
  const visibleLabel=label.split('·').slice(0,1).join('').trim();
  return <div className="line-chart" style={{height}}>
-  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenMom===null?'var(--muted,#9aa9b7)':chosenMom>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{perChip?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · 전월 가격 ${unitValue(Number(chosenMonthPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`):isScore?(chosenMom===null?'전월 점수 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(0)}점`):'전월 대비: 월별 데이터에만 표시'}</small><small style={{display:'block',marginTop:3,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small></>:<span>그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다</span>}</div>
+  <div className="chart-value-callout" aria-live="polite">{chosen?<><b>{chosen.year||chosen.period||chosen.month}</b><strong>{unitValue(Number(chosen[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}</strong><small style={{display:'block',marginTop:4,color:chosenMom===null?'var(--muted,#9aa9b7)':chosenMom>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{perChip?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · 전월 가격 ${unitValue(Number(chosenMonthPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`):isScore?(chosenMom===null?'전월 대비: 비교 데이터 없음':`전월 대비 ${chosenMom>=0?'+':''}${chosenMom.toFixed(1)}% · ${Number(chosen.scoreDelta)>=0?'+':''}${Number(chosen.scoreDelta)}점`):'전월 대비: 월별 데이터에만 표시'}</small>{!isScore&&<small style={{display:'block',marginTop:3,color:chosenYoy===null?'var(--muted,#9aa9b7)':chosenYoy>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{chosenYoy===null?'전년 동기 대비: 비교 데이터 없음':`전년 동기 대비 ${chosenYoy>=0?'+':''}${chosenYoy.toFixed(1)}% · 전년 값 ${unitValue(Number(chosenPrevious[keyName])*(isUsd?(perChip?FX_USDKRW:FX_USDKRW/1000):1))}`}</small>}</>:<span>{isScore?'그래프의 점을 누르면 월별 점수와 전월 대비 증감률이 표시됩니다':'그래프의 점을 누르면 연도와 단위, 전년 동기 대비 증감률이 표시됩니다'}</span>}</div>
   <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>
     <path d={path} fill="none" stroke="#68c5d4" strokeWidth="2.1" vectorEffect="non-scaling-stroke"/>
@@ -341,9 +349,9 @@ function Overview({period,setPeriod,scoreConfig,onScoreConfigChange}:{period:Per
   <Title eyebrow="01 / CYCLE MONITOR" title="반도체 사이클 한눈에 보기" desc="AI·메모리 수요 전망, 공개 메모리 가격, 메모리 3사 실적과 공시 재고를 반영한 공개자료 기반 참고 지수입니다. 비공개 생산 데이터는 점수에서 제외합니다."/>
   <div className="hero-score"><div className="score-main"><div className="score-label"><span className="live-dot"/> 메모리 산업 사이클 종합지수 <Pill tone="green">공개자료 기반 proxy</Pill></div><div className="score-number">{liveCycleScore}<small>/ 100</small></div><p>AI 수요 {aiDemandScore}점 · 가격 {priceMomentumScore}점 · 공급 {scores.supplyScore}점 · 재고 {inventoryScore}점 · 실적 {financialScore}점</p><div className="score-foot"><span>수요 {demandWeight}%</span><span>가격 {scores.priceWeight.toFixed(0)}%</span><span>공급 {scores.supplyWeight.toFixed(0)}%</span><span>재고 {scores.inventoryWeight.toFixed(0)}%</span><span>실적 {scores.financialWeight.toFixed(0)}%</span></div></div><div className="score-gauge"><div className="gauge-ring"><div><strong>{liveCycleScore}</strong><span>산업 사이클 지수</span></div></div><small>수급·정점 예측 확정 점수 아님</small></div></div>
   <div className="panel" style={{marginTop:14}}>
-   <div className="panel-head"><div><h3>2026년 월별 반도체 사이클 종합점수</h3><p>그래프의 각 월 타점을 누르면 해당 월 점수를 확인할 수 있습니다</p></div><Pill tone="blue">월별 추이</Pill></div>
+   <div className="panel-head"><div><h3>최근 월별 반도체 사이클 종합점수</h3><p>최근 6개월 점수와 전월 대비 증감률 · 타점을 누르면 월별 상세값을 확인할 수 있습니다</p></div><Pill tone="blue">월별 추이</Pill></div>
    <LineChart data={monthlyCycleScoreSeries(scoreConfig)} keyName="value" label="산업 사이클 종합점수 · 점수" height={190}/>
-   <Notice>현재 확보된 월별 가격 데이터가 공통으로 존재하는 2026년 8~10월만 표시합니다. 각 월 점수는 해당 월까지의 DRAM·NAND 가격 흐름으로 가격 점수를 재산출하고, AI 수요·공급·기업 재고·실적 점수는 최신 공개값을 고정해 계산한 참고용 추이입니다. 따라서 과거 당시의 전체 산업점수 실측치가 아니며, 월별 실적·수요 데이터가 추가되면 해당 축도 과거 시점 기준으로 재산출해야 합니다.</Notice>
+   <Notice>최근 6개월(2026년 5~10월)을 표시합니다. DDR5 16Gb·DRAM 8Gb·NAND 128Gb 월별 공개 계약가격을 반영하며, 3~4월 가격은 5월 점수의 전월 비교 및 가격 모멘텀 계산을 위한 기준값으로만 사용합니다. 각 월의 가격 점수는 해당 월까지의 가격 흐름으로 재산출하고, AI 수요·공급·기업 재고·실적 점수는 최신 공개값을 고정한 참고용 추이입니다. 따라서 과거 당시의 전체 산업점수 실측치가 아니라 가격 흐름 중심의 재구성 지수입니다.</Notice>
   </div>
   <ScoreControls config={scoreConfig} onChange={onScoreConfigChange}/>
   <div className="panel" style={{marginTop:14}}>
@@ -410,8 +418,8 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
    valueAt(pricesDram8,period),priceChangeCell(pricesDram8,period,'rate'),
    valueAt(pricesNand,period),priceChangeCell(pricesNand,period,'rate')
   ])}/>
-  <Notice>현재 화면에 입력된 정부 공개 월별 기준가격은 2026년 6~10월입니다. DRAM 8Gb의 6월 값과 DRAM 16Gb의 10월 값은 공개 시계열에 없어 공란으로 둡니다. 11월 월간 기준가격은 아직 확인 가능한 발표치가 없어 임의 추정하지 않았습니다. MoM은 직전 공개 월이 존재할 때만 표시합니다.</Notice>
-  <Sources items={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향']}/>
+  <Notice>현재 화면은 2026년 5~10월 월별 공개 계약가격을 표시합니다. DDR5 16Gb와 DRAM 8Gb는 TEAMGROUP의 TrendForce 기준 시계열, NAND 128Gb MLC는 공개된 TrendForce 고정가격 월별 집계를 사용합니다. 11월 월간 기준가격은 아직 확인 가능한 발표치가 없어 임의 추정하지 않았습니다. MoM은 직전 공개 월이 존재할 때만 표시합니다.</Notice>
+  <Sources items={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향','TEAMGROUP · 2026 Q4 기업설명회 자료','BonusCHIP · 2026년 10월 메모리 고정거래가격 월별 추이']}/>
  </div>
  <div className="panel">
   <div className="panel-head"><div><h3>2025년 월별 공개 기준가격</h3><p className="muted">USD / chip · 2026년과 별도 비교</p></div></div>
