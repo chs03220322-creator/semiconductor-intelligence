@@ -143,7 +143,7 @@ const priceMomentum=(values:number[],cfg:ScoreConfig)=>{
  const avgMonthly=(Math.pow(values[values.length-1]/values[0],1/(values.length-1))-1)*100;
  const latestMonthly=(values[values.length-1]/values[values.length-2]-1)*100;
  const weighted=avgMonthly*cfg.avgMomentumShare/100+latestMonthly*(100-cfg.avgMomentumShare)/100;
- return {avgMonthly,latestMonthly,score:clampScore(NEUTRAL_SCORE+weighted*PRICE_SENSITIVITY)};
+ return {avgMonthly,latestMonthly,score:Math.round(clampScore(NEUTRAL_SCORE+weighted*PRICE_SENSITIVITY))};
 };
 // 공개 기관 전망: AI 서버 출하 +31%, Server DRAM bit 164→269, Enterprise SSD bit 3,927.2→7,491.2 (십억 Gb).
 // Enterprise SSD는 NAND 전체의 부분집합이며 DRAM 수요와 합산하지 않고 별도 성장 신호로만 사용한다.
