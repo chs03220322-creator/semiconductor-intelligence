@@ -97,8 +97,7 @@ const skAnnual=[
 ];
 const micronAnnual=[
  {year:'2016',revenue:12.399,op:0.168},{year:'2017',revenue:20.322,op:5.870},{year:'2018',revenue:30.391,op:14.990},{year:'2019',revenue:23.406,op:7.384},{year:'2020',revenue:21.435,op:3.000},{year:'2021',revenue:27.705,op:6.276},{year:'2022',revenue:30.758,op:9.703},{year:'2023',revenue:15.540,op:-5.745},{year:'2024',revenue:25.111,op:1.304},{year:'2025',revenue:37.378,op:9.770}
-];const samsungQuarterly=[
-  {period:'1Q26',revenue:133.9,op:57.2,margin:42.8},
+];const samsungQuarterly=[  {period:'1Q26',revenue:133.9,op:57.2,margin:42.8},
   {period:'2Q26',revenue:171.5,op:89.5,margin:52.2},
   {period:'3Q26',revenue:195.3,op:107.4,margin:55.0}
 ];
@@ -160,7 +159,7 @@ function financialMomentum(rows:{revenue:number;op:number;margin:number}[],inven
  const earningsScore=clampScore(NEUTRAL_SCORE+revenueGrowth*0.55+marginDelta*1.5);
  // 재고가 매출보다 빠르게 늘면 재고 부담, 매출보다 느리게 늘거나 감소하면 상대적으로 양호한 신호.
  const inventoryScore=clampScore(NEUTRAL_SCORE-(inventoryGrowth-revenueGrowth)*0.8);
- return {revenueGrowth,marginDelta,inventoryGrowth,inventoryScore,score:Math.round(earningsScore*0.7+inventoryScore*0.3)};
+ return {revenueGrowth,marginDelta,inventoryGrowth,inventoryScore,score:Math.round(earningsScore)};
 }
 function calculateCycleScores(cfg:ScoreConfig){
  const demandItems=[
@@ -196,9 +195,8 @@ function calculateCycleScores(cfg:ScoreConfig){
 }
 function ScoreControls({config,onChange}:{config:ScoreConfig;onChange:(key:keyof ScoreConfig,value:number)=>void}){
  return <div className="score-control-panel"><div className="score-control-heading"><div><b>점수 조절</b><small>핵심 비중 3가지만 조절합니다. 변경 즉시 종합점수에 반영됩니다.</small></div><Pill tone="green">실시간 반영</Pill></div><div className="score-control-grid compact">
- <section><WeightControl label="AI 수요 비중 · 가격·실적은 자동 배분" value={config.demandWeight} onChange={v=>onChange("demandWeight",v)}/><div className="score-control-note">AI 수요 {config.demandWeight}% / 나머지 {100-config.demandWeight}% (가격 70% · 실적 30%)</div></section>
- <section><WeightControl label="DRAM 가격 비중 · NAND는 자동 반대" value={config.dramShare} onChange={v=>onChange("dramShare",v)}/><div className="score-control-note">DRAM {config.dramShare}% / NAND {100-config.dramShare}%</div></section>
- <section><WeightControl label="장기 평균 가격 흐름 · 최근 월은 자동 반대" value={config.avgMomentumShare} onChange={v=>onChange("avgMomentumShare",v)}/><div className="score-control-note">장기 평균 {config.avgMomentumShare}% / 최근 월 {100-config.avgMomentumShare}%</div></section>
+ <section><WeightControl label="AI 수요 비중 · 나머지 4개 축 자동 배분" value={config.demandWeight} onChange={v=>onChange("demandWeight",v)}/><div className="score-control-note">AI 수요 {config.demandWeight}% / 나머지 {100-config.demandWeight}% (가격 40% · 공급 25% · 재고 20% · 실적 15%)</div></section>
+ <section><WeightControl label="DRAM 가격 비중 · NAND는 자동 반대" value={config.dramShare} onChange={v=>onChange("dramShare",v)}/><div className="score-control-note">DRAM {config.dramShare}% / NAND {100-config.dramShare}%</div></section> <section><WeightControl label="장기 평균 가격 흐름 · 최근 월은 자동 반대" value={config.avgMomentumShare} onChange={v=>onChange("avgMomentumShare",v)}/><div className="score-control-note">장기 평균 {config.avgMomentumShare}% / 최근 월 {100-config.avgMomentumShare}%</div></section>
  </div><div className="score-control-note bottom">세부 지표 가중치와 점수 환산계수는 일관성을 위해 기본값으로 고정했습니다.</div></div>;
 }
 function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
@@ -297,8 +295,7 @@ function MultiLineChart({series,label,height=220}:{series:{name:string;unit:stri
  const delta=active&&previous?active.value-previous.value:null;
  const deltaPct=active&&previous&&previous.value!==0?(active.value/previous.value-1)*100:null;
  const signed=(v:number)=>v>0?'+':'';
- const fmt=(v:number)=>v.toLocaleString('ko-KR',{maximumFractionDigits:2});
- const selectPoint=(si:number,pi:number)=>{setActiveSeriesIndex(si);setSelected({series:si,point:pi})};
+ const fmt=(v:number)=>v.toLocaleString('ko-KR',{maximumFractionDigits:2}); const selectPoint=(si:number,pi:number)=>{setActiveSeriesIndex(si);setSelected({series:si,point:pi})};
  return <div className="line-chart" style={{height:height+76}}>
   <div className="chart-value-callout" aria-live="polite">{selected&&active&&activeSeries?<><b>{activeSeries.name} · {active.year}</b><strong>{fmt(active.value)} {activeSeries.unit}</strong><small style={{display:'block',marginTop:5,color:deltaPct===null?'var(--muted,#9aa9b7)':deltaPct>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{previous?(`직전 타점(${previous.year}) 대비 ${signed(deltaPct as number)}${(deltaPct as number).toFixed(1)}% · ${signed(delta as number)}${fmt(Math.abs(delta as number))} ${activeSeries.unit}`):'첫 번째 타점 · 이전 시점 비교 없음'}</small>{previous&&<small style={{display:'block',marginTop:3,color:'var(--muted,#9aa9b7)'}}>이전 값 {fmt(previous.value)} {activeSeries.unit}</small>}</>:<span>아래 연도 버튼 또는 그래프의 점을 선택하면 직전 시점 대비 증감률이 표시됩니다</span>}</div>
   <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
@@ -396,9 +393,8 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
   <div className="stats-grid three">
    <Stat label="AI 수요 모멘텀" value={aiDemandScore+" / 100"} sub="AI 서버 출하 · Server DRAM bit · Enterprise SSD bit"/>
    <Stat label="가격 상승 모멘텀" value={priceMomentumScore+" / 100"} sub={`DRAM ${scoreConfig.dramShare}% · NAND ${100-scoreConfig.dramShare}%`}/>
-   <Stat label="산업 사이클 종합" value={liveCycleScore+" / 100"} sub={`수요 ${demandWeight}% · 가격 ${Math.round(nonDemandWeight*0.7)}% · 실적 ${Math.round(nonDemandWeight*0.3)}% (실적 점수 ${financialScore})`}/>
-  </div>
-  <Table headers={["평가 항목","원자료 성장률","환산 점수","반영 방식"]} rows={[
+   <Stat label="산업 사이클 종합" value={liveCycleScore+" / 100"} sub={`수요 ${demandWeight}% · 가격 ${scores.priceWeight.toFixed(0)}% · 공급 ${scores.supplyWeight.toFixed(0)}% · 재고 ${scores.inventoryWeight.toFixed(0)}% · 실적 ${scores.financialWeight.toFixed(0)}% (실적 점수 ${financialScore})`}/>
+  </div>  <Table headers={["평가 항목","원자료 성장률","환산 점수","반영 방식"]} rows={[
     ["AI 서버 출하 증가율 · 2026 전망",aiServerShipmentGrowth.toFixed(0)+"%",scores.demandItems[0].score.toFixed(0),"수요 동일 가중"],
     ["Server DRAM bit 수요 CAGR · 2026~2028",serverDramBitCagr.toFixed(1)+"%",scores.demandItems[1].score.toFixed(0),"수요 동일 가중"],
     ["Enterprise SSD bit 수요 CAGR · 2026~2028",enterpriseSsdBitCagr.toFixed(1)+"%",scores.demandItems[2].score.toFixed(0),"수요 동일 가중"]   ]}/>
@@ -408,7 +404,7 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
    ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0),"25%"],
    ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0),"-"]
   ]}/>
-  <Notice>성장 점수는 중립 50점 + 성장률×0.65로 0~100점에 환산합니다. 종합점수는 수요 {demandWeight}%, 가격 {Math.round(nonDemandWeight*0.7)}%, 기업 실적 {Math.round(nonDemandWeight*0.3)}%입니다. 가격 점수는 DRAM·NAND 비중 및 관측구간 평균·최근 월 비중을 사용합니다. 기업 실적 점수는 삼성·SK하이닉스·Micron 최근 공시 분기의 매출 QoQ 변화와 영업이익률 변화로 계산합니다. 이 환산계수는 공개 관측치를 비교하는 분석 규칙이며 통계적으로 검증된 예측모형은 아닙니다. 수요 수치는 기관 전망치이고 실적이 아닙니다. 가격은 정부 공개 기준가격으로 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
+  <Notice>성장 점수는 중립 50점 + 성장률×0.65로 0~100점에 환산합니다. 종합점수는 수요 {demandWeight}%와 나머지 비중의 가격 40%·공급 25%·재고 20%·기업 실적 15%로 구성됩니다. 기업 실적과 재고는 중복 계산하지 않습니다. 가격 점수는 DRAM·NAND 비중 및 관측구간 평균·최근 월 비중을 사용합니다. 기업 실적 점수는 삼성·SK하이닉스·Micron 최근 공시 분기의 매출 QoQ 변화와 영업이익률 변화로 계산합니다. 이 환산계수는 공개 관측치를 비교하는 분석 규칙이며 통계적으로 검증된 예측모형은 아닙니다. 수요 수치는 기관 전망치이고 실적이 아닙니다. 가격은 정부 공개 기준가격으로 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
   <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
  </div>
  <div className="panel"><h3>AI 서버용 DRAM wafer 수요 전망</h3><p className="muted">학습(Training)과 추론(Inference)의 월간 wafer 수요를 한 그래프에서 비교 · 단위: 천 장/월</p><MultiLineChart label="AI server DRAM wafer demand: Training and Inference" series={[{name:"Training (학습)",unit:"천 장/월",data:[{year:"2024",value:180},{year:"2025",value:360},{year:"2026",value:500},{year:"2027",value:620},{year:"2028",value:720},{year:"2029",value:800}]},{name:"Inference (추론)",unit:"천 장/월",data:[{year:"2024",value:90},{year:"2025",value:180},{year:"2026",value:280},{year:"2027",value:420},{year:"2028",value:570},{year:"2029",value:700}]}]}/><Notice>한 그래프 안에 학습과 추론을 서로 다른 색상의 선으로 표시합니다. SUMCO가 복수 조사기관 자료를 토대로 제시한 전망치이며 실적이 아닙니다.</Notice><Sources items={["SUMCO · 4Q-2025 Results, p.13 (2026-02-10)"]}/></div>
@@ -497,8 +493,7 @@ type MemoryFinancialPoint={year:string;revenue:number;op?:number;periodLabel?:st
 type MemoryFinancialSeries={name:string;data:MemoryFinancialPoint[];color:string;currency:'KRW'|'USD'};
 function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string;subtitle:string;series:MemoryFinancialSeries[];forecast?:boolean}){
  const [metric,setMetric]=useState<'revenue'|'op'>('revenue');
- const [selected,setSelected]=useState<{company:string;index:number}|null>(null);
- const maxZoom=series[0].data.length;
+ const [selected,setSelected]=useState<{company:string;index:number}|null>(null); const maxZoom=series[0].data.length;
  const [zoom,setZoom]=useState(Math.min(maxZoom,forecast?6:11));
  const shown=series.map(s=>({...s,data:s.data.slice(-zoom),offset:s.data.length-Math.min(zoom,s.data.length)})); const values=shown.flatMap(s=>s.data.flatMap(d=>{const v=metric==='revenue'?d.revenue:d.op;const lo=metric==='revenue'?d.revenueLow:d.opLow;const hi=metric==='revenue'?d.revenueHigh:d.opHigh;return [v,lo,hi].filter((n):n is number=>typeof n==='number'&&Number.isFinite(n)).map(n=>n*(s.currency==='USD'?FX_USDKRW/1000:1))}));
  const min=Math.min(0,...values),max=Math.max(...values),range=max-min||1;
@@ -597,8 +592,7 @@ function Companies(){return <>
  <Title eyebrow="05 / COMPANY FINANCIALS" title="주요 반도체 기업 실적" desc="메모리 3사의 2016~2025 연간 실적에 각 사의 최신 공시 분기까지 누적한 실적을 추가해 비교합니다. 매출·영업이익 전환 및 타점별 수치 확인이 가능합니다."/>
  <MemoryThreeChart/>
  <MemoryThreeForecastChart/>
- <div className="panel"><h3>향후 5년 전망 산정 기준</h3><Table headers={['기업','공개 추정 범위의 출처','범위가 확인된 기간','미확보 구간']} rows={[
-  ['삼성전자','미래에셋·삼성증권 등 공개 리포트의 추정치 최저~최고','2027~2028 매출·영업이익','2029~2031'],
+ <div className="panel"><h3>향후 5년 전망 산정 기준</h3><Table headers={['기업','공개 추정 범위의 출처','범위가 확인된 기간','미확보 구간']} rows={[  ['삼성전자','미래에셋·삼성증권 등 공개 리포트의 추정치 최저~최고','2027~2028 매출·영업이익','2029~2031'],
   ['SK하이닉스','미래에셋 등 공개 리포트의 추정치 최저~최고','2027 매출·영업이익; 2028 단일 추정치','2029~2031'],  ['Micron','S&P Global Market Intelligence 기반 공개 애널리스트 추정 범위','FY2027~FY2028 매출','영업이익 범위 및 FY2029~FY2031']
 ]}/>
  <Notice>음영은 공개 리포트·시장 데이터에 실제 기재된 최소~최대 범위이며, 여러 기관의 추정치가 존재하는 연도만 표시합니다. 2029~2031은 공신력 있는 비교 가능 범위를 확인하지 못해 기존 장기 시나리오 선만 표시하고 음영은 넣지 않았습니다. Micron FY2027~FY2028 매출은 S&P Global 기반 컨센서스 범위로 음영 표시합니다. 영업이익은 Visible Alpha의 매출총이익률·영업비용으로 산출한 근사치이며 영업이익 범위는 공개 확인되지 않아 음영을 표시하지 않습니다. 삼성전자·SK하이닉스·Micron의 회계연도와 추정 기준은 서로 다를 수 있습니다.</Notice>
@@ -697,8 +691,7 @@ function Market(){
     latestYieldHistory=Array.isArray(yieldPayload.history)?yieldPayload.history:[];
     setYieldError(latestYieldHistory.length?'':'분기 데이터가 아직 충분하지 않습니다.');
     setYieldUpdated(yieldPayload.updatedAt||'');
-   } catch(rateError) {
-    setYieldError(rateError instanceof Error?rateError.message:'금리 데이터 요청 실패');    setYields({});
+   } catch(rateError) {    setYieldError(rateError instanceof Error?rateError.message:'금리 데이터 요청 실패');    setYields({});
     setYieldHistory([]);
    }
    for(let i=0;i<batches.length;i+=2){
@@ -797,8 +790,7 @@ function App(){
   case'pricing':return <Pricing/>;
   case'demand':return <Demand scoreConfig={scoreConfig}/>;
   case'capex':return <Capex/>;
-    case'companies':return <Companies/>;  case'cycles':return <Cycles/>;
-  case'insights':return <Insights/>;
+    case'companies':return <Companies/>;  case'cycles':return <Cycles/>;  case'insights':return <Insights/>;
   case'market':return <Market/>;
  }};
  return <div className="app-shell">
