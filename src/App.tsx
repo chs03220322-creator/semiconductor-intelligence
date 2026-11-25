@@ -97,8 +97,7 @@ const skAnnual=[
 ];
 const micronAnnual=[
  {year:'2016',revenue:12.399,op:0.168},{year:'2017',revenue:20.322,op:5.870},{year:'2018',revenue:30.391,op:14.990},{year:'2019',revenue:23.406,op:7.384},{year:'2020',revenue:21.435,op:3.000},{year:'2021',revenue:27.705,op:6.276},{year:'2022',revenue:30.758,op:9.703},{year:'2023',revenue:15.540,op:-5.745},{year:'2024',revenue:25.111,op:1.304},{year:'2025',revenue:37.378,op:9.770}
-];const samsungQuarterly=[  {period:'1Q26',revenue:133.9,op:57.2,margin:42.8},  {period:'2Q26',revenue:171.5,op:89.5,margin:52.2},
-  {period:'3Q26',revenue:195.3,op:107.4,margin:55.0}
+];const samsungQuarterly=[  {period:'1Q26',revenue:133.9,op:57.2,margin:42.8},  {period:'2Q26',revenue:171.5,op:89.5,margin:52.2},  {period:'3Q26',revenue:195.3,op:107.4,margin:55.0}
 ];
 const skQuarterly=[
   {period:'1Q26',revenue:52.5763,op:37.6103,margin:71.5},
@@ -197,8 +196,7 @@ function ScoreControls({config,onChange}:{config:ScoreConfig;onChange:(key:keyof
  <section><WeightControl label="AI 수요 비중 · 나머지 4개 축 자동 배분" value={config.demandWeight} onChange={v=>onChange("demandWeight",v)}/><div className="score-control-note">AI 수요 {config.demandWeight}% / 나머지 {100-config.demandWeight}% (가격 40% · 공급 25% · 재고 20% · 실적 15%)</div></section>
  <section><WeightControl label="DRAM 가격 비중 · NAND는 자동 반대" value={config.dramShare} onChange={v=>onChange("dramShare",v)}/><div className="score-control-note">DRAM {config.dramShare}% / NAND {100-config.dramShare}%</div></section> <section><WeightControl label="장기 평균 가격 흐름 · 최근 월은 자동 반대" value={config.avgMomentumShare} onChange={v=>onChange("avgMomentumShare",v)}/><div className="score-control-note">장기 평균 {config.avgMomentumShare}% / 최근 월 {100-config.avgMomentumShare}%</div></section>
  </div><div className="score-control-note bottom">세부 지표 가중치와 점수 환산계수는 일관성을 위해 기본값으로 고정했습니다.</div></div>;}
-function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}
-function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
+function Pill({children,tone='muted'}:{children:any;tone?:'muted'|'green'|'amber'|'blue'}){return <span className={'pill '+tone}>{children}</span>}function Title({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}){return <div className="section-title"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{desc}</p></div>}
 function krwText(value:any){if(typeof value!=='string')return value;return value.replace(/\$([\d,]+(?:\.\d+)?)(\s*(?:B|bn|billion))?/gi,(_m,n,suffix)=>{const v=Number(n.replace(/,/g,''));return suffix?'₩'+(v*FX_USDKRW/1000).toFixed(1)+'조':'₩'+Math.round(v*FX_USDKRW).toLocaleString('ko-KR')+'원'}).replace(/USD\s*\/\s*chip/gi,'원/칩').replace(/USD\s*bn/gi,'조 원').replace(/USD/gi,'KRW')}function visibleUnit(value:string){return value.replace(/USD\s*\/\s*chip/gi,'원/칩').replace(/USD\s*bn/gi,'조 원').replace(/USD/gi,'KRW')}function Stat({label,value,sub}:{label:string;value:string;sub:string}){return <div className="stat"><span>{krwText(label)}</span><strong>{krwText(value)}</strong><small>{krwText(sub)}</small></div>}
 function Table({headers,rows}:{headers:string[];rows:any[][]}){return <div className="table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{visibleUnit(h)}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c===null?'미확보':krwText(c)}</td>)}</tr>)}</tbody></table></div>}
 function pointPeriodKey(point:any):{kind:string;period:string;year:number}|null{
@@ -297,8 +295,7 @@ function MultiLineChart({series,label,height=220}:{series:{name:string;unit:stri
  return <div className="line-chart" style={{height:height+76}}>
   <div className="chart-value-callout" aria-live="polite">{selected&&active&&activeSeries?<><b>{activeSeries.name} · {active.year}</b><strong>{fmt(active.value)} {activeSeries.unit}</strong><small style={{display:'block',marginTop:5,color:deltaPct===null?'var(--muted,#9aa9b7)':deltaPct>=0?'#55bf98':'#e0a06b',fontWeight:700}}>{previous?(`직전 타점(${previous.year}) 대비 ${signed(deltaPct as number)}${(deltaPct as number).toFixed(1)}% · ${signed(delta as number)}${fmt(Math.abs(delta as number))} ${activeSeries.unit}`):'첫 번째 타점 · 이전 시점 비교 없음'}</small>{previous&&<small style={{display:'block',marginTop:3,color:'var(--muted,#9aa9b7)'}}>이전 값 {fmt(previous.value)} {activeSeries.unit}</small>}</>:<span>아래 연도 버튼 또는 그래프의 점을 선택하면 직전 시점 대비 증감률이 표시됩니다</span>}</div>  <div className="line-plot"><div className="line-y-axis"><span>{fmt(max)}</span><span>{fmt((max+min)/2)}</span><span>{fmt(min)}</span></div>
    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label={label}>    {series.map((s,si)=>{const pts=s.data.map((d,i)=>[x(i,s.data.length),y(d.value)] as [number,number]);const path=pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' ');return <g key={s.name}><path d={path} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.4" vectorEffect="non-scaling-stroke"/>{pts.map((p,pi)=><g key={pi} onClick={()=>selectPoint(si,pi)} style={{cursor:'pointer'}}><circle cx={p[0]} cy={p[1]} r="5" fill="transparent" pointerEvents="all"/><circle cx={p[0]} cy={p[1]} r={selected?.series===si&&selected.point===pi?2.8:1.8} fill={colors[si%colors.length]} stroke="#101a23" strokeWidth=".7" vectorEffect="non-scaling-stroke" pointerEvents="none"/></g>)}</g>})}
-   </svg>
-  </div>
+   </svg>  </div>
   <div className="line-labels">{(chosenSeries?.data||[]).map((d,pi)=><button type="button" key={d.year} className={selected?.series===chosenSeriesIndex&&selected.point===pi?'chosen':''} onClick={()=>selectPoint(chosenSeriesIndex,pi)} aria-label={`${chosenSeries?.name} ${d.year} 선택`}>{d.year}</button>)}</div>
   <div className="legend-row">{series.map((s,i)=><button type="button" key={s.name} onClick={()=>{setActiveSeriesIndex(i);setSelected(null)}} aria-pressed={chosenSeriesIndex===i} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'4px 7px',border:'1px solid '+(chosenSeriesIndex===i?'#66899a':'transparent'),borderRadius:5,background:chosenSeriesIndex===i?'#1b2b36':'transparent',color:'inherit',font:'inherit',cursor:'pointer'}}><i style={{background:colors[i%colors.length]}}/>{s.name}</button>)}</div>
  </div>
@@ -374,7 +371,7 @@ function Pricing(){return <>
  </>;
 }
 function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
- const demandWeight=scoreConfig.demandWeight,nonDemandWeight=100-demandWeight;
+ const demandWeight=scoreConfig.demandWeight;
  const scores=calculateCycleScores(scoreConfig),aiDemandScore=scores.demandScore,priceMomentumScore=scores.priceScore,financialScore=scores.financialScore,liveCycleScore=scores.totalScore;
  const {ddr5:ddr5Momentum,dram16:dram16Momentum,dram8:dram8Momentum,nand:nandMomentum}=scores;
  return <>
@@ -397,8 +394,7 @@ function Demand({scoreConfig}:{scoreConfig:ScoreConfig}){
     ["Enterprise SSD bit 수요 CAGR · 2026~2028",enterpriseSsdBitCagr.toFixed(1)+"%",scores.demandItems[2].score.toFixed(0),"수요 동일 가중"]   ]}/>  <Table headers={["가격 지표","전체 구간 월평균","최근 월","가격 점수","DRAM 내 가중치"]} rows={[
    ["DDR5 16Gb",ddr5Momentum.avgMonthly.toFixed(1)+"%",ddr5Momentum.latestMonthly.toFixed(1)+"%",ddr5Momentum.score.toFixed(0),"40%"],
    ["DRAM 16Gb",dram16Momentum.avgMonthly.toFixed(1)+"%",dram16Momentum.latestMonthly.toFixed(1)+"%",dram16Momentum.score.toFixed(0),"35%"],
-   ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0),"25%"],
-   ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0),"-"]
+   ["DRAM 8Gb",dram8Momentum.avgMonthly.toFixed(1)+"%",dram8Momentum.latestMonthly.toFixed(1)+"%",dram8Momentum.score.toFixed(0),"25%"],   ["NAND 128Gb",nandMomentum.avgMonthly.toFixed(1)+"%",nandMomentum.latestMonthly.toFixed(1)+"%",nandMomentum.score.toFixed(0),"-"]
   ]}/>
   <Notice>성장 점수는 중립 50점 + 성장률×0.65로 0~100점에 환산합니다. 종합점수는 수요 {demandWeight}%와 나머지 비중의 가격 40%·공급 25%·재고 20%·기업 실적 15%로 구성됩니다. 기업 실적과 재고는 중복 계산하지 않습니다. 가격 점수는 DRAM·NAND 비중 및 관측구간 평균·최근 월 비중을 사용합니다. 기업 실적 점수는 삼성·SK하이닉스·Micron 최근 공시 분기의 매출 QoQ 변화와 영업이익률 변화로 계산합니다. 이 환산계수는 공개 관측치를 비교하는 분석 규칙이며 통계적으로 검증된 예측모형은 아닙니다. 수요 수치는 기관 전망치이고 실적이 아닙니다. 가격은 정부 공개 기준가격으로 서버 전용 계약 ASP와 동일하지 않습니다.</Notice>
   <Sources items={["SUMCO · 4Q-2025 Results, pp.13-14 (2026-02-10)","미래에셋증권 · SK하이닉스 산업분석 (2026-10-06), 표 5","TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)","산업부 · 2026년 10월 ICT 수출입 동향 (2026-11-16)","산업부 · 2026년 10월 수출입 동향 (2026-11-16)"]}/>
@@ -497,8 +493,7 @@ function MemoryComparePanel({title,subtitle,series,forecast=false}:{title:string
  const y=(v:number)=>218-(v-min)/range*178;
  const selectedSeries=selected?shown.find(s=>s.name===selected.company):null;
  const selectedPoint=selectedSeries&&selected?selectedSeries.data[selected.index]:null;
- const selectedYear=selectedPoint?.year.replace(/^FY/,'').replace('*','');
-  const selectedFullSeries=selected?series.find(s=>s.name===selected.company):null;
+ const selectedYear=selectedPoint?.year.replace(/^FY/,'').replace('*','');  const selectedFullSeries=selected?series.find(s=>s.name===selected.company):null;
   const selectedPrevious=selectedPoint&&selectedFullSeries?findPreviousPeriodPoint(selectedFullSeries.data,selectedPoint):null;
   const selectedValue=selectedPoint?(metric==='revenue'?selectedPoint.revenue:selectedPoint.op):undefined;
   const selectedPreviousValue=selectedPrevious?(metric==='revenue'?selectedPrevious.revenue:selectedPrevious.op):undefined;
@@ -597,8 +592,7 @@ function Companies(){return <>
   ...micronQuarterly.map(x=>['Micron',x.period,'$'+x.revenue.toFixed(3)+'B','$'+x.op.toFixed(3)+'B','US GAAP Actual'])
  ]}/><Sources items={['Samsung Electronics · 1Q26 실적','Samsung Electronics · 2Q26 실적','Samsung Electronics · 3Q26 실적','SK hynix · 1Q26 실적','SK hynix · 2Q26 실적','SK hynix · 3Q26 실적','Micron · FY2026 Q1 실적','Micron · FY2026 Q2 실적','Micron · FY2026 Q4 및 연간 실적']}/></div>
  <TrendPanel title="AI 공급망 선행지표 · 연간 및 최신 분기 actual" series={[
-  {name:'TSMC annual revenue · CY',unit:'USD bn',data:tsmcAnnual},
-  {name:'TSMC quarterly revenue · CY26',unit:'USD bn / quarter',data:[{year:'1Q26',value:35.9},{year:'2Q26',value:44.6},{year:'3Q26',value:46.72}]},
+  {name:'TSMC annual revenue · CY',unit:'USD bn',data:tsmcAnnual},  {name:'TSMC quarterly revenue · CY26',unit:'USD bn / quarter',data:[{year:'1Q26',value:35.9},{year:'2Q26',value:44.6},{year:'3Q26',value:46.72}]},
   {name:'NVIDIA annual revenue · FY',unit:'USD bn',data:nvidiaAnnual},
   {name:'NVIDIA quarterly revenue · FY27',unit:'USD bn / quarter',data:nvidiaQuarterly}
  ]} quarterHeaders={['기업','기간','매출','추가 지표','상태']} quarterRows={[
@@ -697,8 +691,7 @@ function Market(){
     for(const result of results){
      if(result.status==='fulfilled'){Object.assign(merged,result.value?.quotes||{});allErrors.push(...(result.value?.errors||[]));}
      else allErrors.push(result.reason instanceof Error?result.reason.message:'시세 묶음 요청 실패');
-    }
-   }
+    }   }
    setQuotes(merged);
    setYields(latestYields);
    setYieldHistory(latestYieldHistory);
@@ -797,7 +790,6 @@ function App(){
   <main className="main">
    <header className="topbar"><div className="top-left"><button className="menu-button" onClick={()=>setMobileOpen(true)}><Menu size={20}/></button><span>대시보드 / <b>{current.label}</b></span></div><div className="top-actions"><div className="date-label"><CalendarDays size={15}/> 정적 데이터는 항목별 기준일 · 환산 환율 1 USD = 1,344.23원 (2026.11.25)</div><button className="share-button" onClick={()=>navigator.clipboard?.writeText(window.location.href)}><ExternalLink size={15}/> 링크 공유</button></div></header>
    <div className="content">{render()}<footer><div><b>SI · Semiconductor Intelligence</b><span>공개자료 기반 반도체 산업 분석 대시보드</span></div><span>실적 / 추정 / 전망 / 미확보 · v1.1</span></footer></div>
-  </main>
- </div>;
+  </main> </div>;
 }
 export default App;
