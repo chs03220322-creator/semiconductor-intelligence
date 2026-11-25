@@ -59,23 +59,26 @@
     "expected": "Annual and quarter actuals are visible in separate series; TSMC uses CY and TIFRS; NVIDIA and Micron use fiscal years and US GAAP; currencies and periods are not mixed."
   },
   {
-    "name": "Verify updated IEA and AI demand series",
+    "name": "Verify AI token, accelerator and memory demand series",
     "viewport": "desktop",
     "covers": [
-      "IEA 2024 actual",
-      "IEA 2025 estimate",
-      "IEA 2030 forecast",
-      "NVIDIA and TSMC annual demand proxies",
-      "HBM shortage outlook source"
+      "J.P. Morgan global AI token estimate",
+      "disclosed floor and modeled range",
+      "GPU HBM generation specifications",
+      "KV cache memory model",
+      "server DRAM reference configuration",
+      "enterprise SSD inference demand"
     ],
-    "description": "Verifies the latest free IEA demand outlook and annual revenue series for AI supply-chain leaders are separated from quarterly actuals.",
+    "description": "Checks the token-first AI demand page and its sourced translation into HBM, host DRAM and enterprise SSD demand.",
     "steps": [
       "Open AI Demand and Data Centers",
-      "Review 2024 actual, 2025 estimate and 2030 forecast",
-      "Review TSMC annual and NVIDIA annual series",
-      "Review the latest NVIDIA and TSMC quarterly actuals"
+      "Review July 2026 token estimate and disclosed-floor/model range",
+      "Review input/output/reasoning/agent workload breakdown",
+      "Compare H100, H200, B200 and Rubin HBM specifications",
+      "Review KV cache sizing formula and caveats",
+      "Review HGX B200 host DRAM reference and inference SSD demand"
     ],
-    "expected": "IEA data-centre electricity shows 416 TWh for 2024 actual, 485 TWh for 2025 estimate and 945 TWh for 2030 forecast; TSMC CY and NVIDIA FY annual revenue series remain separate from quarterly actuals."
+    "expected": "The page shows July 2026 token estimates as a range rather than an official census; agentic coding findings are scoped to the cited benchmark; HBM specifications are labeled as product maxima; KV cache formula includes model-architecture caveats; 1.5TB host DRAM is labeled as a minimum reference configuration rather than a market average; enterprise SSD demand is presented as a sourced trend, not a quantified shipment forecast."
   },
   {
     "name": "Verify mobile navigation and chart readability",
@@ -99,23 +102,24 @@
     "expected": "Navigation exposes eight current tabs and no removed Supply & Inventory tab; tapping the AI token point shows year and unit; chart title, tooltip, plot, x-axis and note do not overlap; tables remain horizontally scrollable."
   },
   {
-    "name": "Verify AI demand annual history and forecast series",
+    "name": "Verify AI token history and semiconductor demand bridge",
     "viewport": "desktop",
     "covers": [
-      "data-centre electricity annual series",
-      "AI-focused data-centre electricity annual series",
       "AI token historical run-rate",
-      "token low/base/high scenarios",
+      "token low/base/high estimates",
+      "workload token decomposition",
+      "HBM/DDR5/NAND conversion logic",
       "forecast caveats"
     ],
-    "description": "Checks annual and historical AI demand chart continuity while keeping observed data, interpolation and scenario assumptions distinct.",
+    "description": "Checks token history and the traceable conversion from AI workload growth to semiconductor memory demand, with power-demand graphs removed.",
     "steps": [
       "Open AI Demand and Data Centers",
-      "Review 2023–2030 data-centre power series",
-      "Review 2025–2030 AI-focused power series",
       "Review Jan-2024 to Jul-2026 token history",
-      "Compare 2026–2030 low/base/high scenarios"
+      "Review July 2026 disclosed floor, median and high estimate",
+      "Review training, inference, reasoning, agent and multimodal workload rows",
+      "Review HBM, KV cache, server DRAM and eSSD demand bridges",
+      "Review low/base/high scenario assumptions and forecast caveats"
     ],
-    "expected": "Data-centre power shows 2023–2030; AI-focused power shows 2025–2030; token history shows Jan-2024 through Jul-2026 and forecast scenarios through 2030; interpolated and scenario values are labeled as such."
+    "expected": "Token history remains Jan-2024 through Jul-2026; disclosed floor, modeled median and high estimate are distinguished; workload types and memory conversion logic are visible; HBM product specifications and host DRAM reference configurations are sourced and labeled; no data-centre power-demand charts or power KPIs are present."
   }
 ]
