@@ -425,15 +425,6 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
   <Sources items={['산업부 · 2026년 9월 ICT 수출입 동향','산업부 · 2026년 10월 ICT 수출입 동향','산업부 · 2026년 10월 수출입 동향','TEAMGROUP · 2026 Q4 기업설명회 자료','BonusCHIP · 2026년 10월 메모리 고정거래가격 월별 추이']}/>
  </div>
  <div className="panel">
-  <div className="panel-head"><div><h3>2025년 월별 공개 기준가격</h3></div></div>
-  <Table headers={['월','DRAM 8Gb 가격(증감률)','NAND 128Gb 가격(증감률)']} rows={prices2025Dram8.map(x=>[
-   x.year,
-   <>{'₩'+Math.round(x.value*FX_USDKRW).toLocaleString('ko-KR')+'원'} ({priceChangeCell(prices2025Dram8,x.year,'rate')})</>,
-   <>{valueAt(prices2025Nand,x.year)} ({priceChangeCell(prices2025Nand,x.year,'rate')})</>
-  ])}/>
-  <Sources items={['산업부 · 2025년 10월 ICT 수출입 동향']}/>
- </div>
- <div className="panel">
   <div className="panel-head"><div><h3>추가 가능한 월별 가격 데이터 · 누락 점검</h3><p className="muted">가격 공개 빈도와 실제 계약가격 공개 여부를 구분했습니다.</p></div></div>
   <Table headers={['제품군','월별 가격 데이터','공개 접근성·주기','시트 반영 원칙']} rows={[
    ['DDR4 8Gb / 16Gb','있음','TrendForce 계약가격 월별 · spot 일별','추가 가치 높음. DDR5와 분리'],
