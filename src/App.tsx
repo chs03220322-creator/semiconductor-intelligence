@@ -119,12 +119,6 @@ const pricesNand=[
   {year:'May 26',value:26.5},{year:'Jun 26',value:28.8},{year:'Jul 26',value:30.1},
   {year:'Aug 26',value:30.5},{year:'Sep 26',value:30.6},{year:'Oct 26',value:30.6}
 ];
-const prices2025Dram8=[
-  {year:'Jul 25',value:3.9},{year:'Aug 25',value:5.7},{year:'Sep 25',value:6.3},{year:'Oct 25',value:7.0}
-];
-const prices2025Nand=[
-  {year:'Jul 25',value:3.4},{year:'Aug 25',value:3.4},{year:'Sep 25',value:3.8},{year:'Oct 25',value:4.4}
-];
 const supplierCapex=[
   {company:'Samsung Electronics',period:'3Q26',quarter:'₩29.0T',ytd:'₩56.9T',definition:'전사 CAPEX; DS 3Q ₩27.2T, 1~3Q ₩52.8T'},
   {company:'Micron',period:'FY2026 Q4',quarter:'$10.77B',ytd:'$27.37B',definition:'Net CAPEX; FY2026 누계'}
