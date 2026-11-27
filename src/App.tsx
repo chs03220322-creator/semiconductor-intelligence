@@ -405,7 +405,7 @@ function Pricing({scoreConfig}:{scoreConfig:ScoreConfig}){
  const {ddr5,dram8,nand}=scores;
  const allPriceSeries=[pricesDdr5_16,pricesDram8,pricesNand,pricesNandTlc512,pricesNandTlc1tb];
  const monthlyPeriods=Array.from(new Set(allPriceSeries.flatMap(data=>data.map(x=>x.year))));
- const valueAt=(data:{year:string;value:number}[],period:string,unit:'chip'|'wafer'='chip')=>{const item=data.find(x=>x.year===period);return item?'₩'+Math.round(item.value*FX_USDKRW).toLocaleString('ko-KR')+'원/'+(unit==='wafer'?'wafer':'칩'):'—';};
+ const valueAt=(data:{year:string;value:number}[],period:string,unit:'chip'|'wafer'='chip')=>{const item=data.find(x=>x.year===period);return item?'₩'+Math.round(item.value*FX_USDKRW).toLocaleString('ko-KR'):'—';};
  return <>
  <Title eyebrow="02 / PRODUCT PRICING" title="메모리 제품별 가격" desc="DRAM과 NAND를 각각 하나의 월별 꺾은선 그래프로 통합했습니다. 계약가격·제품 규격·단위를 구분하고 실제 공개된 월별 데이터만 표시합니다."/>
  <div className="panel">
