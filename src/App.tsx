@@ -70,8 +70,8 @@ const sources=[
   {name:'TrendForce · 2026년 AI 서버 출하 전망 (2026-08-03)',date:'2026-08-03',url:'https://www.trendforce.com/presscenter/news/20260803-13161.html',desc:'2026년 AI 서버 출하량 약 31% 증가 전망 · 공개 보도자료'},
   {name:'TrendForce · 2026년 7월 30일 메모리 수급 전망',date:'2026-07-30',url:'https://www.trendforce.com/presscenter/news/20260730-13158.html',desc:'DRAM·NAND 공급 증가 및 2027년 제품별 수급 방향 공개 전망'},
   {name:'TrendForce · DRAM Price Trends',date:'2026-11-25',url:'https://www.trendforce.com/price/dram/dram_contract',desc:'DDR4·DDR5 spot 및 계약가격, 서버·PC 모듈·모바일 DRAM 가격 항목'},
-  {name:'TEAMGROUP · 2026 Q4 기업설명회 자료',date:'2026-11 공개',url:'https://file.teamgroupinc.com/about/corporate-information-session/2026/2026-q4-tw.pdf',desc:'TrendForce 기준 2026년 3~9월 DDR5 16Gb·DDR4 8Gb 월별 계약가격'},
-  {name:'BonusCHIP · 2026년 10월 메모리 고정거래가격 월별 추이',date:'2026-11-08',url:'https://bonuschip.app/blog/memory-contract-prices-october-2026',desc:'2026년 3~10월 DDR4 8Gb·NAND 128Gb MLC 월별 계약가격'},
+  {name:'TEAMGROUP · 2026 Q4 기업설명회 자료',date:'2026-11-02',url:'https://file.teamgroupinc.com/about/corporate-information-session/2026/2026-q4-tw.pdf',desc:'TrendForce 기준 2025.10~2026.09 DDR5 16Gb·DDR4 8Gb 및 NAND TLC 512Gb·1Tb 월별 계약가격'},
+  {name:'BonusCHIP · 2026년 10월 메모리 고정거래가격 월별 추이',date:'2026-11-08',url:'https://bonuschip.app/blog/memory-contract-prices-october-2026',desc:'2025년 10월~2026년 10월 DDR4 8Gb·NAND 128Gb MLC 월별 계약가격'},
   {name:'TrendForce · NAND Flash Price Trends',date:'2026-11-25',url:'https://www.trendforce.com/price/flash/flash_contract',desc:'NAND chip 계약·현물, wafer spot, PC SSD·eMMC/UFS 계약가격 항목'},
   {name:'TrendForce · NAND Flash Wafer Contract Price',date:'2026-10-30',url:'https://www.trendforce.com/research/download/RP261030YB',desc:'TLC·QLC NAND wafer 계약가격 월별 리포트'},
   {name:'TrendForce · DRAMeXchange Membership Plans',date:'상시 안내',url:'https://www.trendforce.com/membership/DRAMeXchange',desc:'DRAM/NAND 최근 5년 일별 spot·월별 contract Excel 데이터 제공 안내'}
